@@ -5,6 +5,27 @@
 
 ---
 
+## 0. 前置检查（首次使用前必做）
+
+适用场景：首次使用 24Hagent 前，验证项目的质量门工具链已就绪。
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/check_quality_readiness.ps1
+```
+
+如果输出 `Verdict: **BLOCKED**`，**绝对不要**启动下面的 Orchestrator 循环。
+必须先为项目安装并配置真实的 test/lint/typecheck/coverage 工具链，
+然后重新运行 readiness 检查直到 `Verdict: **READY**`。
+
+规则：
+- `BLOCKED` = 禁止启动 Orchestrator 循环
+- `NEEDS_CONFIG` = 部分门已就绪，但有 commands 不匹配 → 调整 QUALITY_GATES.json 后重跑
+- `READY` = 可以启动完整 Orchestrator 循环
+- `QUALITY_GATES_SUGGESTED.json` 只是建议，不自动覆盖 `QUALITY_GATES.json`
+- 100% coverage 是默认硬门，不因工具缺失自动降级
+
+---
+
 ## 1. 完整启动：长期开发循环
 
 适用场景：项目蓝图已写好，.agent/ 工作区已初始化，启动完整长期开发循环。
