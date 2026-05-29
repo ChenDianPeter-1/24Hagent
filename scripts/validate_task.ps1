@@ -84,7 +84,12 @@ function Write-FileSafe {
     param([string]$Path, [string]$Content)
     $dir = Split-Path -Parent $Path
     if ($dir -and -not (Test-Path $dir)) { New-Item -ItemType Directory -Path $dir -Force | Out-Null }
-    $Content | Set-Content -Path $Path -Encoding UTF8
+    # Explicit UTF-8 without BOM. PS 5.1 Set-Content -Encoding UTF8 produces UTF-8
+    # WITH BOM, which causes rendering artefacts (e.g. "鈥?" for em dashes) in some
+    # viewers. [System.IO.File]::WriteAllText with UTF8Encoding($false) produces
+    # clean UTF-8 without BOM.
+    $utf8NoBom = New-Object System.Text.UTF8Encoding $false
+    [System.IO.File]::WriteAllText($Path, $Content, $utf8NoBom)
 }
 function Invoke-GateCommand {
     param([string]$Command)
@@ -122,6 +127,11 @@ function Read-ReadinessReport {
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
+# Save original parameter values for display use in reports.
+# GetFullPath is kept for internal file operations (writing, existence checks),
+# but report text must use relative-to-repo-root paths to avoid machine-specific
+# absolute paths (e.g. D:\Codex\24Hagent\...) leaking into persistent reports.
+$ReportPathDisplay = $ReportPath
 $ConfigPath = [System.IO.Path]::GetFullPath($ConfigPath)
 $ReportPath = [System.IO.Path]::GetFullPath($ReportPath)
 $timestamp = (Get-Date).ToString("yyyy-MM-ddTHH:mm:sszzz")
@@ -518,7 +528,7 @@ if ($GenerateE2EReport -or $DryRun) {
     $e2eLines += ""
     $e2eLines += "- QUALITY_GATES.json: .agent/QUALITY_GATES.json"
     $e2eLines += "- Readiness report: $ReadinessPath"
-    $e2eLines += "- Validation report: $ReportPath"
+    $e2eLines += "- Validation report: $ReportPathDisplay"
 
     Write-FileSafe -Path $E2EReportPath -Content ($e2eLines -join "`n")
     Write-Host "E2E Report: $E2EReportPath"

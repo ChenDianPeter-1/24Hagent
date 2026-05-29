@@ -34,7 +34,10 @@ function Write-FileSafe {
     if ($dir -and -not (Test-Path $dir)) {
         New-Item -ItemType Directory -Path $dir -Force | Out-Null
     }
-    $Content | Set-Content -Path $Path -Encoding UTF8
+    # Explicit UTF-8 without BOM. PS 5.1 Set-Content -Encoding UTF8 produces UTF-8
+    # WITH BOM, which causes rendering artefacts in some viewers.
+    $utf8NoBom = New-Object System.Text.UTF8Encoding $false
+    [System.IO.File]::WriteAllText($Path, $Content, $utf8NoBom)
 }
 
 function Get-GitDiff {
