@@ -356,14 +356,31 @@ if ($RawInputPathForTest -ne "") {
         exit 1
     }
 
-    # Invoke Codex using PowerShell call operator (no cmd.exe /c)
-    Write-Host "Calling Codex CLI: & codex exec --sandbox read-only --json -C $repoRoot <prompt>"
+    # Invoke Codex by piping the prompt via stdin (codex exec reads prompt from
+    # stdin when "-" is passed). Passing the prompt as a command-line argument
+    # breaks under PowerShell 5.1 native arg quoting: embedded double quotes in
+    # the prompt get split into separate tokens (e.g. codex sees "WITH" as an
+    # unexpected argument). stdin avoids the quoting layer entirely.
+    Write-Host "Calling Codex CLI: <prompt> | codex exec --sandbox read-only --json -C $repoRoot -"
     $rawOutput = ""
     $exitCode = 0
     try {
-        # Pass prompt as a SINGLE argument via splatting — PowerShell handles quoting
-        $rawOutput = & codex exec --sandbox read-only --json -C $repoRoot $prompt 2>&1
+        # Force UTF-8 on the pipe to native command (PS 5.1 defaults to ASCII,
+        # which would mangle non-ASCII chars like em dashes in the prompt).
+        $OutputEncoding = New-Object System.Text.UTF8Encoding $false
+        # Redirect Codex stderr to a sidecar log instead of merging with 2>&1.
+        # Codex emits diagnostic ERROR lines (e.g. a tool call blocked by the
+        # read-only sandbox policy) on stderr even when it recovers and still
+        # produces a final agent_message on stdout. Merging them via 2>&1 under
+        # StrictMode + ErrorActionPreference=Stop turns the first stderr line
+        # into a terminating error, discarding the real JSONL result. Keep
+        # stderr separate and relax the preference for just this native call.
+        $stderrLog = "$RawOutputPath.stderr.log"
+        $prevEAP = $ErrorActionPreference
+        $ErrorActionPreference = "Continue"
+        $rawOutput = $prompt | & codex exec --sandbox read-only --json -C $repoRoot - 2>$stderrLog
         $exitCode = $LASTEXITCODE
+        $ErrorActionPreference = $prevEAP
     }
     catch { $exitCode = 1; $rawOutput = "Exception: $($_.Exception.Message)" }
     $rawOutputStr = ($rawOutput | Out-String).Trim()
@@ -378,26 +395,57 @@ $reviewText = ""
 $parseSuccess = $false
 $jsonlLines = @($rawOutputStr -split "`n" | Where-Object { $_.Trim() -ne "" })
 
+# Quick StrictMode-safe property checker — Set-StrictMode Latest throws if
+# we access a nonexistent property on a PSCustomObject, so guard with this.
+function Test-Property {
+    param($Obj, [string]$PropName)
+    if ($null -eq $Obj) { return $false }
+    return ($Obj.PSObject.Properties.Name -contains $PropName)
+}
+
 foreach ($jsonLine in $jsonlLines) {
+    # Filter to JSONL lines before parsing; skip empty/whitespace-only lines
+    $trimmed = $jsonLine.Trim()
+    if ($trimmed -eq "") { continue }
+
     try {
-        $obj = $jsonLine | ConvertFrom-Json
-        # Collect text from common Codex JSONL fields
-        $candidates = @("message", "content", "text", "output", "delta")
-        foreach ($field in $candidates) {
+        $obj = $trimmed | ConvertFrom-Json
+    }
+    catch {
+        # Not valid JSON — skip (don't pollute review text with raw JSON noise)
+        continue
+    }
+
+    # Codex 0.134 JSONL: the final structured verdict comes from the LAST
+    # "item.completed" event whose nested item.type is "agent_message".
+    # Earlier agent_messages are the model's narrative; we collect the last
+    # one as the canonical structured output, but append all for richness.
+    if (Test-Property $obj "item") {
+        $inner = $obj.item
+        $itemType = if (Test-Property $inner "type") { $inner.type } else { "" }
+        if ($itemType -eq "agent_message" -and (Test-Property $inner "text")) {
+            $txt = $inner.text
+            if ($null -ne $txt -and $txt.ToString().Trim() -ne "") {
+                $reviewText += $txt.ToString() + "`n"
+            }
+        }
+    }
+
+    # Top-level fields (older/alt shapes — belt and suspenders)
+    $candidates = @("message", "content", "text", "output", "delta")
+    foreach ($field in $candidates) {
+        if (Test-Property $obj $field) {
             $val = $obj.$field
             if ($null -ne $val -and $val.ToString().Trim() -ne "") {
                 $reviewText += $val.ToString() + "`n"
             }
         }
-        # If top-level has verdict directly
-        if ($null -ne $obj.verdict) {
-            $reviewText += "verdict: $($obj.verdict)`n"
-            $parseSuccess = $true
-        }
     }
-    catch {
-        # Not JSON — use as plain text
-        $reviewText += $jsonLine + "`n"
+
+    # If the JSON object itself has a verdict at top level
+    if (Test-Property $obj "verdict") {
+        $reviewText += "verdict: $($obj.verdict)`n"
+        $parseSuccess = $true
     }
 }
 
