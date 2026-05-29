@@ -125,17 +125,20 @@ Priority rules:
 
 When dispatching a task to the Worker:
 
-1. Write CURRENT_TASK.md with all required fields
+1. Write CURRENT_TASK.md with all required fields, including the **mandatory** `acceptance_checks` field — a concrete list of test/lint/typecheck commands the Worker must pass. These commands are the contract: the Worker writes+executes them, the Orchestrator re-runs them independently, and Codex verifies them as evidence.
 2. Instruct the Worker to:
    - Read CURRENT_TASK.md
    - Implement only within the declared file_scope
    - Follow TDD: write failing test first, then implement
+   - Run the acceptance_checks commands before declaring done
    - Write WORK_REPORT.md when done
    - NOT modify files outside file_scope
    - NOT self-certify (the Orchestrator will validate independently)
    - NOT use `--no-verify` on git commits
    - NOT use `git push --force`
    - NOT suppress linter/type errors with eslint-disable, @ts-ignore, or as any
+
+**测试归属铁律**：测试是 Claude Code 的专属职责。Worker 按 TDD 写测试 + 跑测试；Orchestrator 独立复跑落到 VALIDATION_REPORT.md。Codex 永不执行测试——它把 VALIDATION_REPORT 当证据消费，不做复测。
 
 The Worker's output is WORK_REPORT.md. The Orchestrator does NOT trust this report — it validates independently.
 
@@ -240,6 +243,13 @@ On re-review after NEED_FIX:
 - The Orchestrator MUST NOT pass the previous CODEX_REVIEW.md to Codex
 - The review prompt contains only: spec, DoD, diff, rubric
 - This prevents anchoring bias — Codex reviews fresh each time
+
+### Codex Read-Only Iron Rule
+
+Codex is an **external read-only adversarial reviewer**, not an implementer. Two hard constraints:
+
+1. **Codex never executes tests, builds, or writes files.** `codex exec --sandbox read-only` enforces this at the mechanism level. Codex reviews the diff + spec + DoD → outputs a verdict. It does not re-run tests to verify the Worker's claims — it treats VALIDATION_REPORT.md as evidence from the Orchestrator's independent re-run.
+2. **Codex uses codegraph for structural impact analysis.** Before reviewing the diff text, Codex checks index freshness (`codegraph_status`), then queries structural impact (`codegraph_impact` on changed symbols) and callers (`codegraph_callers`). This catches breaking changes invisible to diff-only review. If the codegraph index is stale for the changed files, Codex falls back to reading the source files directly.
 
 ### Output Parsing
 
