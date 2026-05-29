@@ -223,7 +223,11 @@ foreach ($gateName in $gateOrder) {
     Write-Host "Running gate '$gateName': $command"
     $result = Invoke-GateCommand -Command $command
     $status = if ($result.ExitCode -eq 0) { "PASS" } else { "FAIL" }
-    $rawOutput = Truncate-Text -Text "$($result.Stdout)`n$($result.Stderr)"
+    # Coverage output can exceed the default 500-char limit (vitest emits
+    # a full table). Use a higher limit so the coverage parser can find
+    # the percentage figures. Other gates keep the default limit.
+    $truncLimit = if ($gateName -eq "coverage") { 4000 } else { 500 }
+    $rawOutput = Truncate-Text -Text "$($result.Stdout)`n$($result.Stderr)" -MaxLen $truncLimit
     $detail = if ($status -eq "FAIL") { $rawOutput } else { "Exit code 0" }
 
     if ($status -eq "FAIL" -and $isBlocking) {
@@ -254,19 +258,51 @@ elseif (-not $DryRun -and $null -ne $coverageThreshold) {
     $coverageGateEnabled = ($null -ne $config.gates.coverage) -and ($config.gates.coverage.enabled)
     $coverageGateBlocking = ($null -ne $config.gates.coverage) -and ($config.gates.coverage.blocking)
 
+    # Try vitest JSON summary first (reliable structured data, no regex fragility).
+    # vitest --reporter json-summary writes coverage/coverage-summary.json.
+    $jsonSummary = $null
+    $jsonPath = "coverage/coverage-summary.json"
+    if (Test-Path $jsonPath) {
+        try {
+            $jsonSummary = Get-Content -Path $jsonPath -Raw -Encoding UTF8 | ConvertFrom-Json
+        } catch { $jsonSummary = $null }
+    }
+
     foreach ($m in @("lines","branches","functions","statements")) {
         $req = $coverageThreshold.$m; $actual = "N/A"; $metricStatus = "UNKNOWN"
-        $pattern = "(?i)$m[^0-9]*(\d+(?:\.\d+)?)\s*%"
-        if ($coverageOutput -match $pattern) {
-            $actual = "$($Matches[1])%"; $actualVal = [double]$Matches[1]
-            if ($actualVal -ge [double]$req) { $metricStatus = "PASS" }
-            else { $metricStatus = "FAIL"; $overallPass = $false; $blockingFailures += "coverage.$m ($actual < $req%)" }
+
+        # Primary: read from vitest JSON summary (pct field on total.$m)
+        if ($null -ne $jsonSummary -and $null -ne $jsonSummary.total) {
+            $entry = $jsonSummary.total.$m
+            if ($null -ne $entry -and $null -ne $entry.pct) {
+                $pctVal = $entry.pct
+                if ($pctVal -is [string]) {
+                    # "Unknown" for branchesTrue — skip
+                    if ($pctVal -eq "Unknown") { $pctVal = $null }
+                    else { $pctVal = [double]$pctVal }
+                }
+                if ($null -ne $pctVal) {
+                    $actual = "$pctVal%"; $actualVal = [double]$pctVal
+                    if ($actualVal -ge [double]$req) { $metricStatus = "PASS" }
+                    else { $metricStatus = "FAIL"; $overallPass = $false; $blockingFailures += "coverage.$m ($actual < $req%)" }
+                }
+            }
         }
-        else {
-            $metricStatus = "PARSE_FAILED"
-            if ($coverageGateEnabled -and $coverageGateBlocking) {
-                $overallPass = $false
-                $blockingFailures += "coverage.$m (PARSE_FAILED: could not extract coverage from output)"
+
+        # Fallback: text regex parse (for non-vitest coverage tools)
+        if ($metricStatus -eq "UNKNOWN") {
+            $pattern = "(?i)$m[^0-9]*(\d+(?:\.\d+)?)\s*%"
+            if ($coverageOutput -match $pattern) {
+                $actual = "$($Matches[1])%"; $actualVal = [double]$Matches[1]
+                if ($actualVal -ge [double]$req) { $metricStatus = "PASS" }
+                else { $metricStatus = "FAIL"; $overallPass = $false; $blockingFailures += "coverage.$m ($actual < $req%)" }
+            }
+            else {
+                $metricStatus = "PARSE_FAILED"
+                if ($coverageGateEnabled -and $coverageGateBlocking) {
+                    $overallPass = $false
+                    $blockingFailures += "coverage.$m (PARSE_FAILED: could not extract coverage from output)"
+                }
             }
         }
         $coverageDetail += [PSCustomObject]@{Metric=(Get-Culture).TextInfo.ToTitleCase($m);Actual=$actual;Required="$req%";Status=$metricStatus}
