@@ -12,3 +12,6 @@ node_modules/
 
 # CodeGraph internals (indexed separately)
 .codegraph/
+
+# Phase B sandbox (independent verification project)
+sandbox/
