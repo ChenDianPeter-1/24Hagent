@@ -1,0 +1,5 @@
+{
+  "enabledPlugins": {
+    "tdd-guard@tdd-guard": false
+  }
+}

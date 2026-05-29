@@ -1,0 +1,14 @@
+# Reference vault - not active source code
+reference valut/
+
+# Agent runtime
+.agent/
+
+# IDE and editor configs
+.cursor/
+
+# Node modules
+node_modules/
+
+# CodeGraph internals (indexed separately)
+.codegraph/
