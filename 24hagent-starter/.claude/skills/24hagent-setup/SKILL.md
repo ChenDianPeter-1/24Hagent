@@ -211,8 +211,12 @@ If any gate is disabled, add a note like:
 
 ### Step 4: Generate PROJECT_BLUEPRINT.md draft
 
-Ask the user 2 questions only. Do NOT ask about quality gates — that was
-decided automatically in Step 3.
+Ask the user questions depending on project state. Do NOT ask about quality
+gates — that was decided automatically in Step 3.
+
+- Empty project (unknown type): ask stack choice first, then 2 blueprint questions.
+- Existing project with toolchain detected: ask 2 blueprint questions.
+- Never claim a fixed number of questions — it depends on what the project needs.
 
 **Q1:** "What does your project do? Describe it in one sentence."
 
