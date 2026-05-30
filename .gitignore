@@ -1,6 +1,3 @@
-# Reference vault - not active source code
-reference valut/
-
 # Agent runtime
 .agent/
 
@@ -15,3 +12,12 @@ node_modules/
 
 # Phase B sandbox (independent verification project)
 sandbox/
+
+# Personal Claude Code config (not project code)
+/.claude/
+
+# Stale drafts replaced by docs/superpowers/specs/
+AGENT.md
+mvp.md
+workmap.md
+package.json

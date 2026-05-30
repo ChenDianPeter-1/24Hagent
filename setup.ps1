@@ -4,7 +4,8 @@
     interactively generates blueprint and quality gates.
 .DESCRIPTION
     Reads core files from the 24Hagent repo and writes them to your project.
-    Asks 3 questions to generate PROJECT_BLUEPRINT.md.
+    Asks 2 questions to generate PROJECT_BLUEPRINT.md draft.
+    Quality gate selection is automatic based on toolchain detection.
     Auto-detects package.json to generate QUALITY_GATES.json.
     Copies the brainstorming skill for optional blueprint refinement.
     Runs readiness check at the end.
@@ -211,7 +212,7 @@ Write-Host "  Coverage:    $coverageTool ($coverageCommand)"
 # Step 3: Questions
 # ===========================================================================
 Write-Host ""
-Write-Host "--- 3 questions to generate your project blueprint ---"
+Write-Host "--- 2 questions to generate your project blueprint ---"
 Write-Host ""
 
 $projectGoal = Read-Host "What does your project do (one sentence)"
@@ -225,39 +226,30 @@ $featuresRaw = Read-Host "> "
 $features = @($featuresRaw -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne "" })
 if ($features.Count -eq 0) { $features = @("(fill in your features)") }
 
-Write-Host ""
-Write-Host "Any quality gates to skip?"
-Write-Host "  [1] All gates: test + lint + typecheck + coverage (recommended)"
-Write-Host "  [2] Skip typecheck (pure JS project)"
-Write-Host "  [3] Skip lint"
-Write-Host "  [4] Minimal: test + coverage only"
-$gateChoice = Read-Host "> "
-if ($gateChoice -notmatch '^[1-4]$') { $gateChoice = "1" }
-
-$enableLint      = ($gateChoice -ne "3")
-$enableTypecheck = ($gateChoice -ne "2")
-$enableTest      = $true
-$enableCoverage  = $true
-
+# Quality gate decisions are automatic: enabled if toolchain detected, disabled if not.
+# No user prompt. Coverage threshold is always 100%.
+$enableTest      = ($null -ne $testCommand)
+$enableLint      = ($null -ne $lintCommand)
+$enableTypecheck = ($null -ne $typecheckCommand)
+$enableCoverage  = ($null -ne $coverageCommand)
 $coverageThreshold = 100
-if ($gateChoice -eq "4") {
-    Write-Host ""
-    Write-Host "Minimum coverage percentage (default 100):"
-    $covInput = Read-Host "> "
-    if ($covInput -match '^\d+$') { $coverageThreshold = [int]$covInput }
-}
 
 # ===========================================================================
 # Step 4: Generate QUALITY_GATES.json
 # ===========================================================================
 Write-Host ""
-Write-Host "--- Generating quality gates config ---"
+Write-Host "--- Quality gates (auto-detected) ---"
+Write-Host "  test:      $(if ($enableTest) { 'ENABLED' } else { 'DISABLED (no test runner detected)' })"
+Write-Host "  lint:      $(if ($enableLint) { 'ENABLED' } else { 'DISABLED (no linter detected)' })"
+Write-Host "  typecheck: $(if ($enableTypecheck) { 'ENABLED' } else { 'DISABLED (no tsconfig.json)' })"
+Write-Host "  coverage:  $(if ($enableCoverage) { 'ENABLED' } else { 'DISABLED (no coverage tool detected)' })"
+Write-Host ""
 
 $gatesJson = @{
     tdd_required = $true
     gates = @{
         test = @{
-            enabled     = $enableTest -and ($null -ne $testCommand)
+            enabled     = $enableTest
             blocking    = $true
             command     = if ($testCommand) { $testCommand } else { "" }
             description = if ($testCommand) { "All tests must pass" } else { "NEEDS CONFIG: install a test runner (vitest/jest)" }
