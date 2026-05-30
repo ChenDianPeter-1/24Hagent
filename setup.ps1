@@ -135,16 +135,19 @@ Copy-DirSafe -Source "$SourceRoot/.claude/skills/brainstorming" `
 Write-Host ""
 Write-Host "--- Detecting toolchain ---"
 
+$projectKind = "unknown"
+
+# ── Node.js path ──
 $pkgJson = Read-JsonSafe "$TargetProject/package.json"
 $hasPackageJson = ($null -ne $pkgJson)
 
 $scripts = @{}
-if ($hasPackageJson -and $null -ne $pkgJson.scripts) {
-    $pkgJson.scripts.PSObject.Properties | ForEach-Object { $scripts[$_.Name] = $_.Value }
-}
-
 $deps = @{}
 if ($hasPackageJson) {
+    $projectKind = "node"
+    if ($null -ne $pkgJson.scripts) {
+        $pkgJson.scripts.PSObject.Properties | ForEach-Object { $scripts[$_.Name] = $_.Value }
+    }
     foreach ($ds in @("devDependencies", "dependencies")) {
         $prop = $pkgJson.PSObject.Properties | Where-Object { $_.Name -eq $ds }
         if ($prop) {
@@ -153,56 +156,93 @@ if ($hasPackageJson) {
     }
 }
 
-# Test runner
-$testCommand = $null
-$testRunner  = "unknown"
-if ($deps.ContainsKey("vitest")) {
-    $testRunner = "vitest"
-    $testCommand = if ($scripts.ContainsKey("test")) { "npm test" } else { "npx vitest run" }
-} elseif ($deps.ContainsKey("jest")) {
-    $testRunner = "jest"
-    $testCommand = if ($scripts.ContainsKey("test")) { "npm test" } else { "npx jest" }
-} elseif ($deps.ContainsKey("mocha")) {
-    $testRunner = "mocha"
-    $testCommand = if ($scripts.ContainsKey("test")) { "npm test" } else { "npx mocha" }
-} elseif ($scripts.ContainsKey("test")) {
-    $rawScript = $scripts["test"]
-    if (-not (Test-IsPlaceholderTestScript -Command $rawScript)) {
-        $testRunner = "custom script"
-        $testCommand = "npm test"
+# ── Python path (if no package.json, look for pyproject.toml / setup.cfg) ──
+$pyprojectToml = $null
+if (-not $hasPackageJson) {
+    $pyprojectPath = "$TargetProject/pyproject.toml"
+    $setupCfgPath  = "$TargetProject/setup.cfg"
+    if ((Test-Path $pyprojectPath) -or (Test-Path $setupCfgPath) -or (Test-Path "$TargetProject/setup.py")) {
+        $projectKind = "python"
+        if (Test-Path $pyprojectPath) {
+            # Quick TOML snippet reader — just grep for dependency-like lines
+            $pyprojectToml = Get-Content $pyprojectPath -Raw -Encoding UTF8
+        }
     }
 }
 
-# Linter
+# ── Detected deps (Python: keyword match in pyproject.toml) ──
+function Test-PythonDep { param([string]$Name)
+    if ($null -eq $pyprojectToml) { return $false }
+    return ($pyprojectToml -match "(?m)^\s*['\"]?$([regex]::Escape($Name))['\"]?\s*[=~><]")
+}
+
+# ── Test runner ──
+$testCommand = $null
+$testRunner  = "unknown"
+if ($projectKind -eq "node") {
+    if ($deps.ContainsKey("vitest")) {
+        $testRunner = "vitest"; $testCommand = if ($scripts.ContainsKey("test")) { "npm test" } else { "npx vitest run" }
+    } elseif ($deps.ContainsKey("jest")) {
+        $testRunner = "jest"; $testCommand = if ($scripts.ContainsKey("test")) { "npm test" } else { "npx jest" }
+    } elseif ($deps.ContainsKey("mocha")) {
+        $testRunner = "mocha"; $testCommand = if ($scripts.ContainsKey("test")) { "npm test" } else { "npx mocha" }
+    } elseif ($scripts.ContainsKey("test") -and -not (Test-IsPlaceholderTestScript -Command $scripts["test"])) {
+        $testRunner = "custom script"; $testCommand = "npm test"
+    }
+} elseif ($projectKind -eq "python") {
+    if ((Test-PythonDep "pytest") -or (Test-Path "$TargetProject/pytest.ini") -or (Test-Path "$TargetProject/conftest.py")) {
+        $testRunner = "pytest"; $testCommand = "python -m pytest"
+    } elseif (Test-Path "$TargetProject/tests") {
+        $testRunner = "unittest"; $testCommand = "python -m unittest discover"
+    }
+}
+
+# ── Linter ──
 $lintCommand = $null
 $linter = "unknown"
-if ($deps.ContainsKey("eslint")) {
-    $linter = "eslint"
-    $lintCommand = if ($scripts.ContainsKey("lint")) { "npm run lint" } else { "npx eslint src/" }
-} elseif ($deps.ContainsKey("biome")) {
-    $linter = "biome"
-    $lintCommand = if ($scripts.ContainsKey("lint")) { "npm run lint" } else { "npx biome check ." }
+if ($projectKind -eq "node") {
+    if ($deps.ContainsKey("eslint")) {
+        $linter = "eslint"; $lintCommand = if ($scripts.ContainsKey("lint")) { "npm run lint" } else { "npx eslint src/" }
+    } elseif ($deps.ContainsKey("biome")) {
+        $linter = "biome"; $lintCommand = if ($scripts.ContainsKey("lint")) { "npm run lint" } else { "npx biome check ." }
+    }
+} elseif ($projectKind -eq "python") {
+    if ((Test-PythonDep "ruff")) {
+        $linter = "ruff"; $lintCommand = "ruff check ."
+    } elseif ((Test-PythonDep "flake8")) {
+        $linter = "flake8"; $lintCommand = "flake8 ."
+    }
 }
 
-# Typechecker
+# ── Typechecker ──
 $typecheckCommand = $null
 $typechecker = "unknown"
-if (Test-Path "$TargetProject/tsconfig.json") {
-    $typechecker = "tsc"
-    $typecheckCommand = if ($scripts.ContainsKey("typecheck")) { "npm run typecheck" } else { "npx tsc --noEmit" }
+if ($projectKind -eq "node" -and (Test-Path "$TargetProject/tsconfig.json")) {
+    $typechecker = "tsc"; $typecheckCommand = if ($scripts.ContainsKey("typecheck")) { "npm run typecheck" } else { "npx tsc --noEmit" }
+} elseif ($projectKind -eq "python") {
+    if ((Test-PythonDep "mypy") -or (Test-Path "$TargetProject/mypy.ini")) {
+        $typechecker = "mypy"; $typecheckCommand = "mypy ."
+    }
 }
 
-# Coverage
+# ── Coverage ──
 $coverageCommand = $null
 $coverageTool = "unknown"
-if ($testRunner -eq "vitest") {
-    $coverageTool = "vitest built-in"
-    $coverageCommand = if ($scripts.ContainsKey("coverage")) { "npm run coverage" } else { "npx vitest run --coverage" }
-} elseif ($testRunner -eq "jest") {
-    $coverageTool = "jest built-in"
-    $coverageCommand = if ($scripts.ContainsKey("coverage")) { "npm run coverage" } else { "npx jest --coverage" }
+if ($projectKind -eq "node") {
+    if ($testRunner -eq "vitest") {
+        $coverageTool = "vitest built-in"; $coverageCommand = if ($scripts.ContainsKey("coverage")) { "npm run coverage" } else { "npx vitest run --coverage" }
+    } elseif ($testRunner -eq "jest") {
+        $coverageTool = "jest built-in"; $coverageCommand = if ($scripts.ContainsKey("coverage")) { "npm run coverage" } else { "npx jest --coverage" }
+    }
+} elseif ($projectKind -eq "python" -and $testRunner -eq "pytest") {
+    if ((Test-PythonDep "pytest-cov")) {
+        $coverageTool = "pytest-cov"; $coverageCommand = "python -m pytest --cov=. --cov-report=term"
+    } elseif ((Test-PythonDep "coverage")) {
+        $coverageTool = "coverage.py"; $coverageCommand = "coverage run -m pytest && coverage report"
+    }
 }
 
+Write-Host "  Project:     $projectKind"
 Write-Host "  Test:        $testRunner ($testCommand)"
 Write-Host "  Lint:        $linter ($lintCommand)"
 Write-Host "  Typecheck:   $typechecker ($typecheckCommand)"
@@ -252,19 +292,19 @@ $gatesJson = @{
             enabled     = $enableTest
             blocking    = $true
             command     = if ($testCommand) { $testCommand } else { "" }
-            description = if ($testCommand) { "All tests must pass" } else { "NEEDS CONFIG: install a test runner (vitest/jest)" }
+            description = if ($testCommand) { "All tests must pass" } else { "NEEDS CONFIG: install a test runner (vitest/jest for Node, pytest for Python)" }
         }
         lint = @{
             enabled     = $enableLint -and ($null -ne $lintCommand)
             blocking    = $true
             command     = if ($lintCommand) { $lintCommand } else { "" }
-            description = if ($lintCommand) { "No lint errors allowed" } else { "NEEDS CONFIG: install a linter (eslint/biome)" }
+            description = if ($lintCommand) { "No lint errors allowed" } else { "NEEDS CONFIG: install a linter (eslint for Node, ruff/flake8 for Python)" }
         }
         typecheck = @{
             enabled     = $enableTypecheck -and ($null -ne $typecheckCommand)
             blocking    = $true
             command     = if ($typecheckCommand) { $typecheckCommand } else { "" }
-            description = if ($typecheckCommand) { "No type errors allowed" } else { "NEEDS CONFIG: add tsconfig.json + typescript" }
+            description = if ($typecheckCommand) { "No type errors allowed" } else { "NEEDS CONFIG: add typescript or mypy for Python" }
         }
         coverage = @{
             enabled     = $enableCoverage -and ($null -ne $coverageCommand)

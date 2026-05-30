@@ -41,25 +41,30 @@ the user:
 Execute these steps in order. If any step fails, report the exact failure and
 ask the user how to proceed — don't skip steps.
 
-### Step 1: Detect toolchain
+### Step 1: Detect project type and toolchain
 
-Read the project's `package.json` and `tsconfig.json` (if they exist). From
-`package.json`, inspect `scripts` and `devDependencies` + `dependencies`.
+First, determine what kind of project this is. Check in order:
 
-Determine these four commands:
+**Node.js** — if `package.json` exists:
+- Read `scripts` and `devDependencies` + `dependencies` from `package.json`.
+- **test**: vitest/jest/mocha in deps. If the test script is an npm placeholder ("no test specified" / `echo ... && exit 1`), treat as "no real runner".
+- **lint**: eslint → `npx eslint src/`, biome → `npx biome check .`
+- **typecheck**: if `tsconfig.json` exists → `npx tsc --noEmit` (prefer `npm run typecheck` if script exists)
+- **coverage**: vitest → `npm run coverage`, jest → `npm run coverage`
 
-- **test**: look for vitest/jest/mocha in deps, then fall back to the `test`
-  script in package.json. If the test script is an npm default placeholder
-  (contains "no test specified" or is just `echo ... && exit 1`), treat it as
-  "no real test runner" — the test gate command should be empty.
-- **lint**: look for eslint/biome in deps. Command is `npx eslint src/` for
-  eslint, `npx biome check .` for biome. If neither is found, lint gate is empty.
-- **typecheck**: if `tsconfig.json` exists, command is `npx tsc --noEmit`. If
-  the project has a `typecheck` script, prefer `npm run typecheck`.
-- **coverage**: if using vitest, `npm run coverage` or `npx vitest run --coverage`.
-  If jest, `npm run coverage` or `npx jest --coverage`.
+**Python** — if `package.json` does NOT exist but `pyproject.toml`, `setup.cfg`, or `setup.py` does:
+- Read `pyproject.toml` (plain text grep for dependency names is fine).
+- **test**: if `pytest` appears in pyproject.toml deps OR `pytest.ini`/`conftest.py` exists → `python -m pytest`. If a `tests/` directory exists with no pytest → `python -m unittest discover`.
+- **lint**: `ruff` in pyproject.toml → `ruff check .`, `flake8` → `flake8 .`
+- **typecheck**: `mypy` in pyproject.toml OR `mypy.ini` exists → `mypy .`
+- **coverage**: `pytest-cov` → `python -m pytest --cov=. --cov-report=term`. `coverage` → `coverage run -m pytest && coverage report`.
 
-Print the detected commands to the user before proceeding.
+**Unknown** — if neither is detected:
+- Tell the user: "This doesn't look like a Node.js or Python project. I can still copy the files and generate a blueprint, but quality gates will need manual configuration."
+- Set all four gate commands to empty and `enabled: false`.
+- Continue with the setup anyway — the user can edit `.agent/QUALITY_GATES.json` later.
+
+Print the detected project type and all four commands before proceeding.
 
 ### Step 2: Copy starter files to project root
 
