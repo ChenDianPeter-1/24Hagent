@@ -12,10 +12,12 @@
 #>
 param(
     [string]$ReportPath = ".agent/QUALITY_READINESS_REPORT.md",
-    [string]$SuggestedPath = ".agent/QUALITY_GATES_SUGGESTED.json"
+    [string]$SuggestedPath = ".agent/QUALITY_GATES_SUGGESTED.json",
+    [switch]$Verify
 )
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
+$script:exitCode = 0
 
 # ===========================================================================
 # Helpers
@@ -618,6 +620,40 @@ $($nextSteps -join "`n")
 }
 
 # ===========================================================================
+# Verify: actually execute gate commands (optional)
+# ===========================================================================
+function Invoke-VerifyGates {
+    param($GateComparisons)
+
+    $verifyResults = @()
+    foreach ($cmp in $GateComparisons) {
+        if ($cmp.IsDisabled) {
+            $verifyResults += [pscustomobject]@{Gate=$cmp.Gate; ExitCode="SKIPPED"; Status="disabled in config"; Output=""}
+            continue
+        }
+        $cmd = $cmp.CurrentCommand
+        if ($cmd -eq "N/A" -or [string]::IsNullOrWhiteSpace($cmd)) {
+            $verifyResults += [pscustomobject]@{Gate=$cmp.Gate; ExitCode="SKIPPED"; Status="no command configured"; Output=""}
+            continue
+        }
+        Write-Host "Verify $($cmp.Gate): $cmd"
+        try {
+            $output = & cmd.exe /c "$cmd 2>&1" 2>&1 | Out-String
+            $ec = $LASTEXITCODE
+            $status = if ($ec -eq 0) { "PASS" } else { "FAIL (exit $ec)" }
+            # Truncate output for report
+            if ($output.Length -gt 400) { $output = $output.Substring(0, 400) + "...(truncated)" }
+            $verifyResults += [pscustomobject]@{Gate=$cmp.Gate; ExitCode=$ec; Status=$status; Output=$output.Trim()}
+            Write-Host "  -> $status"
+        } catch {
+            $verifyResults += [pscustomobject]@{Gate=$cmp.Gate; ExitCode="ERROR"; Status="execution error"; Output=$_.Exception.Message}
+            Write-Host "  -> execution error"
+        }
+    }
+    return $verifyResults
+}
+
+# ===========================================================================
 # Main
 # ===========================================================================
 $timestamp = (Get-Date).ToString("yyyy-MM-ddTHH:mm:sszzz")
@@ -666,6 +702,39 @@ Write-ReadinessReportFile -Toolchain $toolchain -GateComparisons $comparisons `
     -Verdict $resolution.Verdict -BlockingIssues $resolution.BlockingIssues `
     -ReportPath $ReportPath -SuggestedPath $SuggestedPath -Timestamp $timestamp
 
+
+# 6. Verify (optional — actually execute gate commands)
+$VerifyFailed = $false
+if ($Verify) {
+    Write-Host ""
+    Write-Host "--- Verifying gate commands (actual execution) ---"
+    $verifyResults = Invoke-VerifyGates -GateComparisons $comparisons
+
+    # Append verify results to the report
+    $vTable = ($verifyResults | ForEach-Object {
+        "| $($_.Gate) | $($_.ExitCode) | $($_.Status) |"
+    }) -join "`n"
+    $vSection = @"
+
+## Verify Results (actual execution)
+
+| Gate | Exit Code | Status |
+|------|-----------|--------|
+$vTable
+
+"@
+    Add-Content -Path $ReportPath -Value $vSection -Encoding UTF8
+    Write-Host "Verify results appended to: $ReportPath"
+
+    $failedVerify = $verifyResults | Where-Object {
+        $_.ExitCode -eq "ERROR" -or ($_.ExitCode -is [int] -and $_.ExitCode -ne 0)
+    }
+    if ($failedVerify) {
+        Write-Host "Verify FAILED for $($failedVerify.Count) gate(s)."
+        $script:exitCode = 1
+    }
+}
+
 Write-Host ""
 Write-Host "=========================================="
 Write-Host " Readiness Report: $ReportPath"
@@ -673,4 +742,8 @@ Write-Host " Suggested Gates: $SuggestedPath"
 Write-Host " Verdict: $($resolution.Verdict)"
 Write-Host "=========================================="
 
-if ($resolution.Verdict -eq "BLOCKED") { exit 1 } elseif ($resolution.Verdict -eq "NEEDS_CONFIG") { exit 2 } else { exit 0 }
+if ($script:exitCode -ne 1) {
+    if ($resolution.Verdict -eq "BLOCKED")      { $script:exitCode = 1 }
+    elseif ($resolution.Verdict -eq "NEEDS_CONFIG") { $script:exitCode = 2 }
+}
+exit $script:exitCode
