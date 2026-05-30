@@ -60,6 +60,68 @@ Only begin work when the request includes, or clearly implies, a bounded packet 
 
 If the packet is missing critical boundaries, ask for clarification instead of guessing.
 
+## Dead-End Rule
+
+同一个失败模式尝试了两次之后，停止自己修。必须产出以下内容，然后送给 Codex：
+
+1. `git diff` — 当前改动的干净 diff
+2. 精确的失败命令 — 用户可以直接复制运行的命令
+3. 精确的错误输出 — 不是摘要，是原始错误
+4. 已尝试的两个方案 — 每个方案为什么失败
+5. 当前假设 — 你认为根因是什么
+6. 回滚点 — `git stash push -m "<原因>" -- <具体文件>` 或 `cp <文件> <文件>.bak`
+
+然后向 Codex 发送审查请求，格式为：意图 + diff + 失败命令 + 错误 + 问题。
+
+**冻结规则**：两次失败后，停止编辑——只允许为了产出干净 diff 或回滚点而做的清理。不要在准备 Codex 请求的过程中继续尝试新的修复方案。这防止"战场残骸"在升级过程中继续累积。
+
+**为什么存在这条规则**：T4 证明了独自调试超过两次的收益趋近于零。Codex 作为外部审查官是找到正确修复的最快路径。
+
+## 审查输入合同
+
+每次向 Codex 发送审查请求时，必须包含：
+
+- **意图**：这个改动要达成什么
+- **干净 diff**：`git diff HEAD -- <具体文件>`，无 debug 代码，无死代码
+- **问题**：要 Codex 判断什么
+
+不要发送：累积了多次失败尝试的残骸 diff、包含 debug 代码的 diff、没有上下文解释的裸 diff。
+
+## 审查前 diff 自检
+
+发送 Codex 审查前：
+1. 删除所有 debug 代码（Write-Host "[DEBUG]"、临时 exit 测试等）
+2. 删除所有死代码（unreachable code after exit/return）
+3. 用 `git diff HEAD -- <文件>` 只 diff 目标文件
+4. 确认 diff 只包含当前改动的意图，没有上次修改的残骸
+
+## BOM 自动化
+
+每次写入 `.ps1` 文件后，立即运行 `scripts/fix-encoding.ps1 <文件路径>` 添加 UTF-8 BOM。该脚本是幂等的——如果文件已有 BOM 则不做任何修改。PS 5.1 需要 BOM 才能正确解析非 ASCII 字符。手动记住加 BOM 已经被证明不可靠（T4 忘记 3+ 次）。
+
+如果用 Python 脚本修改 `.ps1` 文件，必须使用 `encoding='utf-8-sig'` 写入，否则写完需立即运行 `fix-encoding.ps1`。
+
+## 批量替换纪律
+
+- `replace_all: true` 之前，先 grep 计数预期匹配数
+- 替换之后执行三项检查：
+  1. 旧模式 grep 计数为 0（确认全部替换完毕）
+  2. 新模式 grep 计数等于替换前的预期数
+  3. 如果是 PowerShell 变量替换，grep `\$[A-Za-z]+[a-z]` 检查变量名是否和后续字符意外拼接（如 `$pmExecvitest`）
+- 给同一个文件做 3 次以上 Edit 时，改用 Python 脚本一次性完成全部修改，避免 Edit 工具和 linter 的反复冲突
+
+## sed 规则
+
+禁止在 `.ps1` 文件和编码敏感文件上使用 `sed -i`。它破坏 CRLF/LF 行尾、破坏 UTF-8 编码、产生不可见的解析器错误。这类文件用 Python 脚本或 Edit 工具修改。
+
+## 回滚纪律
+
+高风险探索前（改 exit 逻辑、改编码、改作用域、重构大函数），先做检查点：
+- `git stash push -m "<原因>" -- <具体文件>` 保存当前状态（只 stash 目标文件，不碰其他改动）
+- 或 `cp <文件> <文件>.bak` 创建文件级备份
+
+禁止不加文件参数的全仓库 `git stash`——可能意外吞掉不相关的改动。失败尝试不会堆积成审查污泥。
+
 ## Hard Restrictions
 
 Do not do any of the following unless Codex or the user explicitly approves it in the current task:
