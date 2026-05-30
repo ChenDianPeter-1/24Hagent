@@ -94,6 +94,24 @@ If the user explicitly says they want manual configuration (not one of the above
 
 Print the detected project type and all four commands before proceeding.
 
+### Step 1.5: Preflight — check required tools exist
+
+Before copying any files, verify that the tools needed to run 24Hagent are
+present:
+
+- `node --version` — required for Node.js projects and vitest/eslint
+- `npm --version` — required for Node.js projects
+- `python --version` (or `python3`) — required for Python projects
+- `powershell -Command '$PSVersionTable.PSVersion'` — PowerShell must be available to run .ps1 scripts. On Windows, test with `powershell`; on macOS/Linux, test with `pwsh`.
+- `codex --version` — required for Codex review
+
+Check only the tools relevant to the detected project type. For Python, also
+check `python -c "import tomllib"` — if this fails, Python >= 3.11 is not
+available and TOML detection confidence will be low.
+
+If any required tool is missing, stop and tell the user exactly what to install.
+Do not proceed with a partial installation.
+
 ### Step 2: Copy starter files to project root
 
 Copy these from the starter folder to the project root:
@@ -109,8 +127,23 @@ Copy these from the starter folder to the project root:
 Do NOT copy `24hagent-starter/.claude/skills/24hagent-setup/` — that skill is
 only needed during setup, not after.
 
-Use PowerShell's `Copy-Item -Recurse -Force` for directories. Create parent
-directories if they don't exist (e.g., `.agent/`, `.claude/skills/`).
+**Before copying:**
+- Create parent directories for all targets (e.g., `.agent/`, `.claude/skills/`, `scripts/`) if they don't already exist.
+- For each target path, check if it already exists.
+- If a file exists and differs from the source, warn the user:
+  "`<path>` already exists. Overwrite?"
+  - If Y: back up existing file to `<path>.bak`, then copy source over it.
+  - If N: leave existing file unchanged and skip copying that file.
+- If a directory exists, check for conflicting files inside and handle same way.
+
+**After copying:**
+- Verify every required file exists at its target path:
+  `scripts/check_quality_readiness.ps1`, `scripts/validate_task.ps1`,
+  `scripts/codex_review.ps1`, `CLAUDE_ORCHESTRATOR_PROTOCOL.md`,
+  `START_ORCHESTRATOR.md`, `.agent/CODEX_REVIEW_RUBRIC.md`,
+  `.claude/skills/brainstorming/SKILL.md`
+- If any file is missing, report which one and stop. Do not continue
+  with a partial installation.
 
 ### Step 3: Generate QUALITY_GATES.json
 
