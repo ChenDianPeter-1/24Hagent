@@ -59,10 +59,38 @@ First, determine what kind of project this is. Check in order:
 - **typecheck**: `mypy` in pyproject.toml OR `mypy.ini` exists → `mypy .`
 - **coverage**: `pytest-cov` → `python -m pytest --cov=. --cov-report=term`. `coverage` → `coverage run -m pytest && coverage report`.
 
-**Unknown** — if neither is detected:
-- Tell the user: "This doesn't look like a Node.js or Python project. I can still copy the files and generate a blueprint, but quality gates will need manual configuration."
-- Set all four gate commands to empty and `enabled: false`.
-- Continue with the setup anyway — the user can edit `.agent/QUALITY_GATES.json` later.
+**Unknown (empty project)** — if neither is detected, the project is probably brand new. Do NOT just report BLOCKED and stop. Instead, offer to initialize it:
+
+> "This looks like an empty project. I can set up the toolchain for you:"
+> [1] Node.js / TypeScript — npm init, install vitest + eslint + typescript
+> [2] Python — create pyproject.toml, install pytest + ruff
+> [3] You pick for me — I'll go with Node.js / TypeScript
+
+If the user picks 1 or 3 (Node.js):
+- Run `npm init -y` to create package.json, then update its `scripts` to:
+  `"test": "vitest run"`, `"lint": "eslint src/"`, `"typecheck": "tsc --noEmit"`, `"coverage": "vitest run --coverage"`
+- Run `npm install --save-dev vitest @vitest/coverage-v8 eslint typescript typescript-eslint @eslint/js @types/node`
+- Create a minimal `tsconfig.json` and `vitest.config.ts`
+- Create a minimal `eslint.config.mjs`:
+  ```js
+  import js from "@eslint/js";
+  import tseslint from "typescript-eslint";
+  export default tseslint.config(js.configs.recommended, ...tseslint.configs.recommended);
+  ```
+- Create a minimal `src/index.ts` with a placeholder function
+- Create `src/index.test.ts` with one placeholder test
+- Then go back to Step 1 — the toolchain will now be detected as Node.js
+
+If the user picks 2 (Python):
+- Create `pyproject.toml` with pytest, pytest-cov, ruff, mypy as dev dependencies
+- Run `python -m venv .venv` then activate (`.venv\Scripts\activate` on Windows, `source .venv/bin/activate` on macOS/Linux)
+- Run `pip install pytest pytest-cov ruff mypy` (inside the venv)
+- Create a minimal `src/__init__.py` and `tests/test_placeholder.py`
+- Then go back to Step 1 — the toolchain will now be detected as Python
+
+If the user explicitly says they want manual configuration (not one of the above):
+- Set all four gate commands to empty and `enabled: false`
+- Continue with the setup — the user can edit `.agent/QUALITY_GATES.json` later
 
 Print the detected project type and all four commands before proceeding.
 
@@ -251,10 +279,11 @@ before starting the orchestrator loop.
 
 - All user-facing output must be in English.
 - Never proceed past a BLOCKED readiness check without the user explicitly
-  asking to continue.
-- If the project has no `package.json`, tell the user this project doesn't
-  look like a Node.js project. Ask if they still want to proceed (some gates
-  will be unavailable).
+  asking to continue. Exception: if the project is empty (no toolchain at all),
+  follow the Step 1 "Unknown" path — offer to initialize the project instead
+  of reporting BLOCKED.
+- If the project has no detectable toolchain (Step 1 returns unknown), follow
+  the empty-project initialization path before reporting BLOCKED.
 - The brainstorming skill is optional — suggest it, don't force it.
 - Never modify files outside the project root.
 - The `24hagent-starter/` folder itself should NOT be deleted by you — the
