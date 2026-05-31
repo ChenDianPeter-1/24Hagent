@@ -4,6 +4,7 @@ export interface GateConfig {
   command: string
   blocking: boolean
   description: string
+  threshold?: { lines: number; branches: number; functions: number; statements: number }
 }
 
 /** 编排后的单个 gate 执行计划 */
@@ -11,6 +12,7 @@ export interface GatePlan {
   name: string
   command: string
   blocking: boolean
+  disabled: boolean
 }
 
 /** 单个 gate 的执行结果 */
