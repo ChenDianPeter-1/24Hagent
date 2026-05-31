@@ -19,7 +19,9 @@ if (cmd === 'status') {
   runReviewPrompt('.')
 } else if (cmd === 'review:render') {
   const { runReviewRender } = await import('./review.js')
-  runReviewRender(process.argv[3] || '.', process.argv[4] || '.agent/codex-review-raw.jsonl')
+  const inputIdx = process.argv.indexOf('--input')
+  const jsonlPath = inputIdx >= 0 ? process.argv[inputIdx + 1] : '.agent/codex-review-raw.jsonl'
+  runReviewRender('.', jsonlPath)
 } else {
   console.error(`Usage: 24h <readiness|validate|validate:plan|review:prompt|review:render|status>`)
   process.exit(1)
