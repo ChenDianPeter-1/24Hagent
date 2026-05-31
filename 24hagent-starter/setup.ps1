@@ -59,7 +59,9 @@ if (-not (Test-Path $GATES_PATH)) {
             }
         }
     }
-    $gates | ConvertTo-Json -Depth 4 | Out-File -FilePath $GATES_PATH -Encoding UTF8
+    $json = $gates | ConvertTo-Json -Depth 4
+    $utf8NoBom = New-Object System.Text.UTF8Encoding $false
+    [System.IO.File]::WriteAllText($GATES_PATH, $json, $utf8NoBom)
     Write-Host "[OK] .agent/QUALITY_GATES.json ($(if ($IS_PYTHON) { 'Python' } else { 'Node' }))" -ForegroundColor Green
 } else {
     Write-Host "[SKIP] .agent/QUALITY_GATES.json already exists" -ForegroundColor Yellow

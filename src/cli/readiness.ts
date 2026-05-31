@@ -2,6 +2,13 @@ import { readFileSync, writeFileSync, existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { detectToolchain, detectPythonToolchain, compareGates, classifyReadiness, renderReadinessReport, computeReadinessExitCode } from '../core/quality/readiness-engine.js'
 
+/** Strip UTF-8 BOM before JSON.parse (PowerShell often writes BOM) */
+function readJsonSafe(path: string) {
+  let raw = readFileSync(path, 'utf-8')
+  if (raw.charCodeAt(0) === 0xFEFF) raw = raw.slice(1)
+  return JSON.parse(raw)
+}
+
 function detectPackageManager(root: string): string {
   const locks = ['uv.lock', 'poetry.lock', 'pdm.lock', 'Pipfile']
   const pms = ['uv', 'poetry', 'pdm', 'pipenv']
@@ -18,7 +25,7 @@ export function runReadiness(root: string): void {
 
   let tc
   if (existsSync(pkgPath)) {
-    const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'))
+    const pkg = readJsonSafe(pkgPath)
     tc = detectToolchain(pkg)
   } else if (existsSync(pyprojectPath)) {
     const tomlText = readFileSync(pyprojectPath, 'utf-8')
@@ -28,7 +35,7 @@ export function runReadiness(root: string): void {
     process.exit(1)
   }
 
-  const gatesRaw = existsSync(gatesPath) ? JSON.parse(readFileSync(gatesPath, 'utf-8')) : null
+  const gatesRaw = existsSync(gatesPath) ? readJsonSafe(gatesPath) : null
   const audit = gatesRaw ? compareGates(tc, gatesRaw.gates) : []
   const result = classifyReadiness(audit, tc)
   const report = renderReadinessReport(result)

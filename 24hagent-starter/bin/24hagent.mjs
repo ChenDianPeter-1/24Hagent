@@ -4518,6 +4518,11 @@ __export(readiness_exports, {
 });
 import { readFileSync as readFileSync2, writeFileSync, existsSync } from "node:fs";
 import { resolve as resolve2 } from "node:path";
+function readJsonSafe(path) {
+  let raw = readFileSync2(path, "utf-8");
+  if (raw.charCodeAt(0) === 65279) raw = raw.slice(1);
+  return JSON.parse(raw);
+}
 function detectPackageManager(root) {
   const locks = ["uv.lock", "poetry.lock", "pdm.lock", "Pipfile"];
   const pms = ["uv", "poetry", "pdm", "pipenv"];
@@ -4532,7 +4537,7 @@ function runReadiness(root) {
   const gatesPath = resolve2(root, ".agent/QUALITY_GATES.json");
   let tc;
   if (existsSync(pkgPath)) {
-    const pkg = JSON.parse(readFileSync2(pkgPath, "utf-8"));
+    const pkg = readJsonSafe(pkgPath);
     tc = detectToolchain(pkg);
   } else if (existsSync(pyprojectPath)) {
     const tomlText = readFileSync2(pyprojectPath, "utf-8");
@@ -4541,7 +4546,7 @@ function runReadiness(root) {
     console.error("readiness: no project file found (package.json or pyproject.toml required)");
     process.exit(1);
   }
-  const gatesRaw = existsSync(gatesPath) ? JSON.parse(readFileSync2(gatesPath, "utf-8")) : null;
+  const gatesRaw = existsSync(gatesPath) ? readJsonSafe(gatesPath) : null;
   const audit = gatesRaw ? compareGates(tc, gatesRaw.gates) : [];
   const result = classifyReadiness(audit, tc);
   const report = renderReadinessReport(result);
@@ -4871,8 +4876,13 @@ __export(validate_exports, {
 });
 import { readFileSync as readFileSync3, writeFileSync as writeFileSync2 } from "node:fs";
 import { resolve as resolve3 } from "node:path";
+function readJsonSafe2(path) {
+  let raw = readFileSync3(path, "utf-8");
+  if (raw.charCodeAt(0) === 65279) raw = raw.slice(1);
+  return JSON.parse(raw);
+}
 async function runValidate(root) {
-  const gatesRaw = JSON.parse(readFileSync3(resolve3(root, ".agent/QUALITY_GATES.json"), "utf-8"));
+  const gatesRaw = readJsonSafe2(resolve3(root, ".agent/QUALITY_GATES.json"));
   const configs = loadGateConfig(gatesRaw);
   const plans = planGateExecutions(configs);
   const results = await runConfiguredGates(plans, new RealCommandRunner());
@@ -4888,7 +4898,7 @@ async function runValidate(root) {
   process.exitCode = verdict.overall === "PASS" ? 0 : 1;
 }
 function runValidatePlan(root) {
-  const gatesRaw = JSON.parse(readFileSync3(resolve3(root, ".agent/QUALITY_GATES.json"), "utf-8"));
+  const gatesRaw = readJsonSafe2(resolve3(root, ".agent/QUALITY_GATES.json"));
   const configs = loadGateConfig(gatesRaw);
   const plans = planGateExecutions(configs);
   for (const p of plans) {
