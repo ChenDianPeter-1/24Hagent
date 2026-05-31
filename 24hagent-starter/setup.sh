@@ -17,14 +17,27 @@ fi
 echo "24Hagent Setup"
 echo "=============="
 
-# Step 1: 检测项目类型（与 readiness.ts 一致：package.json 优先）
+# Step 1: Detect project type (same order as readiness.ts: package.json > pyproject.toml)
 IS_PYTHON=false
 if [ -f "package.json" ]; then
     IS_PYTHON=false
 elif [ -f "pyproject.toml" ]; then
     IS_PYTHON=true
+elif ls *.py >/dev/null 2>&1 || [ -f "requirements.txt" ]; then
+    IS_PYTHON=true
+    echo "[WARN] Found .py files but no pyproject.toml — creating minimal pyproject.toml"
+    cat > pyproject.toml << TOMLEOF
+[project]
+name = "$(basename "$(pwd)")"
+version = "0.1.0"
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest", "pytest-cov", "ruff", "mypy"]
+TOMLEOF
+    echo "[OK] pyproject.toml created"
 else
-    echo "[WARN] 未找到 package.json 或 pyproject.toml"
+    echo "[WARN] No package.json or pyproject.toml found"
 fi
 
 # Step 2: 创建 .agent 目录

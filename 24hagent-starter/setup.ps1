@@ -28,6 +28,20 @@ if (Test-Path "package.json") {
     $IS_PYTHON = $false
 } elseif (Test-Path "pyproject.toml") {
     $IS_PYTHON = $true
+} elseif ((Get-ChildItem -Filter "*.py" -Recurse -Depth 1 | Select-Object -First 1) -or (Test-Path "requirements.txt")) {
+    # Python evidence found but no pyproject.toml — create a minimal one
+    $IS_PYTHON = $true
+    Write-Host "[WARN] Found .py files but no pyproject.toml — creating minimal pyproject.toml" -ForegroundColor Yellow
+    @"
+[project]
+name = "$(Split-Path -Leaf (Get-Location))"
+version = "0.1.0"
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest", "pytest-cov", "ruff", "mypy"]
+"@ | Out-File -FilePath "pyproject.toml" -Encoding UTF8
+    Write-Host "[OK] pyproject.toml created" -ForegroundColor Green
 } else {
     Write-Host "[WARN] No package.json or pyproject.toml found" -ForegroundColor Yellow
 }
