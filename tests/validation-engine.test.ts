@@ -1,10 +1,11 @@
 import { describe, it, expect } from 'vitest'
 import {
   parseCoverageFromRawOutput, evaluateThresholds,
-  loadGateConfig, planGateExecutions, runConfiguredGates, evaluateGateResults
+  loadGateConfig, planGateExecutions, runConfiguredGates, evaluateGateResults,
+  renderValidationReport
 } from '../src/core/quality/validation-engine.js'
 import { FakeCommandRunner } from '../src/adapters/shell/command-runner.js'
-import type { GateConfig } from '../src/core/quality/validation-types.js'
+import type { GateConfig, GateResult, ValidationVerdict } from '../src/core/quality/validation-types.js'
 
 const vitestJson = (pct: { lines?: number; branches?: number; functions?: number; statements?: number }) =>
   JSON.stringify({ total: {
@@ -254,5 +255,110 @@ describe('evaluateGateResults', () => {
     const v = evaluateGateResults(results, configs)
     expect(v.overall).toBe('FAIL')
     expect(v.blockingFailures.some(f => f.includes('CONFIG_ERROR'))).toBe(true)
+  })
+})
+
+// -- B3-2d: report rendering ------------------------------------------------
+
+const baseVerdict = (overrides: Partial<ValidationVerdict> = {}): ValidationVerdict => ({
+  overall: 'PASS', blockingFailures: [],
+  gateResults: [
+    { name: 'test', command: 'npm run test', exitCode: 0, stdout: '', stderr: '', status: 'PASS', rawOutput: '' },
+    { name: 'lint', command: 'npm run lint', exitCode: 0, stdout: '', stderr: '', status: 'PASS', rawOutput: '' },
+    { name: 'typecheck', command: 'npm run typecheck', exitCode: 0, stdout: '', stderr: '', status: 'PASS', rawOutput: '' },
+    { name: 'coverage', command: 'npm run coverage', exitCode: 0, stdout: '', stderr: '', status: 'PASS', rawOutput: vitestOut(100) }
+  ],
+  coverage: { lines: 100, branches: 100, functions: 100, statements: 100 },
+  threshold: { overall: true, metrics: [
+    { name: 'lines', actual: 100, required: 100, pass: true },
+    { name: 'branches', actual: 100, required: 100, pass: true },
+    { name: 'functions', actual: 100, required: 100, pass: true },
+    { name: 'statements', actual: 100, required: 100, pass: true }
+  ]},
+  ...overrides
+})
+
+const render = (v: ValidationVerdict) => renderValidationReport({
+  verdict: v, taskId: 'T-001', timestamp: '2026-01-01T00:00:00+08:00',
+  readinessVerdict: 'READY'
+})
+
+describe('renderValidationReport', () => {
+  it('all PASS → full report with coverage', () => {
+    const report = render(baseVerdict())
+    expect(report).toContain('**PASS**')
+    expect(report).toContain('| test | `npm run test` | 0 | PASS |')
+    expect(report).toContain('| Lines | 100% | 100% | PASS |')
+    expect(report).toContain('None.')
+    expect(report).toContain('T-001')
+  })
+
+  it('blocking FAIL → overall FAIL with blocking section', () => {
+    const gr: GateResult[] = [
+      { name: 'test', command: 'npm run test', exitCode: 0, stdout: '', stderr: '', status: 'PASS', rawOutput: '' },
+      { name: 'lint', command: 'npm run lint', exitCode: 1, stdout: '', stderr: 'lint error', status: 'FAIL', rawOutput: 'lint error' },
+      { name: 'typecheck', command: 'npm run typecheck', exitCode: 0, stdout: '', stderr: '', status: 'PASS', rawOutput: '' },
+      { name: 'coverage', command: 'npm run coverage', exitCode: 0, stdout: '', stderr: '', status: 'PASS', rawOutput: vitestOut(100) }
+    ]
+    const v = baseVerdict({ overall: 'FAIL', blockingFailures: ['lint (exit code 1)'], gateResults: gr })
+    const report = render(v)
+    expect(report).toContain('**FAIL**')
+    expect(report).toContain('lint (exit code 1)')
+    expect(report).toContain('| lint | `npm run lint` | 1 | FAIL |')
+  })
+
+  it('SKIPPED gate → shown as disabled', () => {
+    const gr: GateResult[] = [
+      { name: 'test', command: 'npm run test', exitCode: 0, stdout: '', stderr: '', status: 'PASS', rawOutput: '' },
+      { name: 'lint', command: 'npm run lint', exitCode: null, stdout: '', stderr: '', status: 'SKIPPED', rawOutput: '' },
+      { name: 'typecheck', command: 'npm run typecheck', exitCode: 0, stdout: '', stderr: '', status: 'PASS', rawOutput: '' },
+      { name: 'coverage', command: 'npm run coverage', exitCode: 0, stdout: '', stderr: '', status: 'PASS', rawOutput: vitestOut(100) }
+    ]
+    const v = baseVerdict({ gateResults: gr })
+    const report = render(v)
+    expect(report).toContain('| lint | `npm run lint` | N/A | SKIPPED | Gate disabled in config')
+    expect(report).toContain('**PASS**')
+  })
+
+  it('UNAVAILABLE gate → shows error', () => {
+    const gr: GateResult[] = [
+      { name: 'test', command: 'npm run test', exitCode: 0, stdout: '', stderr: '', status: 'PASS', rawOutput: '' },
+      { name: 'lint', command: 'npm run lint', exitCode: null, stdout: '', stderr: '', status: 'UNAVAILABLE', rawOutput: 'command not found: eslint' },
+      { name: 'typecheck', command: 'npm run typecheck', exitCode: 0, stdout: '', stderr: '', status: 'PASS', rawOutput: '' },
+      { name: 'coverage', command: 'npm run coverage', exitCode: 0, stdout: '', stderr: '', status: 'PASS', rawOutput: vitestOut(100) }
+    ]
+    const v = baseVerdict({ gateResults: gr })
+    const report = render(v)
+    expect(report).toContain('UNAVAILABLE')
+    expect(report).toContain('command not found: eslint')
+  })
+
+  it('coverage parse failure → no coverage section', () => {
+    const v = baseVerdict({
+      coverage: null, threshold: null,
+      blockingFailures: ['coverage (PARSE_FAILED: bad json)']
+    })
+    const report = render(v)
+    expect(report).not.toContain('## Coverage Detail')
+    expect(report).toContain('PARSE_FAILED')
+  })
+
+  it('integration: FakeCommandRunner → render', async () => {
+    const configs = loadGateConfig(rawCfg())
+    const plans = planGateExecutions(configs)
+    const runner = new FakeCommandRunner()
+    runner.preset('npm run test', { exitCode: 0, stdout: '', stderr: '' })
+    runner.preset('npm run lint', { exitCode: 0, stdout: '', stderr: '' })
+    runner.preset('npm run typecheck', { exitCode: 0, stdout: '', stderr: '' })
+    runner.preset('npm run coverage', { exitCode: 0, stdout: vitestOut(100), stderr: '' })
+    const results = await runConfiguredGates(plans, runner)
+    const verdict = evaluateGateResults(results, configs)
+    const report = renderValidationReport({
+      verdict, taskId: 'T-INT', timestamp: 'ts', readinessVerdict: 'READY'
+    })
+    expect(report).toContain('**PASS**')
+    expect(report).toContain('T-INT')
+    expect(report).toContain('| test |')
+    expect(report).toContain('| coverage |')
   })
 })
