@@ -136,7 +136,9 @@ When dispatching a task to the Worker:
    - NOT self-certify (the Orchestrator will validate independently)
    - NOT use `--no-verify` on git commits
    - NOT use `git push --force`
-   - NOT suppress linter/type errors with eslint-disable, @ts-ignore, or as any
+   - NOT suppress linter/type errors:
+     - JS/TS: eslint-disable, @ts-ignore, as any
+     - Python: # noqa (flake8/ruff), # type: ignore (mypy), # pyright: ignore
 
 **测试归属铁律**：测试是 Claude Code 的专属职责。Worker 按 TDD 写测试 + 跑测试；Orchestrator 独立复跑落到 VALIDATION_REPORT.md。Codex 永不执行测试——它把 VALIDATION_REPORT 当证据消费，不做复测。
 

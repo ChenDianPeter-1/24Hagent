@@ -67,10 +67,10 @@ describe('classifyReadiness', () => {
 
   it('NEEDS_CONFIG when gate commands mismatch', () => {
     const pkg = read('fixtures/ps1-golden/readiness/package.json')
-    const gates = { test: { command: 'npm test', enabled: true }, lint: { command: 'npm run lint', enabled: true }, typecheck: { command: 'npm run typecheck', enabled: true }, coverage: { command: 'npm run coverage', enabled: true } }
+    // Use 'pytest' to force a real mismatch (npm test ↔ npm run test are normalized as equivalent)
+    const gates = { test: { command: 'pytest', enabled: true }, lint: { command: 'npm run lint', enabled: true }, typecheck: { command: 'npm run typecheck', enabled: true }, coverage: { command: 'npm run coverage', enabled: true } }
     const tc = detectToolchain(pkg)
     const audit = compareGates(tc, gates)
-    // test gate has 'npm test' but suggested is 'npm run test' → MISMATCH
     expect(audit[0].match).toBe('MISMATCH')
     const r = classifyReadiness(audit, tc)
     expect(r.verdict).toBe('NEEDS_CONFIG')
@@ -123,8 +123,8 @@ describe('renderReadinessReport edge cases', () => {
   it('NEEDS_CONFIG report', () => {
     const pkg = read('fixtures/ps1-golden/readiness/package.json')
     const tc = detectToolchain(pkg)
-    // mismatched gate
-    const gates = { test: { command: 'npm test', enabled: true }, lint: { command: 'npm run lint', enabled: true }, typecheck: { command: 'npm run typecheck', enabled: true }, coverage: { command: 'npm run coverage', enabled: true } }
+    // mismatched gate: 'pytest' is not the suggested 'npm run test'
+    const gates = { test: { command: 'pytest', enabled: true }, lint: { command: 'npm run lint', enabled: true }, typecheck: { command: 'npm run typecheck', enabled: true }, coverage: { command: 'npm run coverage', enabled: true } }
     const audit = compareGates(tc, gates)
     const r = classifyReadiness(audit, tc)
     const report = renderReadinessReport(r)

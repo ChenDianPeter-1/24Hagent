@@ -4,7 +4,7 @@ export interface GateConfig {
   command: string
   blocking: boolean
   description: string
-  threshold?: { lines: number; branches: number; functions: number; statements: number }
+  threshold?: { lines: number; branches: number | null; functions: number | null; statements: number }
 }
 
 /** 编排后的单个 gate 执行计划 */
@@ -26,17 +26,22 @@ export interface GateResult {
   rawOutput: string  // stdout + stderr 完整原文，不做截断
 }
 
-/** vitest JSON summary 解析结果 */
+/** 覆盖率工具 profile —— 不同工具支持的指标不同 */
+export type CoverageProfile = 'vitest' | 'coverage_py'
+
+/** vitest JSON summary / coverage.py JSON 解析结果。
+ *  branches 和 functions 为 null 表示该工具不支持该指标。 */
 export interface CoverageData {
   lines: number
-  branches: number
-  functions: number
+  branches: number | null
+  functions: number | null
   statements: number
+  profile?: CoverageProfile
 }
 
-/** 阈值判定结果 */
+/** 阈值判定结果。null 表示该指标不适用（工具不支持或配置跳过）。 */
 export interface ThresholdResult {
-  metrics: { name: string; actual: number; required: number; pass: boolean }[]
+  metrics: { name: string; actual: number | null; required: number | null; pass: boolean }[]
   overall: boolean
 }
 

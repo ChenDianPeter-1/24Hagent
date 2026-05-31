@@ -2,13 +2,20 @@ import { z } from 'zod'
 import type { GateConfig, GatePlan, GateResult, CoverageData, ThresholdResult, ValidationVerdict } from './validation-types.js'
 import type { CommandRunner } from '../../adapters/shell/command-runner.js'
 
-/** Parse vitest --reporter=json-summary stdout into CoverageData. */
+/** Parse vitest --reporter=json-summary OR coverage.py JSON stdout into CoverageData. */
 export function parseCoverageFromRawOutput(rawOutput: string): CoverageData {
   if (!rawOutput.trim()) throw new Error('Coverage output is empty')
 
-  // vitest stdout may contain ANSI codes and a text table before the JSON
-  const jsonStart = rawOutput.indexOf('{"total":')
-  const jsonStr = jsonStart >= 0 ? rawOutput.slice(jsonStart) : rawOutput
+  // Detect format: vitest uses {"total":...}, coverage.py uses {"totals":...}
+  const isCoveragePy = rawOutput.includes('"totals"') && rawOutput.includes('"percent_covered"')
+
+  if (isCoveragePy) return parseCoveragePyJson(rawOutput)
+  return parseVitestJson(rawOutput)
+}
+
+function parseVitestJson(raw: string): CoverageData {
+  const jsonStart = raw.indexOf('{"total":')
+  const jsonStr = jsonStart >= 0 ? raw.slice(jsonStart) : raw
 
   let parsed: unknown
   try { parsed = JSON.parse(jsonStr) } catch {
@@ -24,28 +31,62 @@ export function parseCoverageFromRawOutput(rawOutput: string): CoverageData {
     return v
   }
 
-  return { lines: pct('lines'), branches: pct('branches'), functions: pct('functions'), statements: pct('statements') }
+  return { lines: pct('lines'), branches: pct('branches'), functions: pct('functions'), statements: pct('statements'), profile: 'vitest' }
 }
 
-/** Compare coverage against thresholds. No rounding — actual must be >= required. */
+function parseCoveragePyJson(raw: string): CoverageData {
+  const jsonStart = raw.indexOf('{"meta":') >= 0 ? raw.indexOf('{"meta":')
+    : raw.indexOf('{"files":') >= 0 ? raw.indexOf('{"files":')
+    : raw.indexOf('{"totals":')
+  const jsonStr = jsonStart >= 0 ? raw.slice(jsonStart) : raw
+
+  let parsed: unknown
+  try { parsed = JSON.parse(jsonStr) } catch {
+    throw new Error('Failed to parse coverage.py JSON from output')
+  }
+
+  const totals = (parsed as Record<string, unknown>)?.totals as Record<string, unknown> | undefined
+  if (!totals) throw new Error('Coverage JSON missing "totals" field')
+
+  const numStmts = typeof totals.num_statements === 'number' ? totals.num_statements : 0
+  const coveredLines = typeof totals.covered_lines === 'number' ? totals.covered_lines : 0
+  const lines = numStmts > 0 ? (coveredLines / numStmts) * 100 : 0
+
+  // branches: only available with --branch flag
+  let branches: number | null = null
+  if (typeof totals.num_branches === 'number' && totals.num_branches > 0) {
+    branches = ((totals.covered_branches as number) ?? 0) / (totals.num_branches as number) * 100
+  }
+
+  return { lines, branches, functions: null, statements: lines, profile: 'coverage_py' }
+}
+
+/** Compare coverage against thresholds. null metrics are skipped (tool doesn't support them). */
 export function evaluateThresholds(
   coverage: CoverageData,
-  thresholds: { lines: number; branches: number; functions: number; statements: number }
+  thresholds: { lines: number; branches: number | null; functions: number | null; statements: number }
 ): ThresholdResult {
-  const metrics = [
-    { name: 'lines',      actual: coverage.lines,      required: thresholds.lines },
-    { name: 'branches',   actual: coverage.branches,   required: thresholds.branches },
-    { name: 'functions',  actual: coverage.functions,  required: thresholds.functions },
-    { name: 'statements', actual: coverage.statements, required: thresholds.statements }
-  ].map(m => ({ ...m, pass: m.actual >= m.required }))
-
+  const metrics: { name: string; actual: number | null; required: number | null; pass: boolean }[] = [
+    { name: 'lines',      actual: coverage.lines,      required: thresholds.lines,      pass: false },
+    { name: 'branches',   actual: coverage.branches,   required: thresholds.branches,   pass: false },
+    { name: 'functions',  actual: coverage.functions,  required: thresholds.functions,  pass: false },
+    { name: 'statements', actual: coverage.statements, required: thresholds.statements, pass: false }
+  ]
+  for (const m of metrics) {
+    if (m.required === null) { m.pass = true; continue } // 配置跳过该指标
+    if (m.actual === null) { m.pass = false; continue }  // 工具不支持但配置要求 → FAIL
+    m.pass = m.actual >= m.required
+  }
   return { metrics, overall: metrics.every(m => m.pass) }
 }
 
 // -- gate config loading (Zod) -----------------------------------------------
 
 const CoverageThresholdSchema = z.object({
-  lines: z.number(), branches: z.number(), functions: z.number(), statements: z.number()
+  lines: z.number(),
+  branches: z.number().nullable(),
+  functions: z.number().nullable(),
+  statements: z.number()
 })
 
 const GateConfigSchema = z.object({
@@ -187,9 +228,11 @@ export function renderValidationReport(params: {
 
   let coverageSection = ''
   if (verdict.coverage && verdict.threshold) {
-    const rows = verdict.threshold.metrics.map(m =>
-      `| ${m.name.charAt(0).toUpperCase() + m.name.slice(1)} | ${m.actual}% | ${m.required}% | ${m.pass ? 'PASS' : 'FAIL'} |`
-    )
+    const rows = verdict.threshold.metrics.map(m => {
+      const actual = m.actual !== null ? `${m.actual}%` : 'N/A'
+      const required = m.required !== null ? `${m.required}%` : 'N/A'
+      return `| ${m.name.charAt(0).toUpperCase() + m.name.slice(1)} | ${actual} | ${required} | ${m.pass ? 'PASS' : 'FAIL'} |`
+    })
     coverageSection = `\n## Coverage Detail\n\n| Metric | Actual | Required | Status |\n|--------|--------|----------|--------|\n${rows.join('\n')}\n`
   }
 
