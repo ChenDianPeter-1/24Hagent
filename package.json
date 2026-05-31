@@ -8,12 +8,14 @@
     "coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src/ tests/",
-    "build": "tsc -p tsconfig.build.json"
+    "build": "tsc -p tsconfig.build.json",
+    "build:starter": "node scripts/build-starter.mjs"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/node": "^22.0.0",
     "@vitest/coverage-v8": "^2.1.0",
+    "esbuild": "^0.28.0",
     "eslint": "^10.4.0",
     "typescript": "^5.6.0",
     "typescript-eslint": "^8.60.0",

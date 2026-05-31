@@ -32,6 +32,9 @@ docs/superpowers/specs/2026-05-30-24hagent-risk-remediation-design.md
 coverage/
 dist/
 
+# Bundled starter CLI — committed for zero-install distribution
+!24hagent-starter/bin/
+
 # B0 state normalization: duplicate skill copies (local-only, not tracked)
 .agents/
 archive/.agents/
