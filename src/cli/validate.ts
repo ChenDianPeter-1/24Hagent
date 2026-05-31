@@ -3,8 +3,14 @@ import { resolve } from 'node:path'
 import { loadGateConfig, planGateExecutions, runConfiguredGates, evaluateGateResults, renderValidationReport } from '../core/quality/validation-engine.js'
 import { RealCommandRunner } from '../adapters/shell/command-runner.js'
 
+function readJsonSafe(path: string) {
+  let raw = readFileSync(path, 'utf-8')
+  if (raw.charCodeAt(0) === 0xFEFF) raw = raw.slice(1)
+  return JSON.parse(raw)
+}
+
 export async function runValidate(root: string): Promise<void> {
-  const gatesRaw = JSON.parse(readFileSync(resolve(root, '.agent/QUALITY_GATES.json'), 'utf-8'))
+  const gatesRaw = readJsonSafe(resolve(root, '.agent/QUALITY_GATES.json'))
   const configs = loadGateConfig(gatesRaw)
   const plans = planGateExecutions(configs)
   const results = await runConfiguredGates(plans, new RealCommandRunner())
@@ -18,7 +24,7 @@ export async function runValidate(root: string): Promise<void> {
 }
 
 export function runValidatePlan(root: string): void {
-  const gatesRaw = JSON.parse(readFileSync(resolve(root, '.agent/QUALITY_GATES.json'), 'utf-8'))
+  const gatesRaw = readJsonSafe(resolve(root, '.agent/QUALITY_GATES.json'))
   const configs = loadGateConfig(gatesRaw)
   const plans = planGateExecutions(configs)
   for (const p of plans) {

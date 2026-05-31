@@ -1,0 +1,4 @@
+{"type": "thread.started", "thread_id": "test-pass"}
+{"type": "turn.started"}
+{"type": "item.completed", "item": {"id": "x", "type": "agent_message", "text": "verdict: PASS\nconfidence: high\nblocking_issues: []\nrequired_fixes: []\nnon_blocking_suggestions: []\nhuman_questions: []\nnext_action: continue_next_task"}}
+{"type": "turn.completed"}
