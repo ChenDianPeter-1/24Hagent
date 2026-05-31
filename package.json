@@ -3,13 +3,25 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
+  "bin": {
+    "24h": "dist/cli/main.js"
+  },
+  "files": [
+    "dist/",
+    "README.md"
+  ],
   "scripts": {
     "test": "vitest run",
     "coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src/ tests/",
     "build": "tsc -p tsconfig.build.json",
-    "build:starter": "node scripts/build-starter.mjs"
+    "build:starter": "node scripts/build-starter.mjs",
+    "prepare": "npm run build"
+  },
+  "dependencies": {
+    "yaml": "^2.6.0",
+    "zod": "^3.23.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
@@ -19,8 +31,6 @@
     "eslint": "^10.4.0",
     "typescript": "^5.6.0",
     "typescript-eslint": "^8.60.0",
-    "vitest": "^2.1.0",
-    "yaml": "^2.6.0",
-    "zod": "^3.23.0"
+    "vitest": "^2.1.0"
   }
 }
