@@ -4,7 +4,7 @@ import {
   loadGateConfig, planGateExecutions, runConfiguredGates, evaluateGateResults,
   renderValidationReport
 } from '../src/core/quality/validation-engine.js'
-import { FakeCommandRunner } from '../src/adapters/shell/command-runner.js'
+import { FakeCommandRunner, classifyExecError } from '../src/adapters/shell/command-runner.js'
 import type { GateConfig, GateResult, ValidationVerdict } from '../src/core/quality/validation-types.js'
 
 const vitestJson = (pct: { lines?: number; branches?: number; functions?: number; statements?: number }) =>
@@ -160,6 +160,21 @@ describe('runConfiguredGates', () => {
     expect(results).toHaveLength(4)
     expect(results[1].status).toBe('SKIPPED')
     expect(results[1].rawOutput).toBe('')
+  })
+
+  it('classifyExecError: string error.code throws (maxBuffer)', () => {
+    const err = { code: 'ERR_CHILD_PROCESS_STDIO_MAXBUFFER' as const, killed: false, message: 'maxBuffer' }
+    expect(() => classifyExecError(err, 'cmd')).toThrow('ERR_CHILD_PROCESS_STDIO_MAXBUFFER')
+  })
+
+  it('classifyExecError: numeric error.code returns exitCode', () => {
+    const err = { code: 1, killed: false, message: 'exit 1' }
+    expect(classifyExecError(err, 'cmd')).toBe(1)
+  })
+
+  it('classifyExecError: killed throws timeout', () => {
+    const err = { code: null, killed: true, message: 'timeout' }
+    expect(() => classifyExecError(err, 'cmd')).toThrow('timed out')
   })
 
   it('marks gate UNAVAILABLE when runner throws', async () => {

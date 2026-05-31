@@ -15,6 +15,13 @@ export interface CommandRunner {
   run(command: string, opts?: RunOptions): Promise<CommandResult>
 }
 
+/** Pure: classify exec error. Returns exitCode for command failures, throws for operational errors. */
+export function classifyExecError(error: { code?: number | string | null; killed?: boolean; message?: string }, command: string): never | number {
+  if (error.killed) throw new Error(`Command timed out: ${command}`)
+  if (typeof error.code === 'number') return error.code
+  throw new Error(`${error.code ?? 'SPAWN_ERROR'}: ${error.message}`)
+}
+
 export class FakeCommandRunner implements CommandRunner {
   private results = new Map<string, CommandResult>()
 
@@ -36,14 +43,11 @@ export class RealCommandRunner implements CommandRunner {
         cwd: opts?.cwd,
         timeout: opts?.timeoutMs,
         maxBuffer: 10 * 1024 * 1024
-      }, (error, stdout, stderr) => {
-        if (error && (error as NodeJS.ErrnoException).code === 'ENOENT') {
-          reject(new Error(`Command not found: ${command.split(' ')[0]}`))
-        } else if (error?.killed) {
-          reject(new Error(`Command timed out: ${command}`))
-        } else {
-          resolve({ exitCode: typeof error?.code === 'number' ? error.code : 0, stdout, stderr })
-        }
+      }, (error: { code?: number | string | null; killed?: boolean; message?: string } | null, stdout: string, stderr: string) => {
+        if (!error) { resolve({ exitCode: 0, stdout, stderr }); return }
+        try {
+          resolve({ exitCode: classifyExecError(error, command), stdout, stderr })
+        } catch (e) { reject(e) }
       })
     })
   }
