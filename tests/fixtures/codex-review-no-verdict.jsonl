@@ -1,0 +1,4 @@
+{"type": "thread.started", "thread_id": "test-noverdict"}
+{"type": "turn.started"}
+{"type": "item.completed", "item": {"id": "x", "type": "agent_message", "text": "Just a status message with no YAML verdict block"}}
+{"type": "turn.completed"}

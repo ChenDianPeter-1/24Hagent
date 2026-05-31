@@ -1,0 +1,32 @@
+{
+  "active_task_id": "B0-state-normalization",
+  "phase": "B0_COMPLETE",
+  "retry_count": 0,
+  "last_verdict": "PASS",
+  "consecutive_failures": 0,
+  "fix_history": [
+    {
+      "attempt": 1,
+      "timestamp": "2026-05-31T01:00+08:00",
+      "verdict": "NEED_FIX",
+      "required_fixes": [
+        "archive gitignore"
+      ],
+      "blocking_issue_ids": [
+        "BI-001"
+      ]
+    },
+    {
+      "attempt": 2,
+      "timestamp": "2026-05-31T01:30+08:00",
+      "verdict": "NEED_HUMAN",
+      "reason": "sandbox blocked"
+    },
+    {
+      "attempt": 3,
+      "timestamp": "2026-05-31T02:00+08:00",
+      "verdict": "PASS"
+    }
+  ],
+  "updated_at": "2026-05-31T02:00:00+08:00"
+}

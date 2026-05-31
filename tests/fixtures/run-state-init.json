@@ -1,0 +1,9 @@
+{
+  "active_task_id": null,
+  "phase": "INIT",
+  "retry_count": 0,
+  "last_verdict": null,
+  "consecutive_failures": 0,
+  "fix_history": [],
+  "updated_at": null
+}

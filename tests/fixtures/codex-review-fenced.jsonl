@@ -1,0 +1,4 @@
+{"type": "thread.started", "thread_id": "test-fenced"}
+{"type": "turn.started"}
+{"type": "item.completed", "item": {"id": "x", "type": "agent_message", "text": "```yaml\nverdict: PASS\nconfidence: high\nblocking_issues: []\nrequired_fixes: []\nnon_blocking_suggestions: []\nhuman_questions: []\nnext_action: continue_next_task\n```"}}
+{"type": "turn.completed"}

@@ -1,0 +1,4 @@
+{"type": "thread.started", "thread_id": "test-fix"}
+{"type": "turn.started"}
+{"type": "item.completed", "item": {"id": "x", "type": "agent_message", "text": "verdict: NEED_FIX\nconfidence: high\nblocking_issues:\n  - id: BI-001\n    severity: BLOCKING\n    issue: Missing test for edge case\n    evidence: src/foo.ts:42\n    required_fix: Add test for empty input\nrequired_fixes:\n  - Add test for empty input\nnon_blocking_suggestions: []\nhuman_questions: []\nnext_action: fix_current_task"}}
+{"type": "turn.completed"}

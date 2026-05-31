@@ -1,0 +1,14 @@
+{
+  "active_task_id": "T-001",
+  "phase": "EXECUTE_TASK",
+  "retry_count": 1,
+  "last_verdict": null,
+  "consecutive_failures": 0,
+  "fix_history": [
+    {
+      "attempt": 1,
+      "timestamp": "2026-05-28T18:00:00+08:00"
+    }
+  ],
+  "updated_at": null
+}

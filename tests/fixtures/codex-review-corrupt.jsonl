@@ -1,0 +1,4 @@
+{"type": "thread.started", "thread_id": "test-bad"}
+{"type": "turn.started"}
+{"type": "item.completed", "item": {"id": "x", "type": "command_execution", "command": "echo hi"}}
+{"type": "turn.completed"}
