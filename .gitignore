@@ -16,8 +16,22 @@ sandbox/
 # Personal Claude Code config (not project code)
 /.claude/
 
+# Brainstorming visual companion session data
+.superpowers/
+
+# Reference projects (not active code)
+reference valut/
+
 # Stale drafts replaced by docs/superpowers/specs/
 AGENT.md
 mvp.md
 workmap.md
-package.json
+docs/superpowers/specs/2026-05-30-24hagent-risk-remediation-design.md
+
+# Build artifacts
+coverage/
+dist/
+
+# B0 state normalization: duplicate skill copies (local-only, not tracked)
+.agents/
+archive/.agents/

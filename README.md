@@ -104,14 +104,25 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/check_quality_readin
 | `codex_review.ps1` | Codex 真实审查（消耗额度） |
 | `codex_review.ps1 -DryRun` | 预览审查包（不消耗额度） |
 
-## 已验证状态
+## 当前状态
 
-Phase A（自举修复）+ Phase B（真实闭环）+ Phase C（固化）**全部完成**。
+### Sandbox 验证（已完成 ✓）
+
+在 `sandbox/string-utils/`（独立 TS git 仓库）上，24Hagent 核心闭环已真实验证：
 
 - PASS 路径：B3 slugify 实现 → 4 gate PASS → Codex PASS → commit ✓
 - NEED_FIX 路径：B4 underscore 测试遗漏 → Codex NEED_FIX → 返修 → PASS ✓
 - codegraph 审查：B5 11 次 MCP 工具调用，结构依赖分析真实生效 ✓
 - 安全护栏：`--sandbox read-only`、3 条铁律、HUMAN_HANDOFF 门禁、retry_count≤2 ✓
+
+### 根项目自举（进行中）
+
+根项目（24Hagent 工具本身）的自进化循环尚未闭合：
+
+- 根项目 quality gates 当前为 BLOCKED（无 TypeScript 工具链）
+- 正在按 Codex 审查后的 Route B+ 路线执行自进化
+- 当前阶段：B0 状态归一化（对齐文档与运行态）
+- 详见 `.agent/CURRENT_TASK.md` 和 `.agent/PROJECT_STATE.md`
 
 ## 明确不做
 

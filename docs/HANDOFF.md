@@ -1,10 +1,12 @@
 # 24Hagent Handoff
 
-更新时间：2026-05-30
+更新时间：2026-05-31
 
 ## 项目状态总览
 
-Phase A（自举修复）+ Phase B（首次真实闭环）**已完成**。24Hagent 已在 sandbox 项目上跑通 PASS 和 NEED_FIX 两条路径，Codex + codegraph 跨模型审查护城河已真实验证。
+**Sandbox 验证已完成**：24Hagent 在 sandbox/string-utils 上跑通了 PASS 和 NEED_FIX 两条路径，Codex + codegraph 跨模型审查护城河已真实验证。
+
+**根项目自举进行中**：当前处于 B0 状态归一化阶段。根项目 quality gates 尚未闭合（BLOCKED），正在按 Codex 审查后的 Route B+ 路线执行自进化。
 
 ## 已完成
 
@@ -25,11 +27,9 @@ Phase A（自举修复）+ Phase B（首次真实闭环）**已完成**。24Hage
 - B4：NEED_FIX 路径跑通（underscore 测试遗漏 → Codex NEED_FIX → 返修 → PASS）✓
 - B5：codegraph 结构分析生效（11 次 MCP 工具调用，codegraph_context/explore/search）✓
 
-### Phase C：固化（进行中）
+### Phase C：固化（未开始）
 
-- C1：START_ORCHESTRATOR.md 前置检查 ✓
-- C2：HANDOFF.md 回写（本文件）✓
-- C3：如何用在新项目 ← 待办
+- 待根项目自举完成后再启动
 
 ## 三条角色边界铁律（已验证生效）
 
