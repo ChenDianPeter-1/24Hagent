@@ -41,15 +41,15 @@
 
 | 脚本 | 状态 |
 |------|------|
-| scripts/validate_task.ps1 | ✓ 可用（coverage JSON 优先解析、UTF-8 无 BOM、4000 char 截断） |
-| scripts/codex_review.ps1 | ✓ 可用（stdin 管道、stderr 侧车、StrictMode 安全解析器、evidence-first prompt） |
-| scripts/check_quality_readiness.ps1 | ✓ 可用（就绪检查 + 建议生成） |
+| 24h validate | ✓ 可用（coverage JSON 优先解析、UTF-8 无 BOM、4000 char 截断） |
+| 24h review | ✓ 可用（stdin 管道、stderr 侧车、StrictMode 安全解析器、evidence-first prompt） |
+| 24h readiness | ✓ 可用（就绪检查 + 建议生成） |
 
 ## 仓库结构
 
 ```
 24Hagent/
-├── scripts/*.ps1          三个质量门 + Codex 审查脚本
+├── src/                    TypeScript 核心（ReadinessEngine + ValidationEngine + ReviewEngine + CLI）
 ├── CLAUDE_ORCHESTRATOR_PROTOCOL.md  编排器操作系统（含 3 条铁律）
 ├── START_ORCHESTRATOR.md  启动入口（含前置检查）
 ├── .agent/                运行态（gitignored）
@@ -62,5 +62,5 @@
 ## 新窗口启动
 
 1. 读 CLAUDE.md → CLAUDE_ORCHESTRATOR_PROTOCOL.md → docs/HANDOFF.md
-2. 检查 `check_quality_readiness.ps1`（BLOCKED = 禁止启动循环）
+2. 检查 `24h readiness`（BLOCKED = 禁止启动循环）
 3. 选择 START_ORCHESTRATOR.md 中合适的启动模式

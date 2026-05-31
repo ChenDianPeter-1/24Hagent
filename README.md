@@ -53,10 +53,12 @@ CODEX（外部只读审查官）
 │   ├── HANDOFF.md                    项目交接文档（当前状态总览）
 │   ├── HOW_TO_NEW_PROJECT.md         如何把 24Hagent 用到新项目（一页纸）
 │   └── superpowers/specs/            设计蓝图 + 实施计划
-├── scripts/
-│   ├── check_quality_readiness.ps1   就绪检查（检测 test/lint/typecheck/coverage 工具链）
-│   ├── validate_task.ps1             本地质量门（Orchestrator 独立复跑）
-│   └── codex_review.ps1              组装审查包 + 调用 Codex + 解析 verdict
+├── src/                                TypeScript 核心（B3 交付）
+│   ├── cli/                             CLI 命令入口
+│   ├── core/quality/                    ReadinessEngine + ValidationEngine
+│   ├── core/review/                     prompt-builder + result-renderer
+│   └── core/schemas/                    4 个 Zod schema
+├── scripts/                             setup.ps1（项目初始化）
 ├── .agent/                           运行态（gitignored）
 │   ├── PROJECT_BLUEPRINT.md          项目蓝图（人类写，Orchestrator 每轮读）
 │   ├── CURRENT_TASK.md               当前任务包（含 acceptance_checks）
@@ -78,9 +80,9 @@ CODEX（外部只读审查官）
 
 ### 4 步启动
 
-```powershell
-# 1. 就绪检查——必须先过这关
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts/check_quality_readiness.ps1
+```bash
+# 1. 构建 + 就绪检查——必须先过这关
+npm run build && node dist/cli/main.js readiness
 # 看到 READY 才能继续。BLOCKED = 去装工具链。
 
 # 2. 填项目蓝图
@@ -98,11 +100,11 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/check_quality_readin
 
 | 命令 | 用途 |
 |------|------|
-| `check_quality_readiness.ps1` | 就绪检查（BLOCKED/READY） |
-| `validate_task.ps1` | 本地质量门（test/lint/typecheck/coverage） |
-| `validate_task.ps1 -DryRun` | 预览质量门命令 |
-| `codex_review.ps1` | Codex 真实审查（消耗额度） |
-| `codex_review.ps1 -DryRun` | 预览审查包（不消耗额度） |
+| `24h readiness` | 就绪检查（BLOCKED/READY） |
+| `24h validate` | 本地质量门（test/lint/typecheck/coverage） |
+| `24h validate:plan` | 预览质量门执行计划 |
+| `24h review:prompt` | 生成 Codex 审查 prompt |
+| `24h review:render` | 从 JSONL 渲染审查报告 |
 
 ## 当前状态
 

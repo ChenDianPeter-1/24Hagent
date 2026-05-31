@@ -10,7 +10,7 @@
 适用场景：首次使用 24Hagent 前，验证项目的质量门工具链已就绪。
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts/check_quality_readiness.ps1
+npm run build && node dist/cli/main.js readiness
 ```
 
 如果输出 `Verdict: **BLOCKED**`，**绝对不要**启动下面的 Orchestrator 循环。
@@ -52,10 +52,10 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/check_quality_readin
 3. Worker 不得修改 file_scope 之外的文件，不得自行扩大范围。
 4. Worker 执行完成后，必须写 .agent/WORK_REPORT.md。
 5. 然后必须以 Orchestrator 身份运行本地质量门：
-   powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate_task.ps1
+   node dist/cli/main.js validate
    如果任何 blocking gate 失败，回到步骤 2 返修（retry_count + 1）。
 6. 本地验证通过后，运行 Codex 对抗性审查：
-   powershell -NoProfile -ExecutionPolicy Bypass -File scripts/codex_review.ps1
+   node dist/cli/main.js review
 7. 读取 .agent/CODEX_REVIEW.md 中的 verdict：
    - PASS → 标记任务 done，更新 PROJECT_STATE.md 和 RUN_STATE.json，进入下一个任务。
    - NEED_FIX → 读取 required_fixes，创建返修任务，retry_count + 1。
@@ -106,13 +106,13 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/check_quality_readin
 2. 根据 RUN_STATE.json 的 phase 和 retry_count 判断当前处于哪一步：
    - 如果 phase=EXECUTE_TASK 且 retry_count>0：这是返修，先读 CODEX_REVIEW.md 的 required_fixes
    - 如果 phase=HUMAN_HANDOFF：等待人类回复，不要自行决定
-   - 如果 phase=ASK_CODEX_REVIEW：重新运行 scripts/codex_review.ps1（fresh review）
+   - 如果 phase=ASK_CODEX_REVIEW：重新运行 24h review（fresh review）
    - 如果 phase=INIT 或 READ_BLUEPRINT：按完整启动流程重新开始
 
 3. 恢复执行后严格遵守：
    - 每次只执行一个 CURRENT_TASK
-   - 每轮运行 scripts/validate_task.ps1
-   - 每轮运行 scripts/codex_review.ps1
+   - 每轮运行 24h validate
+   - 每轮运行 24h review
    - TDD + 100% coverage 硬门
    - PASS / NEED_FIX / NEED_HUMAN 三条路径
    - 最多 2 次返修
@@ -165,10 +165,10 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/check_quality_readin
 
 | 命令 | 用途 |
 |------|------|
-| `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate_task.ps1` | 运行本地质量门 |
-| `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/codex_review.ps1` | 调用 Codex 对抗性审查 |
-| `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/validate_task.ps1 -DryRun` | 预览质量门命令（不真实运行） |
-| `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/codex_review.ps1 -DryRun` | 预览 Codex 审查包（不调用 Codex） |
+| `node dist/cli/main.js validate` | 运行本地质量门 |
+| `node dist/cli/main.js review` | 调用 Codex 对抗性审查 |
+| `node dist/cli/main.js validate -DryRun` | 预览质量门命令（不真实运行） |
+| `node dist/cli/main.js review -DryRun` | 预览 Codex 审查包（不调用 Codex） |
 
 ## 关键文件列表
 
@@ -179,13 +179,13 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/check_quality_readin
 | `.agent/TASK_QUEUE.md` | Orchestrator | 任务队列 |
 | `.agent/CURRENT_TASK.md` | Orchestrator | 当前任务，限制 Worker 范围 |
 | `.agent/WORK_REPORT.md` | Worker | 执行报告 |
-| `.agent/VALIDATION_REPORT.md` | validate_task.ps1 | 本地质量门结果 |
-| `.agent/CODEX_REVIEW.md` | codex_review.ps1 | Codex 审查结果 |
+| `.agent/VALIDATION_REPORT.md` | 24h validate | 本地质量门结果 |
+| `.agent/CODEX_REVIEW.md` | 24h review | Codex 审查结果 |
 | `.agent/CODEX_REVIEW_RUBRIC.md` | 人类（模板） | Codex 审查标准 |
 | `.agent/QUALITY_GATES.json` | 人类（配置） | 质量门定义，含 100% coverage |
 | `.agent/RUN_STATE.json` | Orchestrator | 机器可读当前状态 |
 | `.agent/DECISION_LOG.md` | Orchestrator | 关键决策记录 |
 | `.agent/HUMAN_HANDOFF.md` | Orchestrator | 人类交接（停机门） |
-| `scripts/validate_task.ps1` | 脚本 | 执行本地验证 |
-| `scripts/codex_review.ps1` | 脚本 | 组装审查包 + 调用 Codex |
+| `24h validate` | 脚本 | 执行本地验证 |
+| `24h review` | 脚本 | 组装审查包 + 调用 Codex |
 | `CLAUDE_ORCHESTRATOR_PROTOCOL.md` | 协议 | Orchestrator 操作系统 |

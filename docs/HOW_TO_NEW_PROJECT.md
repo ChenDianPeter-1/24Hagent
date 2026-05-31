@@ -6,9 +6,9 @@
 
 ```powershell
 # 从 24Hagent 仓库复制核心脚本到你的项目
-cp scripts/check_quality_readiness.ps1 <你的项目>/
-cp scripts/validate_task.ps1 <你的项目>/
-cp scripts/codex_review.ps1 <你的项目>/
+cp 24h readiness <你的项目>/
+cp 24h validate <你的项目>/
+cp 24h review <你的项目>/
 ```
 
 ## 2. 填蓝图
@@ -41,7 +41,7 @@ cp scripts/codex_review.ps1 <你的项目>/
 # 编辑 .agent/QUALITY_GATES.json，填入你项目的真实命令
 # 然后跑就绪检查
 
-powershell -NoProfile -ExecutionPolicy Bypass -File scripts/check_quality_readiness.ps1
+npm run build && node dist/cli/main.js readiness
 ```
 
 看到 `Verdict: **BLOCKED**` 说明工具链没配好——去装 test runner、linter、typechecker、coverage tool。
@@ -64,8 +64,8 @@ Orchestrator 会自动：
 - [ ] 已安装 `codex-cli`（`codex --version` → 0.134+）
 - [ ] `~/.codex/config.toml` 已配置 `[mcp_servers.codegraph]`（可选但推荐）
 - [ ] `.agent/` 目录已创建，含 `QUALITY_GATES.json` 和 `PROJECT_BLUEPRINT.md`
-- [ ] `check_quality_readiness.ps1` 返回 `READY`
-- [ ] 项目是 git 仓库（codex_review.ps1 依赖 `git diff`）
+- [ ] `24h readiness` 返回 `READY`
+- [ ] 项目是 git 仓库（24h review 依赖 `git diff`）
 
 ## 三条铁律（搬到新项目也必须遵守）
 
