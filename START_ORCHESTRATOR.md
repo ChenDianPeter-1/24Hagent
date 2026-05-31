@@ -10,7 +10,7 @@
 适用场景：首次使用 24Hagent 前，验证项目的质量门工具链已就绪。
 
 ```powershell
-npm run build && node dist/cli/main.js readiness
+node 24hagent-starter/bin/24hagent.mjs readiness
 ```
 
 如果输出 `Verdict: **BLOCKED**`，**绝对不要**启动下面的 Orchestrator 循环。
@@ -52,10 +52,10 @@ npm run build && node dist/cli/main.js readiness
 3. Worker 不得修改 file_scope 之外的文件，不得自行扩大范围。
 4. Worker 执行完成后，必须写 .agent/WORK_REPORT.md。
 5. 然后必须以 Orchestrator 身份运行本地质量门：
-   node dist/cli/main.js validate
+   node 24hagent-starter/bin/24hagent.mjs validate
    如果任何 blocking gate 失败，回到步骤 2 返修（retry_count + 1）。
 6. 本地验证通过后，运行 Codex 对抗性审查：
-   node dist/cli/main.js review
+   node 24hagent-starter/bin/24hagent.mjs review
 7. 读取 .agent/CODEX_REVIEW.md 中的 verdict：
    - PASS → 标记任务 done，更新 PROJECT_STATE.md 和 RUN_STATE.json，进入下一个任务。
    - NEED_FIX → 读取 required_fixes，创建返修任务，retry_count + 1。
@@ -165,10 +165,10 @@ npm run build && node dist/cli/main.js readiness
 
 | 命令 | 用途 |
 |------|------|
-| `node dist/cli/main.js validate` | 运行本地质量门 |
-| `node dist/cli/main.js review` | 调用 Codex 对抗性审查 |
-| `node dist/cli/main.js validate -DryRun` | 预览质量门命令（不真实运行） |
-| `node dist/cli/main.js review -DryRun` | 预览 Codex 审查包（不调用 Codex） |
+| `node 24hagent-starter/bin/24hagent.mjs validate` | 运行本地质量门 |
+| `node 24hagent-starter/bin/24hagent.mjs review` | 调用 Codex 对抗性审查 |
+| `node 24hagent-starter/bin/24hagent.mjs validate -DryRun` | 预览质量门命令（不真实运行） |
+| `node 24hagent-starter/bin/24hagent.mjs review -DryRun` | 预览 Codex 审查包（不调用 Codex） |
 
 ## 关键文件列表
 
