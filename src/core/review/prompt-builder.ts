@@ -1,15 +1,16 @@
-export function buildReviewPrompt(params: {
-  taskSpec: string
-  dodItems: string[]
-  workReport: string
-  gitDiff: string
-  rubric: string
-}): string {
-  const { taskSpec, dodItems, workReport, gitDiff, rubric } = params
-  const dodSection = dodItems.length > 0
-    ? dodItems.map((d, i) => `${i + 1}. ${d}`).join('\n')
-    : '(no DoD items provided)'
-  const diffSection = gitDiff || '(no uncommitted changes)'
+import type { ReviewEvidence } from './evidence-builder.js'
+
+function renderList(items: string[], emptyText: string): string {
+  return items.length > 0 ? items.map((d, i) => `${i + 1}. ${d}`).join('\n') : emptyText
+}
+
+function renderBullets(items: string[], emptyText: string): string {
+  return items.length > 0 ? items.map(item => `- ${item}`).join('\n') : emptyText
+}
+
+export function buildReviewPrompt(evidence: ReviewEvidence): string {
+  const { task, workReport, validationReport, scopedDiff, rubric, changedFiles } = evidence
+  const diffSection = scopedDiff || '(no uncommitted changes)'
 
   return [
     '# Codex Review',
@@ -19,13 +20,30 @@ export function buildReviewPrompt(params: {
     'Judge the implementation against its written contract (spec + DoD).',
     'Every finding requires cited evidence (file:line). Output in the YAML format specified below.',
     '',
+    '## Task Identity',
+    '',
+    `Task ID: ${task.task_id || '(no task id provided)'}`,
+    `Title: ${task.title || '(no title provided)'}`,
+    '',
     '## Task Specification',
     '',
-    taskSpec || '(no spec provided)',
+    task.specification || '(no spec provided)',
+    '',
+    '## File Scope',
+    '',
+    renderBullets(task.file_scope, '(no file scope provided)'),
     '',
     '## Definition of Done',
     '',
-    dodSection,
+    renderList(task.definition_of_done.map(d => d.content), '(no DoD items provided)'),
+    '',
+    '## Acceptance Checks',
+    '',
+    task.acceptance_checks || '(no acceptance checks provided)',
+    '',
+    '## Stop Rule',
+    '',
+    task.stop_rule || '(no stop rule provided)',
     '',
     '## Evidence',
     '',
@@ -33,7 +51,15 @@ export function buildReviewPrompt(params: {
     '',
     workReport || '(no work report provided)',
     '',
-    '### Git Diff',
+    '### Validation Report',
+    '',
+    validationReport || '(no validation report provided)',
+    '',
+    '### Changed Files Summary',
+    '',
+    renderBullets(changedFiles, '(no changed files)'),
+    '',
+    '### Scoped Git Diff',
     '',
     '```diff',
     diffSection,

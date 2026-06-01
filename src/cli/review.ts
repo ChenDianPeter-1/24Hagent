@@ -1,25 +1,12 @@
-import { readFileSync, writeFileSync, existsSync } from 'node:fs'
+import { readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { execSync } from 'node:child_process'
 import { buildReviewPrompt } from '../core/review/prompt-builder.js'
+import { buildReviewEvidence } from '../core/review/evidence-builder.js'
 import { renderReviewMarkdown } from '../core/review/result-renderer.js'
-import { parseCurrentTaskMarkdown } from '../core/schemas/task-package.js'
 import { parseCodexJsonlToReviewResult } from '../core/schemas/review-result.js'
 
 export function runReviewPrompt(root: string): void {
-  const taskMd = readFileSync(resolve(root, '.agent/CURRENT_TASK.md'), 'utf-8')
-  const workMd = existsSync(resolve(root, '.agent/WORK_REPORT.md'))
-    ? readFileSync(resolve(root, '.agent/WORK_REPORT.md'), 'utf-8') : ''
-  const rubric = existsSync(resolve(root, '.agent/CODEX_REVIEW_RUBRIC.md'))
-    ? readFileSync(resolve(root, '.agent/CODEX_REVIEW_RUBRIC.md'), 'utf-8') : ''
-  const diff = execSync('git diff HEAD', { cwd: root, encoding: 'utf-8', maxBuffer: 1024 * 1024 })
-
-  const tp = parseCurrentTaskMarkdown(taskMd)
-  const prompt = buildReviewPrompt({
-    taskSpec: tp.specification,
-    dodItems: tp.definition_of_done.map(d => d.content),
-    workReport: workMd, gitDiff: diff, rubric
-  })
+  const prompt = buildReviewPrompt(buildReviewEvidence(root))
   writeFileSync(resolve(root, '.agent/codex-review-prompt.md'), prompt, 'utf-8')
   console.log('Review prompt written to .agent/codex-review-prompt.md')
 }
