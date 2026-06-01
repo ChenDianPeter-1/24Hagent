@@ -14,6 +14,9 @@ if (cmd === 'status') {
 } else if (cmd === 'validate:plan') {
   const { runValidatePlan } = await import('./validate.js')
   runValidatePlan('.')
+} else if (cmd === 'task:review') {
+  const { runTaskReview } = await import('./task-review.js')
+  runTaskReview('.')
 } else if (cmd === 'review:prompt') {
   const { runReviewPrompt } = await import('./review.js')
   runReviewPrompt('.')
@@ -23,6 +26,6 @@ if (cmd === 'status') {
   const jsonlPath = inputIdx >= 0 ? process.argv[inputIdx + 1] : '.agent/codex-review-raw.jsonl'
   runReviewRender('.', jsonlPath)
 } else {
-  console.error(`Usage: 24h <readiness|validate|validate:plan|review:prompt|review:render|status>`)
+  console.error(`Usage: 24h <readiness|validate|validate:plan|task:review|review:prompt|review:render|status>`)
   process.exit(1)
 }
