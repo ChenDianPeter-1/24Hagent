@@ -55,8 +55,8 @@ CODEX（外部只读审查官）
 │   └── superpowers/specs/            设计蓝图 + 实施计划
 ├── src/                                TypeScript 核心（B3 交付）
 │   ├── cli/                             CLI 命令入口
-│   ├── core/quality/                    ReadinessEngine + ValidationEngine
-│   ├── core/review/                     prompt-builder + result-renderer
+│   ├── core/quality/                    ReadinessEngine + ValidationEngine + TaskQualityGate
+│   ├── core/review/                     evidence-builder + prompt-builder + result-renderer
 │   └── core/schemas/                    4 个 Zod schema
 ├── scripts/                             setup.ps1（项目初始化）
 ├── .agent/                           运行态（gitignored）
@@ -105,6 +105,7 @@ npm run build && node dist/cli/main.js readiness
 | `24h validate:plan` | 预览质量门执行计划 |
 | `24h review:prompt` | 生成 Codex 审查 prompt |
 | `24h review:render` | 从 JSONL 渲染审查报告 |
+| `24h task:review` | 执行前任务包质量门审查 |
 
 ## 当前状态
 
@@ -119,12 +120,12 @@ npm run build && node dist/cli/main.js readiness
 
 ### 根项目自举（进行中）
 
-根项目（24Hagent 工具本身）的自进化循环尚未闭合：
+根项目（24Hagent 工具本身）自进化循环持续迭代：
 
-- 根项目 quality gates 当前为 BLOCKED（无 TypeScript 工具链）
-- 正在按 Codex 审查后的 Route B+ 路线执行自进化
-- 当前阶段：B0 状态归一化（对齐文档与运行态）
-- 详见 `.agent/CURRENT_TASK.md` 和 `.agent/PROJECT_STATE.md`
+- B3 闭环已打通：PASS / NEED_FIX / NEED_HUMAN 三分支真实验证
+- 模块边界护栏已接入（eslint-plugin-boundaries），详见 `docs/ARCHITECTURE_BOUNDARIES.md`
+- 任务质量门已上线（`24h task:review`），执行前审查任务包质量
+- 详见 `.agent/PROJECT_STATE.md`
 
 ## 明确不做
 
