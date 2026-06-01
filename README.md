@@ -52,6 +52,7 @@ CODEX（外部只读审查官）
 ├── docs/
 │   ├── HANDOFF.md                    项目交接文档（当前状态总览）
 │   ├── HOW_TO_NEW_PROJECT.md         如何把 24Hagent 用到新项目（一页纸）
+│   ├── ARCHITECTURE_BOUNDARIES.md    模块边界规则
 │   └── superpowers/specs/            设计蓝图 + 实施计划
 ├── src/                                TypeScript 核心（B3 交付）
 │   ├── cli/                             CLI 命令入口
@@ -74,24 +75,27 @@ CODEX（外部只读审查官）
 ### 前置条件
 
 - Windows + PowerShell 5.1 + Node 20
-- [codex-cli](https://github.com/openai/codex) 0.134+（`codex --version`）
+- [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code/setup)（`claude --version`）
+- [codex-cli](https://github.com/openai/codex) 0.134+（可选，用于异模型审查）
 - `~/.codex/config.toml` 已配置 `[mcp_servers.codegraph]`（可选但推荐）
-- 你的项目是 git 仓库，有 `package.json`，装了 test/lint/typecheck/coverage 工具
+- 你的项目是 git 仓库
+- 支持 Node.js 和 Python 项目（starter 自动检测）
 
-### 4 步启动
+### 5 步启动
 
 ```bash
-# 1. 构建 + 就绪检查——必须先过这关
-npm run build && node dist/cli/main.js readiness
-# 看到 READY 才能继续。BLOCKED = 去装工具链。
+# 1. 复制 starter 到你的项目
+cp -r 24hagent-starter <你的项目>/
 
-# 2. 填项目蓝图
-# 编辑 .agent/PROJECT_BLUEPRINT.md，写清你的项目目标/范围/边界/禁止项
+# 2. 双击 Start.bat（或 bash setup.sh）
+# starter 自动检测技术栈，生成 .agent/ 运行态
 
-# 3. 启动 Orchestrator
-# 把 START_ORCHESTRATOR.md 里的"完整启动"提示词复制到 Claude Code
+# 3. Claude Code 接入向导会帮你填蓝图、设质量门
 
-# 4. 人类只在出现 HUMAN_HANDOFF.md 时介入
+# 4. 确认后启动编排循环
+# 从 START_ORCHESTRATOR.md 复制提示词
+
+# 5. 人类只在出现 HUMAN_HANDOFF.md 时介入
 ```
 
 详见 [docs/HOW_TO_NEW_PROJECT.md](docs/HOW_TO_NEW_PROJECT.md)。

@@ -165,10 +165,14 @@ node 24hagent-starter/bin/24hagent.mjs readiness
 
 | 命令 | 用途 |
 |------|------|
+| `node 24hagent-starter/bin/24hagent.mjs readiness` | 就绪检查 |
 | `node 24hagent-starter/bin/24hagent.mjs validate` | 运行本地质量门 |
 | `node 24hagent-starter/bin/24hagent.mjs review` | 调用 Codex 对抗性审查 |
 | `node 24hagent-starter/bin/24hagent.mjs validate -DryRun` | 预览质量门命令（不真实运行） |
 | `node 24hagent-starter/bin/24hagent.mjs review -DryRun` | 预览 Codex 审查包（不调用 Codex） |
+| `node 24hagent-starter/bin/24hagent.mjs task:review` | 执行前任务包质量门审查 |
+
+如果已 `npm install -g`，用 `24h` 代替 `node 24hagent-starter/bin/24hagent.mjs`。
 
 ## 关键文件列表
 

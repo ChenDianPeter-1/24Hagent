@@ -1,12 +1,12 @@
 # 24Hagent Handoff
 
-更新时间：2026-05-31
+更新时间：2026-06-01
 
 ## 项目状态总览
 
 **Sandbox 验证已完成**：24Hagent 在 sandbox/string-utils 上跑通了 PASS 和 NEED_FIX 两条路径，Codex + codegraph 跨模型审查护城河已真实验证。
 
-**根项目自举进行中**：当前处于 B0 状态归一化阶段。根项目 quality gates 尚未闭合（BLOCKED），正在按 Codex 审查后的 Route B+ 路线执行自进化。
+**根项目自举持续迭代**：B3 闭环已打通，TypeScript CLI 全部接管 PS1 脚本。审查质量已升级（证据包补全、任务质量门、模块边界护栏）。
 
 ## 已完成
 
@@ -19,48 +19,62 @@
 - A4：PROJECT_BLUEPRINT.md 填充真实内容 ✓
 - A5：3 条铁律写入协议 + codegraph 审查条目 ✓
 
-### Phase B：真实闭环验证（交付达成）
+### Phase B：真实闭环验证
 
-- B1：sandbox/string-utils/ 项目建好（TS + vitest + eslint + 100% coverage）✓
-- B2：Codex 真实调用冒烟（stdin 管道 + stderr 侧车 + StrictMode 安全解析器）✓
-- B3：PASS 路径跑通（slugify 实现 → 质量门 → Codex PASS → commit）✓
-- B4：NEED_FIX 路径跑通（underscore 测试遗漏 → Codex NEED_FIX → 返修 → PASS）✓
-- B5：codegraph 结构分析生效（11 次 MCP 工具调用，codegraph_context/explore/search）✓
+- B1：sandbox/string-utils/ 项目建好 ✓
+- B2：Codex 真实调用冒烟 ✓
+- B3：PASS 路径跑通 + NEED_FIX 路径跑通 + codegraph 结构分析生效 ✓
 
-### Phase C：固化（未开始）
+### Phase B3：TypeScript CLI 完整交付
 
-- 待根项目自举完成后再启动
+- B3-0~B3-5：ReadinessEngine + ValidationEngine + ReviewEngine + CLI 入口 ✓
+- PS1 核心脚本全部由 TS CLI 接管 ✓
+- 极致清洁（30+ 残留文件删除）✓
+- esbuild 打包 CLI 为单文件 ✓
+- npm 全局安装支持 ✓
+
+### Starter 升级
+
+- Superpower 能力包分发 ✓
+- Start.bat / Start.ps1 一键入口 ✓
+- 接入向导 prompt 重新设计 ✓
+
+### 审查质量提升
+
+- 送审证据包补全（evidence-builder + scoped diff + 越界保护）✓
+- 任务质量门上线（task-quality-gate + `24h task:review`）✓
+- 模块边界护栏接入（eslint-plugin-boundaries + 6 层边界规则）✓
 
 ## 三条角色边界铁律（已验证生效）
 
 1. 测试归 Claude Code：Worker 按 TDD 写+跑，Orchestrator 独立复跑，Codex 只消费 VALIDATION_REPORT 作证据
-2. Codex 全程只读：`codex exec --sandbox read-only`，B3/B4/B5 共 7 次真实调用，0 次执行测试/构建/写文件
-3. acceptance_checks 提前说死：CURRENT_TASK.md 必填字段，B3/B4/B5 所有任务均遵循
+2. Codex 全程只读：`codex exec --sandbox read-only`
+3. acceptance_checks 提前说死：CURRENT_TASK.md 必填字段
 
-## 核心脚本
+## 核心模块
 
-| 脚本 | 状态 |
+| 模块 | 位置 | 职责 |
+|------|------|------|
+| CLI 入口 | `src/cli/` | main / readiness / validate / review / task-review / status |
+| 质量引擎 | `src/core/quality/` | ReadinessEngine + ValidationEngine + TaskQualityGate |
+| 审查引擎 | `src/core/review/` | evidence-builder + prompt-builder + result-renderer |
+| Schema | `src/core/schemas/` | task-package / review-result / run-state / evidence-packet |
+| 适配器 | `src/adapters/shell/` | CommandRunner 接口 + RealCommandRunner |
+| 边界配置 | `eslint.config.mjs` | eslint-plugin-boundaries 6 层规则 |
+
+## 关键命令
+
+| 命令 | 用途 |
 |------|------|
-| 24h validate | ✓ 可用（coverage JSON 优先解析、UTF-8 无 BOM、4000 char 截断） |
-| 24h review | ✓ 可用（stdin 管道、stderr 侧车、StrictMode 安全解析器、evidence-first prompt） |
-| 24h readiness | ✓ 可用（就绪检查 + 建议生成） |
-
-## 仓库结构
-
-```
-24Hagent/
-├── src/                    TypeScript 核心（ReadinessEngine + ValidationEngine + ReviewEngine + CLI）
-├── CLAUDE_ORCHESTRATOR_PROTOCOL.md  编排器操作系统（含 3 条铁律）
-├── START_ORCHESTRATOR.md  启动入口（含前置检查）
-├── .agent/                运行态（gitignored）
-└── sandbox/string-utils/  独立 TS git 仓库（Phase B 验证对象，gitignored）
-    ├── src/slugify.ts      slugify + truncateSlug 实现
-    ├── src/slugify.test.ts  13 tests, 100% coverage
-    └── .codegraph/        codegraph 索引
-```
+| `24h readiness` | 就绪检查 |
+| `24h validate` | 本地质量门 |
+| `24h validate:plan` | 预览质量门执行计划 |
+| `24h review:prompt` | 生成 Codex 审查 prompt |
+| `24h review:render` | 渲染审查报告 |
+| `24h task:review` | 执行前任务包质量门 |
 
 ## 新窗口启动
 
 1. 读 CLAUDE.md → CLAUDE_ORCHESTRATOR_PROTOCOL.md → docs/HANDOFF.md
-2. 检查 `24h readiness`（BLOCKED = 禁止启动循环）
+2. 检查 `24h readiness` 或 `npm test`
 3. 选择 START_ORCHESTRATOR.md 中合适的启动模式

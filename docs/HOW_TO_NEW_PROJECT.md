@@ -1,79 +1,53 @@
 # 如何用在新项目 —— 一页纸指南
 
-把 24Hagent 用到你自己的项目，只需 4 步。
+把 24Hagent 用到你自己的项目，只需 3 步。
 
-## 1. 复制脚本
+## 1. 复制 starter 到你的项目
 
-```powershell
-# 从 24Hagent 仓库复制核心脚本到你的项目
-cp 24h readiness <你的项目>/
-cp 24h validate <你的项目>/
-cp 24h review <你的项目>/
+```
+你的项目/
+  24hagent-starter/    ← 从 24Hagent 仓库复制这个目录过来
+    Start.bat          ← 双击启动
+    Start.ps1
+    setup.ps1
+    setup.sh
+    bin/24hagent.mjs   ← 核心工具
+    ...
 ```
 
-## 2. 填蓝图
+## 2. 双击 Start.bat
 
-```markdown
-# .agent/PROJECT_BLUEPRINT.md
+starter 会自动：
+- 检测项目技术栈（Node / Python / 空项目）
+- 生成 `.agent/` 运行态目录
+- 初始化 `QUALITY_GATES.json`、`PROJECT_BLUEPRINT.md` 模板
+- 打开 Claude Code 进入接入向导（或输出提示词让你手动粘贴）
 
-## Project Goal
-你的项目一句话描述。
+Claude Code 接入向导会：
+- 只读项目，不改业务代码
+- 问你项目目标、当前任务、技术栈、边界
+- 生成 `.agent/PROJECT_BLUEPRINT.md`、`.agent/CURRENT_GOAL.md`
+- 确认后才进入编排循环
 
-## MVP Scope
-### In Scope
-- 功能 A
-- 功能 B
+## 3. 填蓝图 + 配质量门
 
-### Out of Scope
-- 明确不做的东西
+接入向导帮你生成了模板，你需要确认/修改：
 
-## Technical Boundaries
-- 语言/框架/平台约束
-- 测试框架 + coverage 工具
+- `.agent/PROJECT_BLUEPRINT.md` — 项目目标、范围、禁止项
+- `.agent/QUALITY_GATES.json` — 质量门命令（test/lint/typecheck/coverage）
+- `.agent/CURRENT_GOAL.md` — 当前阶段目标
 
-## Prohibited Actions
-- （保留模板的禁止项列表）
-```
+然后启动编排循环，Claude Code 会按协议自动运行。
 
-## 3. 配质量门 + 跑就绪检查
+## 前置条件
 
-```powershell
-# 编辑 .agent/QUALITY_GATES.json，填入你项目的真实命令
-# 然后跑就绪检查
+- [ ] Node.js 20+（starter 的 24hagent.mjs 需要 Node 运行）
+- [ ] 项目是 git 仓库
+- [ ] 已安装 Claude Code CLI（`claude` 命令）
+- [ ] 如需异模型审查：已安装 `codex-cli`（`codex --version` → 0.134+）
+- [ ] 如需结构化分析：`~/.codex/config.toml` 已配置 codegraph MCP（可选但推荐）
 
-npm run build && node dist/cli/main.js readiness
-```
-
-看到 `Verdict: **BLOCKED**` 说明工具链没配好——去装 test runner、linter、typechecker、coverage tool。
-看到 `Verdict: **READY**` 就可以下一步了。
-
-## 4. 启动
-
-从 `START_ORCHESTRATOR.md` 复制"完整启动"提示词到 Claude Code。
-
-Orchestrator 会自动：
-1. 读蓝图 → 拆任务 → 写 CURRENT_TASK.md
-2. Worker TDD 实现 → 写 WORK_REPORT.md
-3. Orchestrator 独立复跑质量门 → 写 VALIDATION_REPORT.md
-4. Codex 交叉审查 → 写 CODEX_REVIEW.md
-5. PASS 继续 / NEED_FIX 返修 / NEED_HUMAN 停机
-
-## 前置条件清单
-
-- [ ] 项目有 `package.json` + 真实的 test/lint/typecheck/coverage 脚本
-- [ ] 已安装 `codex-cli`（`codex --version` → 0.134+）
-- [ ] `~/.codex/config.toml` 已配置 `[mcp_servers.codegraph]`（可选但推荐）
-- [ ] `.agent/` 目录已创建，含 `QUALITY_GATES.json` 和 `PROJECT_BLUEPRINT.md`
-- [ ] `24h readiness` 返回 `READY`
-- [ ] 项目是 git 仓库（24h review 依赖 `git diff`）
-
-## 三条铁律（搬到新项目也必须遵守）
-
-1. 测试归 Claude Code，Codex 永不跑测试
-2. Codex 全程只读（`--sandbox read-only`）
-3. 要跑哪些测试在 `CURRENT_TASK.md` 的 `acceptance_checks` 字段提前说死
-
-## 默认质量门
+## 质量门默认配置
 
 | Gate | 命令 | 阈值 |
 |------|------|------|
@@ -82,5 +56,23 @@ Orchestrator 会自动：
 | typecheck | `npm run typecheck` | exit 0 |
 | coverage | `npm run coverage` | lines 100%, branches 100%, functions 100%, statements 100% |
 
-如果你的项目用不同工具，改 `.agent/QUALITY_GATES.json` 即可。
-如果不需要某个门，把它的 `enabled` 设为 `false`。
+如果是 Python 项目，改为 `pytest`、`ruff`、`mypy`、`coverage.py`。
+如果不需要某个门，把 `enabled` 设为 `false`。
+如果要自定义阈值，改 `threshold` 字段。
+
+## 三条铁律
+
+1. 测试归 Claude Code，Codex 永不跑测试
+2. Codex 全程只读（`--sandbox read-only`）
+3. 要跑哪些测试在 `CURRENT_TASK.md` 的 `acceptance_checks` 字段提前说死
+
+## 编排循环
+
+```
+选任务 → 写 CURRENT_TASK.md（含 acceptance_checks）
+  → Worker TDD 实现 → 写 WORK_REPORT.md
+  → Orchestrator 独立复跑质量门 → 写 VALIDATION_REPORT.md
+  → Codex 审查（读 diff + codegraph 查结构）→ 写 CODEX_REVIEW.md
+  → PASS 继续 / NEED_FIX 返修（最多 2 次）/ NEED_HUMAN 停机
+  → git commit
+```
