@@ -1,9 +1,6 @@
 # Agent runtime
 .agent/
 
-# IDE and editor configs
-.cursor/
-
 # Node modules
 node_modules/
 
