@@ -1,46 +1,104 @@
 # 24Hagent Starter
 
-把这个文件夹复制到你的项目里，运行一条命令，24Hagent 就装好了。
+24Hagent Starter turns first-time project onboarding into a guided Claude Code
+setup flow. Copy this folder into a project, double-click `Start.bat`, and the
+starter will install the local 24Hagent runtime plus the bundled Superpower Pack.
 
-## 前提
+## What Gets Installed
 
-- Node.js >= 20（只需要 Node 运行时，不需要 npm install）
-- 你的项目有 `package.json` 或 `pyproject.toml`
-- 你的项目里有测试/lint/类型检查/覆盖率工具（pytest/vitest 等）
-
-## 3 步安装
-
-```bash
-# 1. 复制 starter 到你的项目
-cp -r 24hagent-starter/ /path/to/your-project/
-
-# 2. 进入你的项目，运行 setup
-cd /path/to/your-project
-powershell -ExecutionPolicy Bypass -File 24hagent-starter/setup.ps1   # Windows
-bash 24hagent-starter/setup.sh                                         # macOS/Linux
-
-# 3. 看到 Verdict: **READY** 就成功了
+```text
+target-project/
++-- .claude/
+|   +-- skills/
+|       +-- superpower/
+|       +-- 24hagent-install/
++-- .agent/
+    +-- QUALITY_GATES.json
+    +-- NEXT_CLAUDE_INSTALL_PROMPT.md
 ```
 
-setup 脚本会自动：
-- 检测你的项目是 Node 还是 Python
-- 创建 `.agent/` 目录 + 质量门配置
-- 复制审查标准模板
-- 运行就绪检查
+`superpower/` is Claude Code's product-thinking and workflow layer. It helps
+Claude clarify goals, control scope, shape tasks, and avoid over-engineering
+before implementation starts.
 
-## Python 项目
+`.agent/` is 24Hagent runtime state. It stores quality gates, task packets,
+review prompts, reports, and project state. Do not put Claude Code skills under
+`.agent/skills/`.
 
-setup 会自动配置 pytest + ruff + mypy + pytest-cov 作为默认工具链。
-覆盖率阈值：lines=100%, statements=100%。branches 和 functions 对 Python 项目自动设为 null（coverage.py 不提供）。
+## Windows Quick Start
 
-## 之后
+1. Copy `24hagent-starter/` into your target project.
+2. Open the folder and double-click `Start.bat`.
+3. Let the starter finish local setup.
+4. If Claude CLI is available, Claude Code will start from the project root.
+5. If Claude CLI is not available, paste the copied prompt from:
 
-1. 编辑 `.agent/PROJECT_BLUEPRINT.md` 写你的项目目标
-2. 把 `START_ORCHESTRATOR.md` 里的提示词复制到 Claude Code
-3. Orchestrator 开始自动循环：拆任务 → TDD 实现 → 跑质量门 → Codex 审查
-4. 只在出现 `HUMAN_HANDOFF.md` 时你需要介入
+```text
+.agent/NEXT_CLAUDE_INSTALL_PROMPT.md
+```
 
-## 不需要的可以删
+## What Start.bat Does
 
-- `24hagent-starter/` 文件夹（装完即可删）
-- `24hagent-starter/bin/` 里的 CLI 已内置全部依赖，不依赖你的项目的 node_modules
+`Start.bat` runs `Start.ps1`, which:
+
+- switches to the target project root;
+- creates `.agent/` and `.claude/skills/`;
+- installs the complete Superpower Pack to `.claude/skills/superpower/`;
+- installs the 24Hagent onboarding skill to `.claude/skills/24hagent-install/`;
+- creates `.agent/QUALITY_GATES.json` if it does not exist;
+- generates `.agent/NEXT_CLAUDE_INSTALL_PROMPT.md`;
+- copies the install prompt to the clipboard when possible;
+- runs the 24Hagent readiness check;
+- tries to launch `claude` from the project root;
+- passes the install prompt to `claude` automatically when the local CLI supports prompt arguments.
+
+If `claude` is not on PATH, setup still completes and prints clear next steps.
+
+For an empty project with no `package.json`, `pyproject.toml`,
+`requirements.txt`, or Python files, the starter uses `project_type: unknown`.
+It does not choose Node.js or Python for you. Quality gates are created as
+disabled `NEEDS_CONFIG` placeholders, readiness is skipped, and Claude
+onboarding asks you to clarify the stack with Superpower before finalizing
+`.agent` state.
+
+## Claude Onboarding Flow
+
+The generated install prompt tells Claude Code to read:
+
+```text
+.claude/skills/24hagent-install/SKILL.md
+```
+
+That skill requires Claude to:
+
+- begin with read-only project intake;
+- use `.claude/skills/superpower/` for clarification and scope control;
+- clarify project goal, current task, stopping condition, forbidden paths, and work type;
+- generate only minimal `.agent` onboarding files;
+- stop before entering the Orchestrator loop unless the user confirms.
+
+## Optional Manual Command
+
+If double-click launch is not suitable, run:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File 24hagent-starter/Start.ps1
+```
+
+For setup without launching Claude:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File 24hagent-starter/Start.ps1 -NoClaude
+```
+
+## Requirements
+
+- Node.js 20 or newer for the bundled 24Hagent CLI.
+- Claude CLI on PATH if you want automatic Claude Code launch.
+- A project with `package.json`, `pyproject.toml`, `requirements.txt`, `src/`,
+  or `tests/` gives the starter better onboarding signals.
+
+## After Setup
+
+Claude Code takes over the install onboarding through `24hagent-install`.
+It will ask for confirmation before entering the Orchestrator loop.

@@ -75,12 +75,6 @@ describe('classifyReadiness for Python', () => {
   it('READY when all Python tools detected', () => {
     const toml = read('fixtures/python/pyproject.toml')
     const tc = detectPythonToolchain(toml, 'pip')
-    const gates = {
-      test: { command: 'pytest', enabled: true },
-      lint: { command: 'ruff check .', enabled: true },
-      typecheck: { command: 'mypy src/', enabled: true },
-      coverage: { command: 'pytest --cov --cov-report=json', enabled: true }
-    }
     // Simplified: skip compareGates and go straight to classifyReadiness
     const audit = [
       { gate: 'test', currentCommand: 'pytest', suggestedCommand: 'pytest', match: 'MATCH' as const },

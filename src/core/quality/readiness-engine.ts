@@ -88,7 +88,7 @@ function parsePyprojectDeps(toml: string): { deps: Set<string>; toolSections: Se
   const arrayRe = /(?:dependencies|dev)\s*=\s*\[([\s\S]*?)\]/g
   for (const m of toml.matchAll(arrayRe)) {
     for (const item of m[1].match(/"([^"]+)"/g) ?? []) {
-      const name = item.replace(/"/g, '').split(/[><=!~\[\s;]/)[0].trim().toLowerCase()
+      const name = item.replace(/"/g, '').split(/[><=!~[\s;]/)[0].trim().toLowerCase()
       if (name && name !== '.' && name !== '..') deps.add(name)
     }
   }
@@ -96,7 +96,7 @@ function parsePyprojectDeps(toml: string): { deps: Set<string>; toolSections: Se
   // PEP 621 inline table: dependencies = ["pkg"] (one-per-line)
   const projectSection = toml.match(/\[project\]([\s\S]*?)(?=\[|$)/)?.[1] ?? ''
   for (const line of projectSection.match(/^\s*"([^"]+)"/gm) ?? []) {
-    const name = line.replace(/"/g, '').trim().split(/[><=!~\[\s;]/)[0].trim().toLowerCase()
+    const name = line.replace(/"/g, '').trim().split(/[><=!~[\s;]/)[0].trim().toLowerCase()
     if (name && name !== '.' && name !== '..') deps.add(name)
   }
 
