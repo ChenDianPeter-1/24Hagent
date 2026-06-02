@@ -19,7 +19,7 @@ describe('CLI smoke', () => {
         schema_version: 1,
         project_id: 'aegis-rewrite',
         task_id: 'T-DEFAULT',
-        phase: 'task-ready',
+        phase: 'codex-review',
         mode: 'auto',
         last_verdict: 'PASS',
         retry_count: 0,
@@ -33,8 +33,9 @@ describe('CLI smoke', () => {
       const out = execSync(cli(''), { encoding: 'utf-8', cwd: dir })
 
       expect(out).toContain('# Aegis Status')
-      expect(out).toContain('`task-ready`')
+      expect(out).toContain('`codex-review`')
       expect(out).toContain('Default Aegis entrypoint')
+      expect(out).toContain('aegis review:prompt')
     } finally {
       rmSync(dir, { recursive: true, force: true })
     }
