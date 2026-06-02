@@ -21,6 +21,7 @@ export type AegisRuntimePaths = {
   decisionRequest: string
   humanHandoff: string
   roundSummary: string
+  taskQualityReport: string
   validationReport: string
   codexReviewPrompt: string
   codexReviewRaw: string
@@ -55,6 +56,7 @@ export function getAegisRuntimePaths(root: string): AegisRuntimePaths {
     decisionRequest: resolve(currentDir, 'decision-request.md'),
     humanHandoff: resolve(currentDir, 'human-handoff.md'),
     roundSummary: resolve(currentDir, 'round-summary.md'),
+    taskQualityReport: resolve(currentDir, 'task-quality-report.md'),
     validationReport: resolve(currentDir, 'validation-report.md'),
     codexReviewPrompt: resolve(currentDir, 'codex-review-prompt.md'),
     codexReviewRaw: resolve(currentDir, 'codex-review.jsonl'),

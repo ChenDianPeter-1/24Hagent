@@ -7,6 +7,7 @@
 .aegis/current/codex-review.jsonl
 .aegis/current/codex-review.md
 .aegis/current/validation-report.md
+.aegis/current/task-quality-report.md
 .aegis/current/work-report.md
 .aegis/current/debug-log.md
 .aegis/current/tdd-log.md
