@@ -2,7 +2,10 @@
 export {} // make this file a module for top-level await
 const cmd = process.argv[2]
 
-if (cmd === 'status') {
+if (!cmd) {
+  const { runStatus } = await import('./status.js')
+  runStatus('.')
+} else if (cmd === 'status') {
   const { runStatus } = await import('./status.js')
   runStatus(process.argv[3] || '.')
 } else if (cmd === 'readiness') {
