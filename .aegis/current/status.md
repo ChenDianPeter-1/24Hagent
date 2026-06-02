@@ -2,7 +2,7 @@
 
 ## Phase
 
-`paused`
+`task-ready`
 
 ## Mode
 
@@ -10,19 +10,19 @@
 
 ## Current Task
 
-`20260602-phase2-runtime-scaffold`
+`20260603-phase9-current-task-normalization`
 
 ## Current Task Title
 
-Introduce tracked `.aegis/` runtime scaffold.
+Normalize tracked Aegis current task scaffold.
 
 ## Last Result
 
-phase1-pass
+phase8-pass
 
 ## Next Action
 
-Run `aegis` to continue or refresh the current state.
+Run `aegis task:review` to confirm the tracked Aegis current task is schema-valid.
 
 ## Risks
 

@@ -2,11 +2,11 @@
 
 ## Task
 
-Introduce tracked `.aegis/` runtime scaffold.
+Normalize tracked Aegis current task scaffold.
 
 ## Instruction
 
-Run `aegis` to continue or refresh the current state.
+Update the tracked Aegis current task and navigation files so `task:review` can validate the active Aegis task package.
 
 ## Boundaries
 

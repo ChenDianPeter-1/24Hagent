@@ -6,15 +6,15 @@ Rewrite 24Hagent into Aegis: a delivery gate that lives inside Claude Code, uses
 
 ## Current Phase
 
-`paused`
+`task-ready`
 
 ## Current Task
 
-Introduce tracked `.aegis/` runtime scaffold.
+Normalize tracked Aegis current task scaffold.
 
 ## Next Action
 
-Run `aegis` to continue or refresh the current state.
+Run `aegis task:review` to confirm the tracked current task is schema-valid, then continue migrating remaining legacy `.agent` assumptions.
 
 ## Risks
 
