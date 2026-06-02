@@ -1,6 +1,7 @@
-import { readFileSync, writeFileSync, existsSync } from 'node:fs'
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { detectToolchain, detectPythonToolchain, compareGates, classifyReadiness, renderReadinessReport, computeReadinessExitCode } from '../core/quality/readiness-engine.js'
+import { getAegisRuntimePaths } from '../core/aegis-runtime/index.js'
 
 /** Strip UTF-8 BOM before JSON.parse (PowerShell often writes BOM) */
 function readJsonSafe(path: string) {
@@ -18,10 +19,33 @@ function detectPackageManager(root: string): string {
   return 'pip'
 }
 
+export type ReadinessRuntimePaths = {
+  qualityGatesPath: string
+  reportPath: string
+  runtimeKind: 'aegis' | 'legacy-agent'
+}
+
+export function getReadinessRuntimePaths(root: string): ReadinessRuntimePaths {
+  const aegis = getAegisRuntimePaths(root)
+  if (existsSync(aegis.qualityGates)) {
+    return {
+      qualityGatesPath: aegis.qualityGates,
+      reportPath: aegis.qualityReadinessReport,
+      runtimeKind: 'aegis'
+    }
+  }
+
+  return {
+    qualityGatesPath: resolve(root, '.agent/QUALITY_GATES.json'),
+    reportPath: resolve(root, '.agent/QUALITY_READINESS_REPORT.md'),
+    runtimeKind: 'legacy-agent'
+  }
+}
+
 export function runReadiness(root: string): void {
   const pkgPath = resolve(root, 'package.json')
   const pyprojectPath = resolve(root, 'pyproject.toml')
-  const gatesPath = resolve(root, '.agent/QUALITY_GATES.json')
+  const paths = getReadinessRuntimePaths(root)
 
   let tc
   if (existsSync(pkgPath)) {
@@ -35,12 +59,13 @@ export function runReadiness(root: string): void {
     process.exit(1)
   }
 
-  const gatesRaw = existsSync(gatesPath) ? readJsonSafe(gatesPath) : null
+  const gatesRaw = existsSync(paths.qualityGatesPath) ? readJsonSafe(paths.qualityGatesPath) : null
   const audit = gatesRaw ? compareGates(tc, gatesRaw.gates) : []
   const result = classifyReadiness(audit, tc)
   const report = renderReadinessReport(result)
 
-  writeFileSync(resolve(root, '.agent/QUALITY_READINESS_REPORT.md'), report, 'utf-8')
+  mkdirSync(resolve(paths.reportPath, '..'), { recursive: true })
+  writeFileSync(paths.reportPath, report, 'utf-8')
   console.log(`Verdict: **${result.verdict}**`)
   process.exitCode = computeReadinessExitCode(result.verdict)
 }
