@@ -9,7 +9,7 @@ function renderBullets(items: string[], emptyText: string): string {
 }
 
 export function buildReviewPrompt(evidence: ReviewEvidence): string {
-  const { task, workReport, validationReport, scopedDiff, rubric, changedFiles } = evidence
+  const { task, workReport, superpowerSummary, disciplineReport, validationReport, scopedDiff, rubric, changedFiles } = evidence
   const diffSection = scopedDiff || '(no uncommitted changes)'
 
   return [
@@ -50,6 +50,14 @@ export function buildReviewPrompt(evidence: ReviewEvidence): string {
     '### Work Report',
     '',
     workReport || '(no work report provided)',
+    '',
+    '### Superpower Source Summary',
+    '',
+    superpowerSummary || '(no Superpower source summary provided)',
+    '',
+    '### Superpower Discipline Report',
+    '',
+    disciplineReport || '(no Superpower discipline report provided)',
     '',
     '### Validation Report',
     '',

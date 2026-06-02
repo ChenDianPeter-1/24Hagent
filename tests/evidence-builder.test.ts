@@ -90,6 +90,8 @@ describe('buildReviewEvidence', () => {
       'Stop if files are outside scope.'
     ].join('\n'))
     write('.aegis/current/round-summary.md', 'Aegis work summary.')
+    write('.aegis/current/superpower-summary.md', 'Aegis Superpower summary.')
+    write('.aegis/current/discipline-report.md', 'Aegis discipline passed.')
     write('.aegis/current/validation-report.md', 'Aegis validation passed.')
     write('.aegis/config/codex-rubric.md', 'Aegis rubric.')
     git(['add', '.'])
@@ -102,6 +104,8 @@ describe('buildReviewEvidence', () => {
     expect(paths.runtimeKind).toBe('aegis')
     expect(evidence.task.task_id).toBe('A-001')
     expect(evidence.workReport).toContain('Aegis work summary.')
+    expect(evidence.superpowerSummary).toContain('Aegis Superpower summary.')
+    expect(evidence.disciplineReport).toContain('Aegis discipline passed.')
     expect(evidence.validationReport).toContain('Aegis validation passed.')
     expect(evidence.rubric).toContain('Aegis rubric.')
   })

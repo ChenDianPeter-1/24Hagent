@@ -7,6 +7,8 @@ import { getAegisRuntimePaths } from '../aegis-runtime/index.js'
 export interface ReviewEvidence {
   task: TaskPackage
   workReport: string
+  superpowerSummary: string
+  disciplineReport: string
   validationReport: string
   rubric: string
   changedFiles: string[]
@@ -22,6 +24,8 @@ export interface ReviewEvidenceOptions {
 export interface ReviewEvidencePaths {
   currentTaskPath: string
   workReportPath: string
+  superpowerSummaryPath: string
+  disciplineReportPath: string
   validationReportPath: string
   rubricPath: string
   runtimeKind: 'aegis' | 'legacy-agent'
@@ -33,6 +37,8 @@ export function getReviewEvidencePaths(root: string): ReviewEvidencePaths {
     return {
       currentTaskPath: aegis.currentTask,
       workReportPath: aegis.roundSummary,
+      superpowerSummaryPath: aegis.superpowerSummary,
+      disciplineReportPath: aegis.disciplineReport,
       validationReportPath: aegis.validationReport,
       rubricPath: aegis.codexRubric,
       runtimeKind: 'aegis'
@@ -42,6 +48,8 @@ export function getReviewEvidencePaths(root: string): ReviewEvidencePaths {
   return {
     currentTaskPath: resolve(root, '.agent/CURRENT_TASK.md'),
     workReportPath: resolve(root, '.agent/WORK_REPORT.md'),
+    superpowerSummaryPath: resolve(root, '.agent/SUPERPOWER_SUMMARY.md'),
+    disciplineReportPath: resolve(root, '.agent/DISCIPLINE_REPORT.md'),
     validationReportPath: resolve(root, '.agent/VALIDATION_REPORT.md'),
     rubricPath: resolve(root, '.agent/CODEX_REVIEW_RUBRIC.md'),
     runtimeKind: 'legacy-agent'
@@ -114,6 +122,8 @@ export function buildReviewEvidence(root: string, options: ReviewEvidenceOptions
   return {
     task,
     workReport: readIfExists(paths.workReportPath),
+    superpowerSummary: readIfExists(paths.superpowerSummaryPath),
+    disciplineReport: readIfExists(paths.disciplineReportPath),
     validationReport: readIfExists(paths.validationReportPath),
     rubric: readIfExists(paths.rubricPath),
     changedFiles,
