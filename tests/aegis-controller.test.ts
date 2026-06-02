@@ -19,6 +19,8 @@ const artifacts = (overrides: Partial<AegisRuntimeArtifacts> = {}): AegisRuntime
   hasTaskQualityReport: false,
   hasQualityReadinessReport: false,
   hasValidationReport: false,
+  hasSuperpowerSources: false,
+  hasDisciplineReport: false,
   hasCodexReviewPrompt: false,
   hasCodexReviewRaw: false,
   hasCodexReview: false,
@@ -62,6 +64,19 @@ describe('Aegis controller decision', () => {
       state({ phase: 'codex-review' }),
       artifacts({ hasCodexReviewPrompt: true, hasCodexReviewRaw: true })
     ).nextAction).toContain('aegis review:render')
+  })
+
+  it('routes discipline-check through source scan and discipline report', () => {
+    expect(decideAegisNextAction(state({ phase: 'discipline-check' }), artifacts()).nextAction)
+      .toContain('aegis superpower:scan')
+    expect(decideAegisNextAction(
+      state({ phase: 'discipline-check' }),
+      artifacts({ hasSuperpowerSources: true })
+    ).nextAction).toContain('aegis discipline:check')
+    expect(decideAegisNextAction(
+      state({ phase: 'discipline-check' }),
+      artifacts({ hasSuperpowerSources: true, hasDisciplineReport: true })
+    ).nextAction).toContain('Continue to Codex review')
   })
 
   it('blocks gate execution when current task is missing', () => {

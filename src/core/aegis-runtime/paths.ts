@@ -21,6 +21,9 @@ export type AegisRuntimePaths = {
   decisionRequest: string
   humanHandoff: string
   roundSummary: string
+  superpowerSources: string
+  superpowerSummary: string
+  disciplineReport: string
   taskQualityReport: string
   qualityReadinessReport: string
   validationReport: string
@@ -57,6 +60,9 @@ export function getAegisRuntimePaths(root: string): AegisRuntimePaths {
     decisionRequest: resolve(currentDir, 'decision-request.md'),
     humanHandoff: resolve(currentDir, 'human-handoff.md'),
     roundSummary: resolve(currentDir, 'round-summary.md'),
+    superpowerSources: resolve(currentDir, 'superpower-sources.json'),
+    superpowerSummary: resolve(currentDir, 'superpower-summary.md'),
+    disciplineReport: resolve(currentDir, 'discipline-report.md'),
     taskQualityReport: resolve(currentDir, 'task-quality-report.md'),
     qualityReadinessReport: resolve(currentDir, 'quality-readiness-report.md'),
     validationReport: resolve(currentDir, 'validation-report.md'),

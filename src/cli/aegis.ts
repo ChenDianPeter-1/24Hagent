@@ -29,6 +29,8 @@ export function runAegis(root: string): void {
     hasTaskQualityReport: existsSync(paths.taskQualityReport),
     hasQualityReadinessReport: existsSync(paths.qualityReadinessReport),
     hasValidationReport: existsSync(paths.validationReport),
+    hasSuperpowerSources: existsSync(paths.superpowerSources),
+    hasDisciplineReport: existsSync(paths.disciplineReport),
     hasCodexReviewPrompt: existsSync(paths.codexReviewPrompt),
     hasCodexReviewRaw: existsSync(paths.codexReviewRaw),
     hasCodexReview: existsSync(paths.codexReview)
