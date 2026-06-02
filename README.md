@@ -1,5 +1,21 @@
 # 24Hagent
 
+> Repositioning in progress: 24Hagent is being rewritten as **Aegis**, a Claude Code delivery gate and Codex review communicator.
+>
+> New product formula:
+>
+> ```text
+> Aegis = Superpower discipline + Claude Code construction + Aegis gates + Codex review
+> ```
+>
+> The rewrite is tracked from GitHub issue `#14`. The current target specs are:
+>
+> - `docs/AEGIS_PRODUCT_DECISIONS.md`
+> - `docs/AEGIS_RUNTIME_SPEC.md`
+> - `docs/AEGIS_MVP_ROADMAP.md`
+>
+> The old `24h` command remains historical context during migration. The new product identity is `aegis`.
+
 一个运行在 Claude Code 内部的常驻编排器。它读项目蓝图、逐个拆任务、以 Worker 身份执行、独立跑本地质量门、调用 **Codex 作为跨模型对抗审查官**，根据 `PASS / NEED_FIX / NEED_HUMAN` 决定继续/返修/停机。人类只在战略节点和高风险点出现。
 
 ## 为什么存在
