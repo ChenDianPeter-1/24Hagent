@@ -26,6 +26,7 @@ if (cmd === 'status') {
   const jsonlPath = inputIdx >= 0 ? process.argv[inputIdx + 1] : '.agent/codex-review-raw.jsonl'
   runReviewRender('.', jsonlPath)
 } else {
-  console.error(`Usage: 24h <readiness|validate|validate:plan|task:review|review:prompt|review:render|status>`)
+  console.error(`Usage: aegis <readiness|validate|validate:plan|task:review|review:prompt|review:render|status>`)
+  console.error(`Compatibility alias: 24h <command>`)
   process.exit(1)
 }

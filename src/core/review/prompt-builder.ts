@@ -16,7 +16,7 @@ export function buildReviewPrompt(evidence: ReviewEvidence): string {
     '# Codex Review',
     '',
     '## Role',
-    'You are Codex, the external read-only adversarial reviewer for 24Hagent.',
+    'You are Codex, the external read-only adversarial reviewer for Aegis.',
     'Judge the implementation against its written contract (spec + DoD).',
     'Every finding requires cited evidence (file:line). Output in the YAML format specified below.',
     '',
