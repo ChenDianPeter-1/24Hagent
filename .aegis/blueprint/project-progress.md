@@ -1,33 +1,21 @@
 # Aegis Project Progress
 
-## Current Goal
+## Project Goal
 
-Complete the rewrite from 24Hagent to Aegis.
+Rewrite 24Hagent into Aegis: a delivery gate that lives inside Claude Code, uses Superpower as the engineering discipline source, and communicates with Codex for read-only external review.
 
-## Current Status
+## Current Phase
 
-Phase 1 is complete: product decisions, runtime spec, and roadmap were documented.
+`paused`
 
-Phase 2 is in progress: tracked `.aegis/` runtime scaffold is being introduced.
+## Current Task
 
-## Completed
+Introduce tracked `.aegis/` runtime scaffold.
 
-- Created `D:\AAAOddsAndEnds\PROGRAM\aegis` worktree.
-- Created branch `aegis-repositioning`.
-- Added Aegis product decision docs.
-- Added Aegis runtime spec.
-- Added Aegis MVP roadmap.
-- Added README repositioning notice.
-- Added `.aegis` runtime artifact ignore policy.
+## Next Action
 
-## Next
-
-- Commit tracked `.aegis/` scaffold.
-- Migrate CLI identity from `24h` to `aegis`.
-- Keep old `24h` compatibility until tests and docs are migrated.
+Run `aegis` to continue or refresh the current state.
 
 ## Risks
 
-- Existing CLI smoke tests still rely on ignored legacy `.agent/` files.
-- README and older docs still describe the old 24Hagent mental model.
-- Core TypeScript runtime still uses old `.agent` paths.
+- None recorded.

@@ -12,19 +12,18 @@
 
 `20260602-phase2-runtime-scaffold`
 
-## Last Verified Result
+## Current Task Title
 
-Phase 1 passed with the existing test suite:
+Introduce tracked `.aegis/` runtime scaffold.
 
-```text
-18 test files passed
-135 tests passed
-```
+## Last Result
+
+phase1-pass
 
 ## Next Action
 
-Verify and commit the `.aegis/` scaffold.
+Run `aegis` to continue or refresh the current state.
 
-## Notes
+## Risks
 
-This file is currently a tracked scaffold. Future Aegis runtime code will render it automatically from `state/run-state.json`.
+- None recorded.

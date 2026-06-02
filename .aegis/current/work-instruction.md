@@ -1,18 +1,15 @@
 # Work Instruction
 
+## Task
+
+Introduce tracked `.aegis/` runtime scaffold.
+
 ## Instruction
 
-Verify the Phase 2 `.aegis/` scaffold and commit it as a separate stage.
+Run `aegis` to continue or refresh the current state.
 
-## Claude Code Boundaries
+## Boundaries
 
-- Do not change core TypeScript runtime yet.
-- Do not rename the package yet.
-- Do not remove `24h` compatibility yet.
-- Do not run forbidden Git or release actions.
-
-## Expected Evidence
-
-- Git diff shows only `.aegis/` scaffold files for Phase 2.
-- Test suite passes.
-- Commit is created after verification.
+- Do not exceed `current-task.md` file scope.
+- Do not perform forbidden Git or release actions.
+- Leave evidence for the required Superpower discipline.
