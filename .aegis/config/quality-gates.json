@@ -19,11 +19,17 @@
       "blocking": true,
       "description": "Run lint checks."
     },
-    "build": {
-      "command": "npm run build",
+    "coverage": {
+      "command": "npm run coverage",
       "enabled": true,
       "blocking": true,
-      "description": "Build the CLI."
+      "description": "Run coverage checks.",
+      "threshold": {
+        "lines": 100,
+        "branches": 100,
+        "functions": 100,
+        "statements": 100
+      }
     }
   }
 }
