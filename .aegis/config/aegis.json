@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "product_name": "Aegis",
+  "project_id": "aegis-rewrite",
+  "default_mode": "auto",
+  "runtime_dir": ".aegis",
+  "superpower": {
+    "integration": "file-reference",
+    "local_path_hint": "D:\\AAAOddsAndEnds\\PROGRAM\\superpowers",
+    "aegis_direct_call_allowed": false
+  },
+  "codex": {
+    "review_mode": "read-only",
+    "command_hint": "codex exec --sandbox read-only --json"
+  },
+  "safety": {
+    "forbidden_actions_are_builtin": true,
+    "forbidden_actions": [
+      "git commit",
+      "git push",
+      "git merge",
+      "git rebase",
+      "git reset --hard",
+      "delete branch",
+      "npm publish",
+      "docker push",
+      "release",
+      "deploy",
+      "rewrite git history"
+    ],
+    "note": "Aegis may generate suggestions for these actions, but must never execute them."
+  },
+  "limits": {
+    "max_auto_rounds": 5,
+    "max_repair_attempts": 2
+  }
+}

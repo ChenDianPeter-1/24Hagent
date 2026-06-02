@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "project_id": "aegis-rewrite",
+  "task_id": "20260602-phase2-runtime-scaffold",
+  "phase": "paused",
+  "mode": "auto",
+  "last_verdict": "phase1-pass",
+  "retry_count": 0,
+  "updated_at": "2026-06-02T20:25:00+08:00"
+}
