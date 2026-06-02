@@ -3,7 +3,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { buildReviewEvidence } from '../src/core/review/evidence-builder.js'
+import { buildReviewEvidence, getReviewEvidencePaths } from '../src/core/review/evidence-builder.js'
 
 let root: string
 
@@ -64,6 +64,48 @@ afterEach(() => {
 })
 
 describe('buildReviewEvidence', () => {
+  it('prefers .aegis current task, reports, and rubric when present', () => {
+    write('.aegis/current/current-task.md', [
+      '## Task ID',
+      'A-001',
+      '',
+      '## Title',
+      'Aegis review',
+      '',
+      '## Specification',
+      'Use Aegis runtime paths.',
+      '',
+      '## File Scope',
+      '- src',
+      '',
+      '## Definition of DoD',
+      '- [ ] prompt includes Aegis validation report',
+      '',
+      '## Acceptance Checks',
+      '```bash',
+      'npm test',
+      '```',
+      '',
+      '## Stop Rule',
+      'Stop if files are outside scope.'
+    ].join('\n'))
+    write('.aegis/current/round-summary.md', 'Aegis work summary.')
+    write('.aegis/current/validation-report.md', 'Aegis validation passed.')
+    write('.aegis/config/codex-rubric.md', 'Aegis rubric.')
+    git(['add', '.'])
+    git(['commit', '-m', 'add aegis runtime'])
+    write('src/allowed.ts', 'export const value = 3\n')
+
+    const paths = getReviewEvidencePaths(root)
+    const evidence = buildReviewEvidence(root)
+
+    expect(paths.runtimeKind).toBe('aegis')
+    expect(evidence.task.task_id).toBe('A-001')
+    expect(evidence.workReport).toContain('Aegis work summary.')
+    expect(evidence.validationReport).toContain('Aegis validation passed.')
+    expect(evidence.rubric).toContain('Aegis rubric.')
+  })
+
   it('builds a review evidence packet with validation report and scoped diff', () => {
     write('src/allowed.ts', 'export const value = 2\n')
 

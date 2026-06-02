@@ -23,7 +23,7 @@ if (cmd === 'status') {
 } else if (cmd === 'review:render') {
   const { runReviewRender } = await import('./review.js')
   const inputIdx = process.argv.indexOf('--input')
-  const jsonlPath = inputIdx >= 0 ? process.argv[inputIdx + 1] : '.agent/codex-review-raw.jsonl'
+  const jsonlPath = inputIdx >= 0 ? process.argv[inputIdx + 1] : undefined
   runReviewRender('.', jsonlPath)
 } else {
   console.error(`Usage: aegis <readiness|validate|validate:plan|task:review|review:prompt|review:render|status>`)

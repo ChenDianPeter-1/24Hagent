@@ -21,7 +21,7 @@ export function getValidationRuntimePaths(root: string): ValidationRuntimePaths 
   if (existsSync(aegis.qualityGates)) {
     return {
       qualityGatesPath: aegis.qualityGates,
-      reportPath: resolve(aegis.currentDir, 'validation-report.md'),
+      reportPath: aegis.validationReport,
       runtimeKind: 'aegis'
     }
   }
