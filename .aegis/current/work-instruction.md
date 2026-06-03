@@ -2,11 +2,11 @@
 
 ## Task
 
-Continue Aegis after Codex verdict routing.
+Add the Claude Code-facing Aegis contract.
 
 ## Instruction
 
-Make default `aegis` continue from Codex-routed states without clobbering bounded repair instructions or launching Claude Code.
+Make the Claude Code host contract explicit in docs, runtime config, and CLI output.
 
 ## Boundaries
 

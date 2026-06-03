@@ -20,6 +20,9 @@ if (!cmd) {
 } else if (cmd === 'task:review') {
   const { runTaskReview } = await import('./task-review.js')
   runTaskReview('.')
+} else if (cmd === 'contract') {
+  const { runContract } = await import('./contract.js')
+  runContract('.')
 } else if (cmd === 'superpower:scan') {
   const { runSuperpowerScan } = await import('./superpower.js')
   runSuperpowerScan('.')
@@ -35,7 +38,7 @@ if (!cmd) {
   const jsonlPath = inputIdx >= 0 ? process.argv[inputIdx + 1] : undefined
   runReviewRender('.', jsonlPath)
 } else {
-  console.error(`Usage: aegis <readiness|validate|validate:plan|task:review|superpower:scan|discipline:check|review:prompt|review:render|status>`)
+  console.error(`Usage: aegis <readiness|validate|validate:plan|task:review|contract|superpower:scan|discipline:check|review:prompt|review:render|status>`)
   console.error(`Compatibility alias: 24h <command>`)
   process.exit(1)
 }

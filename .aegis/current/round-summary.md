@@ -2,16 +2,17 @@
 
 ## Summary
 
-This round implements post-verdict continuation for the default `aegis` entrypoint.
+This round makes the Claude Code-facing Aegis contract explicit and runnable.
 
 ## What Changed
 
-- `need-fix` advances to `waiting-for-construction`.
-- Bounded Codex repair instructions are preserved for Claude Code.
-- `passed` advances to `ready-for-task`.
-- `passed` clears the current task id so Aegis asks for a new concrete task.
+- Added a product-level Claude Code contract document.
+- Added a runtime contract file under `.aegis/config/`.
+- Added `aegis contract` so Claude Code can print the contract in-session.
+- Added tests for the runtime path and CLI output.
 
 ## What Did Not Change
 
-- Aegis still does not repair code or launch Claude Code.
+- Aegis still does not launch Claude Code.
+- Aegis still does not replace Codex as reviewer.
 - No Git, release, deploy, publish, or history rewrite behavior was added.

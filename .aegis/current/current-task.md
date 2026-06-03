@@ -2,42 +2,40 @@
 
 ## Task ID
 
-`20260603-post-verdict-continuation`
+`20260603-claude-code-contract`
 
 ## Title
 
-Continue Aegis after Codex verdict routing.
+Add the Claude Code-facing Aegis contract.
 
 ## Specification
 
-Extend the default `aegis` controller so Codex verdict routing does not become a dead end.
+Make the host contract for Claude Code explicit, tracked, and runnable.
 
-The behavior must preserve the Aegis role split:
+This phase must turn the issue #14 boundary from an issue comment into project artifacts:
 
-- Aegis must not repair code by itself.
-- Aegis must not launch Claude Code.
-- Aegis should write deterministic navigation state and instructions for Claude Code to follow.
+- a product-level contract document for humans and maintainers
+- an Aegis runtime contract file that Claude Code can read
+- a CLI command that prints the runtime contract
 
-Required continuation behavior:
-
-- When run-state is `need-fix`, default `aegis` advances to `waiting-for-construction` and preserves the bounded Codex repair instruction already written by `review:render`.
-- When run-state is `passed`, default `aegis` advances to `ready-for-task`, clears the current task id, and asks for the next concrete task.
-- Normal status, work instruction, and project progress refresh should continue to work for other phases.
+The contract must state that Aegis is not a Claude Code launcher, Claude Code is the construction worker, Aegis is the state controller and Codex communication layer, and Codex is the final read-only `PASS / NEED_FIX / NEED_HUMAN` reviewer.
 
 ## File Scope
 
+- .aegis/config/claude-code-contract.md
 - .aegis/current
 - .aegis/blueprint/project-progress.md
 - .aegis/state/run-state.json
-- src/cli/aegis.ts
-- tests/cli-smoke.test.ts
+- docs
+- src
+- tests
 
 ## Definition of DoD
 
-- [ ] Default `aegis` turns `need-fix` into `waiting-for-construction`.
-- [ ] Default `aegis` preserves bounded Codex repair instructions when entering construction.
-- [ ] Default `aegis` turns `passed` into `ready-for-task`.
-- [ ] CLI smoke tests cover both continuation paths.
+- [ ] `docs/AEGIS_CLAUDE_CODE_CONTRACT.md` defines the host contract.
+- [ ] `.aegis/config/claude-code-contract.md` provides the runtime contract.
+- [ ] `aegis contract` prints the runtime contract.
+- [ ] Tests cover the new runtime path and CLI command.
 
 ## Acceptance Checks
 
@@ -46,7 +44,8 @@ npm run typecheck
 npm run build
 npm run lint
 npm test
-npx vitest run tests/cli-smoke.test.ts tests/aegis-controller.test.ts
+npx vitest run tests/cli-smoke.test.ts tests/aegis-runtime.test.ts
+node dist\cli\main.js contract
 node dist\cli\main.js task:review
 git status --short --ignored
 ```

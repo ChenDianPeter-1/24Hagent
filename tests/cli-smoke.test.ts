@@ -122,6 +122,13 @@ describe('CLI smoke', () => {
     expect(out).toContain('coverage')
   })
 
+  it('contract prints the Claude Code-facing Aegis contract', () => {
+    const out = execSync(cli('contract'), { encoding: 'utf-8', cwd: root })
+    expect(out).toContain('When the user says "Use Aegis to start/continue"')
+    expect(out).toContain('Claude Code = construction worker')
+    expect(out).toContain('Codex = read-only reviewer')
+  })
+
   it('review:render outputs PASS from fixture', () => {
     const dir = mkdtempSync(resolve(tmpdir(), 'aegis-review-render-'))
     const fixture = resolve(root, 'tests/fixtures/codex-review-pass.jsonl')

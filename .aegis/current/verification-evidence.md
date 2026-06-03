@@ -2,13 +2,15 @@
 
 Verification completed for this round:
 
-- `npm run typecheck`: PASS.
-- `npm run build`: PASS.
-- `npm run lint`: PASS.
-- `npx vitest run tests/cli-smoke.test.ts tests/aegis-controller.test.ts`: PASS, 2 files and 12 tests.
-- `npm test`: PASS, 26 files and 175 tests.
+- Initial implementation complete. Final verification is pending.
 
-The full suite includes CLI smoke coverage for both continuation paths:
+Planned checks:
 
-- `need-fix` to `waiting-for-construction` while preserving Codex repair instructions.
-- `passed` to `ready-for-task` with `task_id` cleared.
+- `npm run typecheck`
+- `npm run build`
+- `npm run lint`
+- `npm test`
+- `npx vitest run tests/cli-smoke.test.ts tests/aegis-runtime.test.ts`
+- `node dist\cli\main.js contract`: PASS.
+- Initial `node dist\cli\main.js task:review` caught an oversized File Scope. The scope was narrowed and rerun after correction.
+- `node dist\cli\main.js task:review`: PASS after File Scope correction.

@@ -29,6 +29,7 @@ describe('Aegis runtime paths', () => {
 
     expect(paths.runtimeDir).toBe(resolve('D:/repo', '.aegis'))
     expect(paths.qualityGates).toBe(resolve('D:/repo', '.aegis/config/quality-gates.json'))
+    expect(paths.claudeCodeContract).toBe(resolve('D:/repo', '.aegis/config/claude-code-contract.md'))
     expect(paths.projectProgress).toBe(resolve('D:/repo', '.aegis/blueprint/project-progress.md'))
     expect(paths.currentTask).toBe(resolve('D:/repo', '.aegis/current/current-task.md'))
     expect(paths.runState).toBe(resolve('D:/repo', '.aegis/state/run-state.json'))

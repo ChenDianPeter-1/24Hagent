@@ -10,6 +10,7 @@ This spec describes the first target runtime shape for the Aegis rewrite.
     aegis.json
     quality-gates.json
     codex-rubric.md
+    claude-code-contract.md
   blueprint/
     project-blueprint.draft.md
     project-blueprint.md
@@ -123,6 +124,14 @@ The main entrypoint reads `run-state.json`, checks the Git worktree, refreshes n
 Subcommands may exist for debug and compatibility, but ordinary users should think of Aegis as one entrypoint, not a command collection.
 
 Aegis does not launch Claude Code. The intended host is an already-running Claude Code session. Claude Code runs `aegis`, reads the refreshed navigation files, performs the instructed construction or review handoff work, and invokes `aegis` again when ready for routing.
+
+The Claude Code-facing contract is stored in `config/claude-code-contract.md` and can be printed with:
+
+```text
+aegis contract
+```
+
+This contract is the operational rule for what Claude Code must do when the user says "Use Aegis to start/continue."
 
 ## Non-Interactive Design
 

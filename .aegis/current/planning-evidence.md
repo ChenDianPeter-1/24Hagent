@@ -1,10 +1,11 @@
 # Planning Evidence
 
-Issue #14 and the current runtime were reviewed before implementation. This phase targets the next missing link after Codex verdict routing: default `aegis` must continue from routed verdict states without becoming an autonomous coder.
+Issue #14 and the current runtime were reviewed before implementation. This phase targets the explicit Claude Code host contract that issue #14 required after the minimal Aegis controller.
 
 The implementation plan is:
 
-- Add post-verdict continuation in the default Aegis entrypoint.
-- For `need-fix`, move to `waiting-for-construction` and preserve Codex's bounded repair instruction.
-- For `passed`, move to `ready-for-task` and clear the current task id.
-- Keep Aegis as state router and instruction writer only.
+- Add a human-facing contract document under `docs/`.
+- Add a runtime contract under `.aegis/config/`.
+- Add `aegis contract` to print the runtime contract for Claude Code sessions.
+- Update runtime path tests and CLI smoke tests.
+- Keep the contract aligned with Aegis as controller, Claude Code as constructor, and Codex as reviewer.

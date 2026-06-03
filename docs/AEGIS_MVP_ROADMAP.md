@@ -78,6 +78,22 @@ Acceptance checks:
 - Unit tests for derived-file refresh.
 - Unit tests for decision-request stop behavior.
 
+## Phase 4B: Claude Code Contract
+
+Goal: make the Claude Code host contract explicit and inspectable.
+
+Deliverables:
+
+- `docs/AEGIS_CLAUDE_CODE_CONTRACT.md`.
+- `.aegis/config/claude-code-contract.md`.
+- `aegis contract` command.
+
+Acceptance checks:
+
+- Contract states that Aegis does not launch Claude Code.
+- Contract states that Claude Code reads Aegis navigation files and performs only the instructed next step.
+- Contract states that Codex remains the final `PASS` / `NEED_FIX` / `NEED_HUMAN` reviewer.
+
 ## Phase 5: Blueprint Flow
 
 Goal: implement the Aegis side of the Superpower blueprint handshake.

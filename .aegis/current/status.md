@@ -10,19 +10,19 @@
 
 ## Current Task
 
-`20260603-post-verdict-continuation`
+`20260603-claude-code-contract`
 
 ## Current Task Title
 
-Continue Aegis after Codex verdict routing.
+Add the Claude Code-facing Aegis contract.
 
 ## Last Result
 
-codex-routing-pass
+post-verdict-continuation-pass
 
 ## Next Action
 
-Implement post-verdict continuation for `need-fix` and `passed`, then run full validation.
+Add tracked contract docs and `aegis contract`, then run full validation.
 
 ## Risks
 
