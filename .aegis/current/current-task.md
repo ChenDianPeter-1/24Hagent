@@ -2,23 +2,23 @@
 
 ## Task ID
 
-`20260603-round-archive`
+`20260603-public-docs-aegis`
 
 ## Title
 
-Archive completed Aegis rounds.
+Migrate public docs to Aegis.
 
 ## Specification
 
-Implement executable round archival behavior after Codex `PASS`.
+Rewrite public entry documentation so it teaches Aegis as the product identity.
 
-This phase must turn the documented `PASS -> archive round` contract into runtime behavior:
+This phase must remove the largest old-product-mind mismatch:
 
-- copy completed round artifacts into `.aegis/archive/<task-id>/`
-- write a small archive manifest
-- archive before next-task selection or ask-mode decision request
-- tolerate missing optional reports/artifacts
-- avoid duplicate confusing archive names on repeated writes
+- top-level README teaches Aegis and `aegis` as the primary command
+- handoff summarizes the current Aegis worktree and remaining migration risks
+- new-project guide describes the `.aegis/` Claude Code / Superpower / Codex handshake
+- legacy `24h` and `.agent` mentions appear only as compatibility or remaining-migration notes
+- bundled starter migration is explicitly deferred to a later phase
 
 Aegis must remain non-interactive and must not launch Claude Code or execute Codex.
 
@@ -26,18 +26,16 @@ Aegis must remain non-interactive and must not launch Claude Code or execute Cod
 
 - .aegis/current
 - .aegis/state/run-state.json
+- README.md
 - docs
-- src/core/aegis-runtime
-- src/cli
-- tests
 
 ## Definition of DoD
 
-- [ ] Completed rounds archive current task, summary, evidence, reports, and Codex artifacts when present.
-- [ ] Archive manifest records task id, timestamp, and copied files.
-- [ ] `auto` PASS progression archives before next-task selection.
-- [ ] `ask` PASS progression archives before writing decision request.
-- [ ] Archive behavior does not execute Git or publish/release actions.
+- [x] README uses Aegis as the main heading and product identity.
+- [x] README command table teaches `aegis` commands first.
+- [x] Handoff reflects the current Aegis branch and recent commits.
+- [x] New-project guide teaches `.aegis/` runtime and Claude Code hosting.
+- [x] Old 24Hagent / `.agent` terms are only compatibility or remaining-migration notes in the touched public docs.
 
 ## Acceptance Checks
 
@@ -46,8 +44,7 @@ npm run typecheck
 npm run build
 npm run lint
 npm test
-npx vitest run tests/aegis-runtime.test.ts
-npx vitest run tests/cli-smoke.test.ts tests/aegis-runtime.test.ts
+rg -n "24Hagent|24hagent|`24h|24h |\\.agent" README.md docs/HANDOFF.md docs/HOW_TO_NEW_PROJECT.md
 node dist\cli\main.js safety:check
 node dist\cli\main.js task:review
 git diff --check

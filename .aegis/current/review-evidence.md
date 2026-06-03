@@ -2,8 +2,14 @@
 
 Review focus for this round:
 
-- Archive behavior must happen before the current task id is cleared by PASS progression.
-- Missing optional reports must not block archival.
-- Archive paths must be deterministic and task-id based.
-- Archive manifests must be compact and must not contain raw diffs or chat transcripts.
-- Aegis must still avoid forbidden Git, release, deploy, publish, or history-rewrite actions.
+- Public docs must not teach `24h` as the primary command.
+- Public docs must not teach `.agent/` as the current runtime.
+- Legacy starter gaps should be named honestly as remaining migration work.
+- The Aegis role boundary must remain explicit: Claude Code constructs, Codex reviews, Aegis gates and routes.
+- Git/release forbidden-action boundaries must remain visible.
+
+Review result:
+
+- README, handoff, and new-project guide now present Aegis as the primary product.
+- `24h` is described only as a compatibility alias.
+- `.agent` and 24Hagent references are retained only where they identify legacy starter or remaining migration work.

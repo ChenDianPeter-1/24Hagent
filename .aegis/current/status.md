@@ -2,7 +2,7 @@
 
 ## Phase
 
-`task-ready`
+`passed`
 
 ## Mode
 
@@ -10,19 +10,19 @@
 
 ## Current Task
 
-`20260603-round-archive`
+`20260603-public-docs-aegis`
 
 ## Current Task Title
 
-Archive completed Aegis rounds.
+Migrate public docs to Aegis.
 
 ## Last Result
 
-round-archive-in-progress
+public-docs-aegis-complete
 
 ## Next Action
 
-Implement PASS round archival, verify archive manifests, then commit this phase.
+Commit the completed public docs migration phase, then record the result in GitHub issue #14.
 
 ## Risks
 

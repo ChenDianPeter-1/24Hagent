@@ -1,9 +1,9 @@
 # TDD Evidence
 
-Tests were added or adjusted before validating the implementation behavior:
+Validation checks planned for this documentation phase:
 
-- `tests/aegis-runtime.test.ts` now covers archive creation, copied round artifacts, and manifest contents.
-- `tests/cli-smoke.test.ts` now verifies real default `aegis` PASS progression writes archive manifests in both `auto` and `ask` modes.
-- Existing progression tests continue to verify `auto`, `allow`, `ask`, and repair-limit behavior while archival is attached.
+- Search touched public docs for old product terms and verify remaining hits are compatibility or migration-risk notes.
+- Run the normal TypeScript build and test suite to ensure docs changes did not disturb package metadata or fixtures.
+- Run Aegis safety and task quality checks before commit.
 
-These tests define the behavior that the implementation must satisfy.
+No runtime behavior changed in this phase, so no new unit tests are required.

@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
   "project_id": "aegis-rewrite",
-  "task_id": "20260603-round-archive",
-  "phase": "validating",
+  "task_id": "20260603-public-docs-aegis",
+  "phase": "passed",
   "mode": "auto",
-  "last_verdict": "round-archive-in-progress",
+  "last_verdict": "public-docs-aegis-complete",
   "round_count": 0,
   "retry_count": 0,
-  "updated_at": "2026-06-03T17:34:00+08:00"
+  "updated_at": "2026-06-03T21:34:00+08:00"
 }
