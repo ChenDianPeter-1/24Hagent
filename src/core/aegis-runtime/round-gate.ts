@@ -7,8 +7,10 @@ import { buildReviewPrompt } from '../review/prompt-builder.js'
 import type { SuperpowerSourceManifest } from '../superpower/sources.js'
 import { checkSuperpowerDiscipline, collectRoundDisciplineEvidence, renderDisciplineReport } from '../superpower/sources.js'
 import { getAegisRuntimePaths } from './paths.js'
+import { runSafetyCheck } from './safety.js'
 
 export type RoundGateStepName =
+  | 'safety'
   | 'task-quality'
   | 'superpower-discipline'
   | 'local-validation'
@@ -81,13 +83,22 @@ export async function runRoundGate(root: string, runner: CommandRunner, timestam
   mkdirSync(paths.currentDir, { recursive: true })
 
   const taskMarkdown = readFileSync(paths.currentTask, 'utf-8')
+  const safety = runSafetyCheck(root, timestamp)
+  let stopped = appendStep(steps, {
+    name: 'safety',
+    verdict: safety.verdict === 'PASS' ? 'PASS' : 'FAIL',
+    detail: safety.verdict === 'PASS' ? 'No hard safety boundaries detected.' : 'Safety check hard-blocked the round.'
+  })
+
   const taskReview = reviewCurrentTaskMarkdown(taskMarkdown)
   writeFileSync(paths.taskQualityReport, renderTaskQualityReview(taskReview), 'utf-8')
-  let stopped = appendStep(steps, {
-    name: 'task-quality',
-    verdict: taskReview.verdict === 'PASS' ? 'PASS' : 'FAIL',
-    detail: taskReview.verdict === 'PASS' ? 'Current task is reviewable.' : `Task quality returned ${taskReview.verdict}.`
-  })
+  if (!stopped) {
+    stopped = appendStep(steps, {
+      name: 'task-quality',
+      verdict: taskReview.verdict === 'PASS' ? 'PASS' : 'FAIL',
+      detail: taskReview.verdict === 'PASS' ? 'Current task is reviewable.' : `Task quality returned ${taskReview.verdict}.`
+    })
+  }
 
   if (!stopped) {
     if (!existsSync(paths.superpowerSources)) {

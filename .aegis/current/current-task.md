@@ -2,31 +2,31 @@
 
 ## Task ID
 
-`20260603-quality-codex-loop`
+`20260603-safety-boundaries`
 
 ## Title
 
-Harden quality gates and Codex review loop.
+Enforce Aegis safety boundaries.
 
 ## Specification
 
-Implement a single Aegis round gate that prepares the current task for Codex read-only review.
+Implement executable Aegis safety boundaries for forbidden actions, file scope, hard blocks, and commit suggestions.
 
-This phase must connect the existing local gates into a deterministic pre-Codex loop:
+This phase must turn safety policy into runtime behavior:
 
-- task quality must pass before validation
-- Superpower discipline evidence must pass before validation
-- local quality gates must pass before Codex prompt generation
-- Codex prompt generation must remain read-only and external
-- parsed Codex verdicts must continue routing `PASS`, `NEED_FIX`, and `NEED_HUMAN` distinctly
+- detect forbidden Git, publish, release, deploy, and history rewrite actions in current task and work instructions
+- report dirty worktree state and file-scope violations
+- hard-block unsafe rounds and write human handoff
+- add `aegis safety:check`
+- add PASS-only commit suggestion rendering without executing `git commit`
 
-Aegis packages evidence and writes reports. Claude Code remains the construction worker, and Codex remains the final semantic reviewer.
+Human confirmed high-risk scope for `.gitignore` safety artifact policy in this A10 task. Aegis still must not execute forbidden actions.
 
 ## File Scope
 
 - .aegis/current
-- .aegis/config/quality-gates.json
 - .aegis/state/run-state.json
+- .gitignore
 - docs
 - src/core/aegis-runtime
 - src/cli
@@ -34,11 +34,11 @@ Aegis packages evidence and writes reports. Claude Code remains the construction
 
 ## Definition of DoD
 
-- [ ] `round:check` runs task quality, Superpower discipline, local validation, and Codex prompt readiness in order.
-- [ ] Local gate failures stop before Codex prompt generation.
-- [ ] Discipline failures stop before local validation.
-- [ ] Generated Codex prompt keeps Codex read-only and external.
-- [ ] `PASS`, `NEED_FIX`, and `NEED_HUMAN` verdict routing remains distinct.
+- [ ] Safety gate detects forbidden actions and ignores explicit prohibition statements.
+- [ ] Safety gate reports dirty worktree and file-scope violations.
+- [ ] Hard safety failures route to `hard-blocked` and write human handoff.
+- [ ] `round:check` runs safety before other gates.
+- [ ] Commit suggestion rendering is available only after Codex `PASS`.
 
 ## Acceptance Checks
 
@@ -48,9 +48,7 @@ npm run build
 npm run lint
 npm test
 npx vitest run tests/aegis-runtime.test.ts
-node dist\cli\main.js superpower:scan
-node dist\cli\main.js discipline:check
-node dist\cli\main.js round:check
+node dist\cli\main.js safety:check
 node dist\cli\main.js task:review
 git diff --check
 git status --short --ignored

@@ -254,6 +254,14 @@ Acceptance checks:
 - Aegis never executes commit, push, merge, release, deploy, publish, or history rewrite commands.
 - Aegis can generate a commit message draft only after `PASS`.
 
+Implemented slice:
+
+- `aegis safety:check` detects forbidden actions in current task and work instructions.
+- `round:check` now runs safety before task quality, Superpower discipline, local validation, and Codex prompt readiness.
+- Safety reports dirty worktree and file-scope violations without executing Git mutations.
+- Hard safety failures write human handoff and move run-state to `hard-blocked`.
+- `aegis commit:suggest` renders a commit message draft only after Codex `PASS`; it does not run `git commit`.
+
 ## Long-Term Direction
 
 Short term:

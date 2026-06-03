@@ -263,10 +263,10 @@ verdict routing
 `aegis round:check` owns the pre-Codex portion of this order:
 
 ```text
-task-quality -> superpower-discipline -> local-validation -> codex-prompt-readiness
+safety -> task-quality -> superpower-discipline -> local-validation -> codex-prompt-readiness
 ```
 
-It writes `current/task-quality-report.md`, `current/discipline-report.md`, `current/validation-report.md`, `current/codex-review-prompt.md`, and `current/quality-readiness-report.md` as generated current-round artifacts. It stops as soon as a prerequisite gate fails.
+It writes `current/safety-report.md`, `current/task-quality-report.md`, `current/discipline-report.md`, `current/validation-report.md`, `current/codex-review-prompt.md`, and `current/quality-readiness-report.md` as generated current-round artifacts. It stops as soon as a prerequisite gate fails.
 
 `round:check` does not execute Codex. It only prepares the read-only prompt and tells Claude Code or the human where the prompt is. Codex remains an external reviewer.
 
@@ -322,4 +322,12 @@ deploy
 rewrite git history
 ```
 
-Aegis can recommend these actions to Claude Code, but cannot execute them.
+Aegis can recommend these actions to the human, but cannot execute them.
+
+`aegis safety:check` inspects `current/current-task.md`, `current/work-instruction.md`, and the current Git diff state.
+
+Explicit prohibition text such as "Do not run git commit" is allowed. Instructions that ask Claude Code or Aegis to perform the forbidden action are hard-blocked.
+
+When safety hard-blocks a round, Aegis writes `current/safety-report.md`, writes `current/human-handoff.md`, and moves run-state to `hard-blocked`. Claude Code must wait for human direction.
+
+`aegis commit:suggest` renders `current/commit-suggestion.md` only after Codex returned `PASS`. It never runs `git commit`.

@@ -35,6 +35,8 @@ export type AegisRuntimePaths = {
   taskQualityReport: string
   qualityReadinessReport: string
   validationReport: string
+  safetyReport: string
+  commitSuggestion: string
   codexReviewPrompt: string
   codexReviewRaw: string
   codexReview: string
@@ -82,6 +84,8 @@ export function getAegisRuntimePaths(root: string): AegisRuntimePaths {
     taskQualityReport: resolve(currentDir, 'task-quality-report.md'),
     qualityReadinessReport: resolve(currentDir, 'quality-readiness-report.md'),
     validationReport: resolve(currentDir, 'validation-report.md'),
+    safetyReport: resolve(currentDir, 'safety-report.md'),
+    commitSuggestion: resolve(currentDir, 'commit-suggestion.md'),
     codexReviewPrompt: resolve(currentDir, 'codex-review-prompt.md'),
     codexReviewRaw: resolve(currentDir, 'codex-review.jsonl'),
     codexReview: resolve(currentDir, 'codex-review.md'),

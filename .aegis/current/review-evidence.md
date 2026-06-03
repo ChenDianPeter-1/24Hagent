@@ -2,8 +2,8 @@
 
 Review focus for this round:
 
-- `round:check` must stop in the right order and must not generate a Codex prompt when prerequisite gates fail.
-- Aegis may package evidence and render a prompt, but it must not execute Codex itself.
-- The generated prompt must preserve Codex as the external read-only reviewer.
-- Local validation must read `.aegis/config/quality-gates.json`.
-- Codex `PASS`, `NEED_FIX`, and `NEED_HUMAN` routing must remain distinct and deterministic.
+- Safety detection must hard-block actual forbidden action instructions while allowing prohibition text such as "Do not run git commit."
+- Dirty worktree reporting must be informational unless changed files exceed current task scope.
+- File-scope violations must become hard safety blocks.
+- Commit suggestions must be rendered only after Codex `PASS`.
+- Aegis must continue to avoid executing commit, push, merge, rebase, reset, release, deploy, publish, or history rewrite actions.

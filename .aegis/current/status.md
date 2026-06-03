@@ -10,19 +10,19 @@
 
 ## Current Task
 
-`20260603-quality-codex-loop`
+`20260603-safety-boundaries`
 
 ## Current Task Title
 
-Harden quality gates and Codex review loop.
+Enforce Aegis safety boundaries.
 
 ## Last Result
 
-superpower-discipline-pass
+round-gate-pass-with-coverage-need-fix
 
 ## Next Action
 
-Implement `round:check`, verify the pre-Codex quality loop, then commit A9.
+Implement safety gate, verify forbidden action enforcement, then commit A10.
 
 ## Risks
 

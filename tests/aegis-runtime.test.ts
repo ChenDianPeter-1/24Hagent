@@ -12,6 +12,9 @@ import {
   refreshNavigation,
   renderProjectProgress,
   routeCodexReviewResult,
+  detectForbiddenActions,
+  renderCommitSuggestion,
+  runSafetyCheck,
   runRoundGate,
   renderBlueprintSummary,
   renderCurrentTaskMarkdown,
@@ -375,6 +378,7 @@ describe('Aegis round gate', () => {
 
       expect(result.verdict).toBe('PASS')
       expect(result.steps.map(step => step.name)).toEqual([
+        'safety',
         'task-quality',
         'superpower-discipline',
         'local-validation',
@@ -393,14 +397,17 @@ describe('Aegis round gate', () => {
     try {
       initGitRepo(dir)
       writeRoundFixture(dir)
+      execFileSync('git', ['add', '.'], { cwd: dir })
+      execFileSync('git', ['commit', '-m', 'runtime fixture'], { cwd: dir, stdio: 'ignore' })
       const paths = getAegisRuntimePaths(dir)
       write(paths.currentTask, currentTask('Broken task').replace('```bash\nnpm run typecheck\nnpm test\n```', 'No executable checks.'))
 
       const result = await runRoundGate(dir, new FakeCommandRunner(), '2026-06-03T10:00:00Z')
 
       expect(result.verdict).toBe('NEED_FIX')
-      expect(result.steps).toHaveLength(1)
-      expect(result.steps[0].name).toBe('task-quality')
+      expect(result.steps).toHaveLength(2)
+      expect(result.steps[0].name).toBe('safety')
+      expect(result.steps[1].name).toBe('task-quality')
       expect(result.promptPath).toBeNull()
       expect(readFileSync(paths.qualityReadinessReport, 'utf-8')).toContain('Codex prompt was not generated')
     } finally {
@@ -413,13 +420,15 @@ describe('Aegis round gate', () => {
     try {
       initGitRepo(dir)
       writeRoundFixture(dir)
+      execFileSync('git', ['add', '.'], { cwd: dir })
+      execFileSync('git', ['commit', '-m', 'runtime fixture'], { cwd: dir, stdio: 'ignore' })
       const paths = getAegisRuntimePaths(dir)
       write(paths.planningEvidence, 'TODO fill this planning evidence later.')
 
       const result = await runRoundGate(dir, new FakeCommandRunner(), '2026-06-03T10:00:00Z')
 
       expect(result.verdict).toBe('NEED_FIX')
-      expect(result.steps.map(step => step.name)).toEqual(['task-quality', 'superpower-discipline'])
+      expect(result.steps.map(step => step.name)).toEqual(['safety', 'task-quality', 'superpower-discipline'])
       expect(readFileSync(paths.disciplineReport, 'utf-8')).toContain('INSUFFICIENT: Planning evidence')
     } finally {
       rmSync(dir, { recursive: true, force: true })
@@ -431,17 +440,82 @@ describe('Aegis round gate', () => {
     try {
       initGitRepo(dir)
       writeRoundFixture(dir)
+      execFileSync('git', ['add', '.'], { cwd: dir })
+      execFileSync('git', ['commit', '-m', 'runtime fixture'], { cwd: dir, stdio: 'ignore' })
       const runner = passingRunner()
       runner.preset('npm run lint', { exitCode: 1, stdout: '', stderr: 'lint failed' })
 
       const result = await runRoundGate(dir, runner, '2026-06-03T10:00:00Z')
 
       expect(result.verdict).toBe('NEED_FIX')
-      expect(result.steps.map(step => step.name)).toEqual(['task-quality', 'superpower-discipline', 'local-validation'])
-      expect(result.steps[2].detail).toContain('lint')
+      expect(result.steps.map(step => step.name)).toEqual(['safety', 'task-quality', 'superpower-discipline', 'local-validation'])
+      expect(result.steps[3].detail).toContain('lint')
     } finally {
       rmSync(dir, { recursive: true, force: true })
     }
+  })
+})
+
+describe('Aegis safety boundaries', () => {
+  it('detects forbidden actions but ignores explicit prohibitions', () => {
+    const findings = detectForbiddenActions([
+      'Do not run git commit from Aegis.',
+      'Claude Code should run git push after tests.',
+      'Aegis must not deploy to production.',
+      'Run npm publish after packaging.'
+    ].join('\n'), 'current-task.md')
+
+    expect(findings.map(finding => finding.code)).toEqual([
+      'FORBIDDEN_GIT_PUSH',
+      'FORBIDDEN_NPM_PUBLISH'
+    ])
+  })
+
+  it('hard-blocks file-scope violations and writes human handoff', () => {
+    const dir = mkdtempSync(resolve(tmpdir(), 'aegis-safety-scope-'))
+    try {
+      initGitRepo(dir)
+      writeRoundFixture(dir)
+      const paths = getAegisRuntimePaths(dir)
+      write(resolve(dir, 'outside.txt'), 'outside scope')
+
+      const result = runSafetyCheck(dir, '2026-06-03T10:00:00Z')
+      const stateAfter = parseAegisRunStateJson(readFileSync(paths.runState, 'utf-8'))
+
+      expect(result.verdict).toBe('HARD_BLOCK')
+      expect(result.outOfScopeFiles).toContain('outside.txt')
+      expect(stateAfter.phase).toBe('hard-blocked')
+      expect(readFileSync(paths.humanHandoff, 'utf-8')).toContain('hard safety boundary')
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  it('hard-blocks forbidden commands in work instructions before construction continues', () => {
+    const dir = mkdtempSync(resolve(tmpdir(), 'aegis-safety-forbidden-'))
+    try {
+      initGitRepo(dir)
+      writeRoundFixture(dir)
+      const paths = getAegisRuntimePaths(dir)
+      write(paths.workInstruction, '# Work Instruction\n\nRun git reset --hard to clean up.')
+
+      const result = runSafetyCheck(dir, '2026-06-03T10:00:00Z')
+
+      expect(result.verdict).toBe('HARD_BLOCK')
+      expect(result.findings.map(finding => finding.code)).toContain('FORBIDDEN_GIT_RESET_HARD')
+      expect(readFileSync(paths.safetyReport, 'utf-8')).toContain('FORBIDDEN_GIT_RESET_HARD')
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  it('renders commit suggestions only after Codex PASS', () => {
+    const passed = state({ phase: 'passed', last_verdict: 'PASS' })
+    const summary = '# Round Summary\n\nCodex returned `PASS` for the current task.'
+
+    expect(renderCommitSuggestion(passed, summary)).toContain('## Suggested Commit Message')
+    expect(() => renderCommitSuggestion(state({ phase: 'need-fix', last_verdict: 'NEED_FIX' }), summary))
+      .toThrow('only after Codex PASS')
   })
 })
 

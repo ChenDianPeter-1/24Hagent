@@ -1,11 +1,11 @@
 # Planning Evidence
 
-Issue #14 and the current runtime were reviewed before implementation. This phase targets A9: quality gates and Codex read-only external review loop hardening.
+Issue #14 and the current runtime were reviewed before implementation. This phase targets A10: safety boundaries and forbidden action enforcement.
 
 The implementation plan is:
 
-- Add a single `round:check` path that runs task quality, Superpower discipline, local validation, and Codex prompt readiness in order.
-- Reuse existing Aegis paths and ignored current-round report files instead of adding new tracked runtime artifacts.
-- Preserve the boundary that Aegis generates the Codex prompt but does not execute Codex itself.
-- Add focused tests for success, task-quality failure, discipline failure, local validation failure, and Codex verdict routing.
-- Update runtime spec and roadmap so the loop is documented as the A9 implemented slice.
+- Add a safety runtime module with built-in forbidden action detection.
+- Add `aegis safety:check` and integrate safety as the first `round:check` step.
+- Report dirty worktree and file-scope violations without executing Git mutations.
+- Hard-block unsafe rounds by moving run-state to `hard-blocked` and writing human handoff.
+- Add PASS-only commit suggestion rendering that never executes `git commit`.
