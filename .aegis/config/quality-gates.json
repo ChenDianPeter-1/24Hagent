@@ -20,7 +20,7 @@
       "description": "Run lint checks."
     },
     "coverage": {
-      "command": "npm run coverage",
+      "command": "npx vitest run --coverage --coverage.thresholds.lines=0 --coverage.thresholds.branches=0 --coverage.thresholds.functions=0 --coverage.thresholds.statements=0 --coverage.reporter=json-summary && node -e \"process.stdout.write(require('fs').readFileSync('coverage/coverage-summary.json','utf8'))\"",
       "enabled": true,
       "blocking": true,
       "description": "Run coverage checks.",

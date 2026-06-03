@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { resolve } from 'node:path'
 import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
+import { execFileSync } from 'node:child_process'
+import { FakeCommandRunner } from '../src/adapters/shell/command-runner.js'
 import {
   getAegisRuntimePaths,
   generateCurrentTaskFromBlueprint,
@@ -9,6 +11,8 @@ import {
   parseAegisRunStateJson,
   refreshNavigation,
   renderProjectProgress,
+  routeCodexReviewResult,
+  runRoundGate,
   renderBlueprintSummary,
   renderCurrentTaskMarkdown,
   renderStatus,
@@ -16,6 +20,7 @@ import {
   stringifyAegisRunState,
   type AegisRunState
 } from '../src/core/aegis-runtime/index.js'
+import type { ReviewResult } from '../src/core/schemas/review-result.js'
 
 const state = (overrides: Partial<AegisRunState> = {}): AegisRunState => ({
   schema_version: 1,
@@ -27,6 +32,123 @@ const state = (overrides: Partial<AegisRunState> = {}): AegisRunState => ({
   retry_count: 0,
   updated_at: '2026-06-02T20:40:00+08:00',
   ...overrides
+})
+
+const currentTask = (title = 'Implement round gate') => [
+  '# Current Task',
+  '',
+  '## Task ID',
+  '',
+  '`T-ROUND`',
+  '',
+  '## Title',
+  '',
+  title,
+  '',
+  '## Specification',
+  '',
+  'Implement a bounded Aegis round gate that packages quality evidence for Codex review.',
+  '',
+  '## File Scope',
+  '',
+  '- .aegis/current',
+  '- src/core/aegis-runtime',
+  '- src/cli',
+  '- tests',
+  '',
+  '## Definition of DoD',
+  '',
+  '- [ ] Round gate checks task quality before validation.',
+  '- [ ] Round gate generates a read-only Codex prompt only after local gates pass.',
+  '',
+  '## Acceptance Checks',
+  '',
+  '```bash',
+  'npm run typecheck',
+  'npm test',
+  '```',
+  '',
+  '## Stop Rule',
+  '',
+  'Stop and ask a human before changing Git history, deployment, release, publish, or dependency boundaries.',
+  ''
+].join('\n')
+
+function write(path: string, content: string): void {
+  mkdirSync(resolve(path, '..'), { recursive: true })
+  writeFileSync(path, content, 'utf-8')
+}
+
+function initGitRepo(root: string): void {
+  execFileSync('git', ['init'], { cwd: root, stdio: 'ignore' })
+  execFileSync('git', ['config', 'user.email', 'aegis@example.test'], { cwd: root })
+  execFileSync('git', ['config', 'user.name', 'Aegis Test'], { cwd: root })
+  writeFileSync(resolve(root, 'README.md'), '# test repo\n', 'utf-8')
+  execFileSync('git', ['add', '.'], { cwd: root })
+  execFileSync('git', ['commit', '-m', 'initial'], { cwd: root, stdio: 'ignore' })
+}
+
+function writeRoundFixture(root: string): void {
+  const paths = getAegisRuntimePaths(root)
+  mkdirSync(paths.configDir, { recursive: true })
+  mkdirSync(paths.currentDir, { recursive: true })
+  mkdirSync(paths.stateDir, { recursive: true })
+  write(paths.currentTask, currentTask())
+  write(paths.codexRubric, 'Return only PASS, NEED_FIX, or NEED_HUMAN with cited evidence.')
+  write(paths.superpowerSummary, '# Superpower Source Summary\n\nSources present.')
+  write(paths.superpowerSources, JSON.stringify({
+    schema_version: 1,
+    source_root: 'D:/superpowers',
+    generated_at: '2026-06-03T00:00:00Z',
+    sources: [
+      'brainstorming',
+      'writing-plans',
+      'test-driven-development',
+      'systematic-debugging',
+      'requesting-code-review',
+      'verification-before-completion',
+      'using-git-worktrees',
+      'finishing-a-development-branch'
+    ].map(name => ({ kind: 'skill', name, path: `D:/superpowers/skills/${name}/SKILL.md`, summary: `${name} skill.` }))
+  }, null, 2))
+  write(paths.planningEvidence, 'Planned the scoped round gate approach, file scope, risk boundary, and acceptance checks.')
+  write(paths.tddEvidence, 'Wrote focused tests before implementation and made the round gate tests pass.')
+  write(paths.verificationEvidence, 'Ran typecheck, build, lint, focused tests, and full validation before completion.')
+  write(paths.reviewEvidence, 'Reviewed the diff, changed files, acceptance checks, and Codex verdict routing boundary.')
+  write(paths.qualityGates, JSON.stringify({
+    gates: {
+      test: { enabled: true, command: 'npm test', blocking: true, description: 'tests' },
+      lint: { enabled: true, command: 'npm run lint', blocking: true, description: 'lint' },
+      typecheck: { enabled: true, command: 'npm run typecheck', blocking: true, description: 'types' },
+      coverage: { enabled: false, command: 'npm run coverage', blocking: true, description: 'coverage' }
+    }
+  }, null, 2))
+  write(paths.runState, stringifyAegisRunState(state({ phase: 'validating', task_id: 'T-ROUND' })))
+}
+
+function passingRunner(): FakeCommandRunner {
+  const runner = new FakeCommandRunner()
+  runner.preset('npm test', { exitCode: 0, stdout: 'tests pass', stderr: '' })
+  runner.preset('npm run lint', { exitCode: 0, stdout: 'lint pass', stderr: '' })
+  runner.preset('npm run typecheck', { exitCode: 0, stdout: 'types pass', stderr: '' })
+  return runner
+}
+
+const reviewResult = (verdict: ReviewResult['verdict']): ReviewResult => ({
+  schemaVersion: '1.0',
+  verdict,
+  confidence: 'high',
+  blocking_issues: verdict === 'NEED_FIX' ? [{
+    id: 'B1',
+    severity: 'BLOCKING',
+    issue: 'A required behavior is missing.',
+    evidence: 'src/example.ts:1',
+    required_fix: 'Implement the missing behavior.'
+  }] : [],
+  required_fixes: verdict === 'NEED_FIX' ? ['Implement the missing behavior.'] : [],
+  non_blocking_suggestions: [],
+  human_questions: verdict === 'NEED_HUMAN' ? [{ question: 'Which path should Aegis take?', options: ['A', 'B'] }] : [],
+  next_action: verdict === 'PASS' ? 'continue_next_task' : verdict === 'NEED_FIX' ? 'fix_current_task' : 'ask_human'
 })
 
 describe('Aegis runtime paths', () => {
@@ -233,6 +355,115 @@ describe('Aegis navigation refresh', () => {
 
       expect(readFileSync(paths.workInstruction, 'utf-8')).toBe('keep bounded Codex repair')
       expect(readFileSync(paths.status, 'utf-8')).toContain('`waiting-for-construction`')
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+})
+
+describe('Aegis round gate', () => {
+  it('runs prerequisite gates and generates a read-only Codex prompt after they pass', async () => {
+    const dir = mkdtempSync(resolve(tmpdir(), 'aegis-round-pass-'))
+    try {
+      initGitRepo(dir)
+      writeRoundFixture(dir)
+      execFileSync('git', ['add', '.'], { cwd: dir })
+      execFileSync('git', ['commit', '-m', 'runtime fixture'], { cwd: dir, stdio: 'ignore' })
+      const paths = getAegisRuntimePaths(dir)
+
+      const result = await runRoundGate(dir, passingRunner(), '2026-06-03T10:00:00Z')
+
+      expect(result.verdict).toBe('PASS')
+      expect(result.steps.map(step => step.name)).toEqual([
+        'task-quality',
+        'superpower-discipline',
+        'local-validation',
+        'codex-prompt-readiness'
+      ])
+      expect(readFileSync(paths.qualityReadinessReport, 'utf-8')).toContain('Verdict: PASS')
+      expect(readFileSync(paths.codexReviewPrompt, 'utf-8')).toContain('external read-only adversarial reviewer')
+      expect(readFileSync(paths.codexReviewPrompt, 'utf-8')).toContain('## Validation Report')
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  it('stops before validation when task quality fails', async () => {
+    const dir = mkdtempSync(resolve(tmpdir(), 'aegis-round-task-fail-'))
+    try {
+      initGitRepo(dir)
+      writeRoundFixture(dir)
+      const paths = getAegisRuntimePaths(dir)
+      write(paths.currentTask, currentTask('Broken task').replace('```bash\nnpm run typecheck\nnpm test\n```', 'No executable checks.'))
+
+      const result = await runRoundGate(dir, new FakeCommandRunner(), '2026-06-03T10:00:00Z')
+
+      expect(result.verdict).toBe('NEED_FIX')
+      expect(result.steps).toHaveLength(1)
+      expect(result.steps[0].name).toBe('task-quality')
+      expect(result.promptPath).toBeNull()
+      expect(readFileSync(paths.qualityReadinessReport, 'utf-8')).toContain('Codex prompt was not generated')
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  it('stops when discipline evidence fails even if Superpower sources exist', async () => {
+    const dir = mkdtempSync(resolve(tmpdir(), 'aegis-round-discipline-fail-'))
+    try {
+      initGitRepo(dir)
+      writeRoundFixture(dir)
+      const paths = getAegisRuntimePaths(dir)
+      write(paths.planningEvidence, 'TODO fill this planning evidence later.')
+
+      const result = await runRoundGate(dir, new FakeCommandRunner(), '2026-06-03T10:00:00Z')
+
+      expect(result.verdict).toBe('NEED_FIX')
+      expect(result.steps.map(step => step.name)).toEqual(['task-quality', 'superpower-discipline'])
+      expect(readFileSync(paths.disciplineReport, 'utf-8')).toContain('INSUFFICIENT: Planning evidence')
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  it('stops when local validation has a blocking failure', async () => {
+    const dir = mkdtempSync(resolve(tmpdir(), 'aegis-round-validation-fail-'))
+    try {
+      initGitRepo(dir)
+      writeRoundFixture(dir)
+      const runner = passingRunner()
+      runner.preset('npm run lint', { exitCode: 1, stdout: '', stderr: 'lint failed' })
+
+      const result = await runRoundGate(dir, runner, '2026-06-03T10:00:00Z')
+
+      expect(result.verdict).toBe('NEED_FIX')
+      expect(result.steps.map(step => step.name)).toEqual(['task-quality', 'superpower-discipline', 'local-validation'])
+      expect(result.steps[2].detail).toContain('lint')
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+})
+
+describe('Aegis Codex verdict routing', () => {
+  it('routes PASS, NEED_FIX, and NEED_HUMAN into distinct runtime states', () => {
+    const dir = mkdtempSync(resolve(tmpdir(), 'aegis-routing-'))
+    try {
+      const paths = getAegisRuntimePaths(dir)
+      mkdirSync(paths.currentDir, { recursive: true })
+      mkdirSync(paths.stateDir, { recursive: true })
+
+      write(paths.runState, stringifyAegisRunState(state({ phase: 'codex-review', task_id: 'T-ROUTE', retry_count: 1 })))
+      expect(routeCodexReviewResult(dir, reviewResult('PASS'), '2026-06-03T10:00:00Z').state.phase).toBe('passed')
+      expect(readFileSync(paths.roundSummary, 'utf-8')).toContain('Codex returned `PASS`')
+
+      write(paths.runState, stringifyAegisRunState(state({ phase: 'codex-review', task_id: 'T-ROUTE', retry_count: 1 })))
+      expect(routeCodexReviewResult(dir, reviewResult('NEED_FIX'), '2026-06-03T10:00:00Z').state.phase).toBe('need-fix')
+      expect(readFileSync(paths.workInstruction, 'utf-8')).toContain('Repair the current task based on Codex review.')
+
+      write(paths.runState, stringifyAegisRunState(state({ phase: 'codex-review', task_id: 'T-ROUTE', retry_count: 1 })))
+      expect(routeCodexReviewResult(dir, reviewResult('NEED_HUMAN'), '2026-06-03T10:00:00Z').state.phase).toBe('human-handoff')
+      expect(readFileSync(paths.humanHandoff, 'utf-8')).toContain('Codex returned `NEED_HUMAN`')
     } finally {
       rmSync(dir, { recursive: true, force: true })
     }

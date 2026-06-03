@@ -2,42 +2,43 @@
 
 ## Task ID
 
-`20260603-superpower-discipline-gate`
+`20260603-quality-codex-loop`
 
 ## Title
 
-Strengthen the Superpower Discipline Gate.
+Harden quality gates and Codex review loop.
 
 ## Specification
 
-Implement structured current-round evidence checks for the Superpower Discipline Gate.
+Implement a single Aegis round gate that prepares the current task for Codex read-only review.
 
-This phase must make discipline evidence specific enough to prove Claude Code followed the expected Superpower discipline before Codex review:
+This phase must connect the existing local gates into a deterministic pre-Codex loop:
 
-- keep `superpower:scan` as a source availability check only
-- make `discipline:check` inspect current-round evidence
-- add requirement reasons, summaries, and failure issues for each evidence category
-- reject missing, placeholder, too-short, or category-mismatched evidence
-- require TDD evidence for feature rounds and debugging evidence for bug-fix rounds
+- task quality must pass before validation
+- Superpower discipline evidence must pass before validation
+- local quality gates must pass before Codex prompt generation
+- Codex prompt generation must remain read-only and external
+- parsed Codex verdicts must continue routing `PASS`, `NEED_FIX`, and `NEED_HUMAN` distinctly
 
-Aegis records and gates evidence. Claude Code performs the construction and writes the evidence files for the active round.
+Aegis packages evidence and writes reports. Claude Code remains the construction worker, and Codex remains the final semantic reviewer.
 
 ## File Scope
 
-- .aegis/current/current-task.md
-- .aegis/current/*evidence.md
+- .aegis/current
+- .aegis/config/quality-gates.json
+- .aegis/state/run-state.json
 - docs
-- src/core/superpower
-- src/cli/superpower.ts
-- tests/superpower-*.test.ts
+- src/core/aegis-runtime
+- src/cli
+- tests/aegis-runtime.test.ts
 
 ## Definition of DoD
 
-- [ ] Source availability remains separate from round evidence.
-- [ ] Structured evidence includes status, summary, and failure issues.
-- [ ] Missing or placeholder required evidence fails before Codex review.
-- [ ] Category-mismatched evidence fails even when the file exists.
-- [ ] Tests cover feature/TDD and bug/debugging requirements.
+- [ ] `round:check` runs task quality, Superpower discipline, local validation, and Codex prompt readiness in order.
+- [ ] Local gate failures stop before Codex prompt generation.
+- [ ] Discipline failures stop before local validation.
+- [ ] Generated Codex prompt keeps Codex read-only and external.
+- [ ] `PASS`, `NEED_FIX`, and `NEED_HUMAN` verdict routing remains distinct.
 
 ## Acceptance Checks
 
@@ -46,9 +47,10 @@ npm run typecheck
 npm run build
 npm run lint
 npm test
-npx vitest run tests/superpower-sources.test.ts tests/superpower-cli.test.ts
+npx vitest run tests/aegis-runtime.test.ts
 node dist\cli\main.js superpower:scan
 node dist\cli\main.js discipline:check
+node dist\cli\main.js round:check
 node dist\cli\main.js task:review
 git diff --check
 git status --short --ignored

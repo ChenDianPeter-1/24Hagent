@@ -41,6 +41,9 @@ if (!cmd) {
 } else if (cmd === 'discipline:check') {
   const { runDisciplineCheck } = await import('./superpower.js')
   runDisciplineCheck('.')
+} else if (cmd === 'round:check') {
+  const { runRoundCheck } = await import('./round.js')
+  await runRoundCheck('.')
 } else if (cmd === 'review:prompt') {
   const { runReviewPrompt } = await import('./review.js')
   runReviewPrompt('.')
@@ -50,7 +53,7 @@ if (!cmd) {
   const jsonlPath = inputIdx >= 0 ? process.argv[inputIdx + 1] : undefined
   runReviewRender('.', jsonlPath)
 } else {
-  console.error(`Usage: aegis <readiness|validate|validate:plan|task:review|task:next|contract|blueprint:start|blueprint:summary|blueprint:confirm|superpower:scan|discipline:check|review:prompt|review:render|status>`)
+  console.error(`Usage: aegis <readiness|validate|validate:plan|task:review|task:next|contract|blueprint:start|blueprint:summary|blueprint:confirm|superpower:scan|discipline:check|round:check|review:prompt|review:render|status>`)
   console.error(`Compatibility alias: 24h <command>`)
   process.exit(1)
 }

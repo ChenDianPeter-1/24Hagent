@@ -2,9 +2,10 @@
 
 Tests were added or adjusted before validating the implementation behavior:
 
-- `tests/superpower-sources.test.ts` now covers source-only separation, missing evidence, placeholder evidence, and category-mismatched evidence.
-- `tests/superpower-sources.test.ts` now covers feature/TDD requirements and bug-fix debugging requirements.
-- `tests/superpower-cli.test.ts` now covers insufficient structured evidence through the real discipline CLI report.
-- The focused Superpower tests were run before full validation and passed.
+- `tests/aegis-runtime.test.ts` now covers successful `round:check` behavior with task quality, discipline, local validation, and Codex prompt readiness.
+- `tests/aegis-runtime.test.ts` now covers task-quality failure stopping before validation.
+- `tests/aegis-runtime.test.ts` now covers discipline failure stopping before local validation.
+- `tests/aegis-runtime.test.ts` now covers local validation failure stopping before Codex prompt generation.
+- `tests/aegis-runtime.test.ts` now covers distinct `PASS`, `NEED_FIX`, and `NEED_HUMAN` Codex verdict routing.
 
 These tests define the behavior that the implementation must satisfy.

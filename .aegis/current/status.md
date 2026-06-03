@@ -10,19 +10,19 @@
 
 ## Current Task
 
-`20260603-superpower-discipline-gate`
+`20260603-quality-codex-loop`
 
 ## Current Task Title
 
-Strengthen the Superpower Discipline Gate.
+Harden quality gates and Codex review loop.
 
 ## Last Result
 
-navigation-refresh-pass
+superpower-discipline-pass
 
 ## Next Action
 
-Strengthen structured Superpower discipline evidence, run full validation, then commit A8.
+Implement `round:check`, verify the pre-Codex quality loop, then commit A9.
 
 ## Risks
 

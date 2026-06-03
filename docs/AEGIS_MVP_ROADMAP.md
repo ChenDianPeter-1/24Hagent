@@ -210,6 +210,14 @@ Acceptance checks:
 - Aegis does not run forbidden Git or deploy actions.
 - `PASS`, `NEED_FIX`, and `NEED_HUMAN` are routed distinctly.
 
+Implemented slice:
+
+- `aegis round:check` runs the pre-Codex gate chain in one deterministic path.
+- Gate order is task quality, Superpower discipline, local validation, then Codex prompt readiness.
+- The round gate writes `quality-readiness-report.md` and only generates `codex-review-prompt.md` after prerequisites pass.
+- Codex prompt generation remains read-only and external; Aegis does not execute Codex.
+- Focused tests cover successful readiness, prerequisite failures, local validation failure, prompt generation, and distinct verdict routing.
+
 ## Phase 9: Auto, Allow, Ask Progression
 
 Goal: implement continuation modes.

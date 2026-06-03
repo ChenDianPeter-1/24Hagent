@@ -260,6 +260,16 @@ Codex result render
 verdict routing
 ```
 
+`aegis round:check` owns the pre-Codex portion of this order:
+
+```text
+task-quality -> superpower-discipline -> local-validation -> codex-prompt-readiness
+```
+
+It writes `current/task-quality-report.md`, `current/discipline-report.md`, `current/validation-report.md`, `current/codex-review-prompt.md`, and `current/quality-readiness-report.md` as generated current-round artifacts. It stops as soon as a prerequisite gate fails.
+
+`round:check` does not execute Codex. It only prepares the read-only prompt and tells Claude Code or the human where the prompt is. Codex remains an external reviewer.
+
 Local gates may fail before Codex. The final semantic construction-round verdict `PASS`, `NEED_FIX`, or `NEED_HUMAN` comes from Codex review output, not from Aegis.
 
 Verdict routing:
