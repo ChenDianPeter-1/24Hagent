@@ -12,6 +12,7 @@ import {
   refreshNavigation,
   renderProjectProgress,
   routeCodexReviewResult,
+  applyProgressionPolicy,
   detectForbiddenActions,
   renderCommitSuggestion,
   runSafetyCheck,
@@ -32,6 +33,7 @@ const state = (overrides: Partial<AegisRunState> = {}): AegisRunState => ({
   phase: 'paused',
   mode: 'auto',
   last_verdict: 'PASS',
+  round_count: 0,
   retry_count: 0,
   updated_at: '2026-06-02T20:40:00+08:00',
   ...overrides
@@ -358,6 +360,94 @@ describe('Aegis navigation refresh', () => {
 
       expect(readFileSync(paths.workInstruction, 'utf-8')).toBe('keep bounded Codex repair')
       expect(readFileSync(paths.status, 'utf-8')).toContain('`waiting-for-construction`')
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+})
+
+describe('Aegis progression policy', () => {
+  function progressionFixture(config = { max_auto_rounds: 5, max_repair_attempts: 2 }): {
+    dir: string
+  } {
+    const dir = mkdtempSync(resolve(tmpdir(), 'aegis-progression-'))
+    const paths = getAegisRuntimePaths(dir)
+    mkdirSync(paths.configDir, { recursive: true })
+    write(paths.aegisConfig, JSON.stringify({
+      schema_version: 1,
+      product_name: 'Aegis',
+      project_id: 'aegis-rewrite',
+      limits: config
+    }, null, 2))
+    return { dir }
+  }
+
+  it('auto mode advances PASS to next-task selection until the round limit', () => {
+    const { dir } = progressionFixture({ max_auto_rounds: 3, max_repair_attempts: 2 })
+    try {
+      const decision = applyProgressionPolicy(dir, state({
+        phase: 'passed',
+        mode: 'auto',
+        round_count: 1,
+        task_id: 'T-PASS'
+      }), '2026-06-03T10:00:00Z')
+
+      expect(decision.state.phase).toBe('ready-for-task')
+      expect(decision.state.task_id).toBeNull()
+      expect(decision.state.round_count).toBe(2)
+      expect(decision.modeDecision).toContain('auto mode advanced')
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  it('ask mode writes a decision request after PASS instead of continuing', () => {
+    const { dir } = progressionFixture()
+    try {
+      const decision = applyProgressionPolicy(dir, state({
+        phase: 'passed',
+        mode: 'ask',
+        task_id: 'T-PASS'
+      }), '2026-06-03T10:00:00Z')
+
+      expect(decision.state.phase).toBe('decision-request')
+      expect(decision.decisionRequest?.decision).toContain('Codex returned PASS')
+      expect(decision.modeDecision).toContain('Ask mode stopped')
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  it('allow mode still stops at the configured round limit', () => {
+    const { dir } = progressionFixture({ max_auto_rounds: 2, max_repair_attempts: 2 })
+    try {
+      const decision = applyProgressionPolicy(dir, state({
+        phase: 'passed',
+        mode: 'allow',
+        round_count: 1
+      }), '2026-06-03T10:00:00Z')
+
+      expect(decision.state.phase).toBe('decision-request')
+      expect(decision.decisionRequest?.decision).toContain('round limit')
+      expect(decision.modeDecision).toContain('Stopped at round limit')
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  it('hard-stops repeated NEED_FIX at the repair limit', () => {
+    const { dir } = progressionFixture({ max_auto_rounds: 5, max_repair_attempts: 2 })
+    try {
+      const decision = applyProgressionPolicy(dir, state({
+        phase: 'need-fix',
+        mode: 'auto',
+        last_verdict: 'NEED_FIX',
+        retry_count: 2
+      }), '2026-06-03T10:00:00Z')
+
+      expect(decision.state.phase).toBe('human-handoff')
+      expect(decision.state.last_verdict).toBe('NEED_HUMAN')
+      expect(decision.humanHandoff).toContain('repair attempts reached')
     } finally {
       rmSync(dir, { recursive: true, force: true })
     }

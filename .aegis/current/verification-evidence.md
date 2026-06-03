@@ -2,16 +2,16 @@
 
 Verification completed for this round:
 
-- Safety boundaries implementation completed and verified.
+- Progression modes implementation completed and verified.
 
 Checks run:
 
 - `npm run typecheck`: PASS.
 - `npm run build`: PASS.
-- `npx vitest run tests/aegis-runtime.test.ts`: PASS, 1 file / 22 tests.
-- `npm test`: PASS, 26 files / 200 tests.
 - `npm run lint`: PASS.
-- `node dist\cli\main.js safety:check`: PASS, wrote `.aegis/current/safety-report.md`.
-- `node dist\cli\main.js task:review`: PASS.
-- `node dist\cli\main.js round:check`: NEED_FIX as expected after safety/task/discipline PASS because local coverage remains below the configured 100% thresholds.
+- `npx vitest run tests/aegis-runtime.test.ts tests/aegis-controller.test.ts tests/cli-smoke.test.ts`: PASS, 3 files / 41 tests.
+- `npx vitest run tests/cli-smoke.test.ts tests/aegis-runtime.test.ts`: PASS, 2 files / 36 tests.
+- `npm test`: PASS, 26 files / 205 tests.
+- `node dist\cli\main.js safety:check`: PASS.
+- `node dist\cli\main.js task:review`: PASS after narrowing File Scope to the smallest directories for this phase.
 - `git diff --check`: PASS.

@@ -2,8 +2,8 @@
 
 Review focus for this round:
 
-- Safety detection must hard-block actual forbidden action instructions while allowing prohibition text such as "Do not run git commit."
-- Dirty worktree reporting must be informational unless changed files exceed current task scope.
-- File-scope violations must become hard safety blocks.
-- Commit suggestions must be rendered only after Codex `PASS`.
-- Aegis must continue to avoid executing commit, push, merge, rebase, reset, release, deploy, publish, or history rewrite actions.
+- `auto`, `allow`, and `ask` must differ in continuation behavior while preserving non-interactive Aegis boundaries.
+- `ask` must write decision requests that Claude Code can present to the human.
+- `allow` must not become an infinite loop; configured round and repair limits remain hard brakes.
+- Repeated `NEED_FIX` at the repair limit must produce human handoff instead of more construction.
+- Navigation files must explain mode decisions so Claude Code knows why Aegis continued or stopped.

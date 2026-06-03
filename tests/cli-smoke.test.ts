@@ -102,8 +102,43 @@ describe('CLI smoke', () => {
 
       expect(out).toContain('`ready-for-task`')
       expect(out).toContain('Write a concrete `.aegis/current/current-task.md`')
+      expect(out).toContain('auto mode advanced after PASS')
       expect(state.phase).toBe('ready-for-task')
       expect(state.task_id).toBeNull()
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  it('default aegis invocation in ask mode writes a decision request after PASS', () => {
+    const dir = mkdtempSync(resolve(tmpdir(), 'aegis-ask-passed-'))
+    try {
+      mkdirSync(resolve(dir, '.aegis/state'), { recursive: true })
+      mkdirSync(resolve(dir, '.aegis/current'), { recursive: true })
+      mkdirSync(resolve(dir, '.aegis/blueprint'), { recursive: true })
+      writeFileSync(resolve(dir, '.aegis/state/run-state.json'), JSON.stringify({
+        schema_version: 1,
+        project_id: 'aegis-rewrite',
+        task_id: 'T-ASK',
+        phase: 'passed',
+        mode: 'ask',
+        last_verdict: 'PASS',
+        retry_count: 0,
+        updated_at: '2026-06-03T01:30:00+08:00'
+      }))
+      writeFileSync(resolve(dir, '.aegis/current/current-task.md'),
+        '# Current Task\n\n## Title\nAsk after pass\n')
+      writeFileSync(resolve(dir, '.aegis/blueprint/project-blueprint.md'),
+        '# Blueprint\n\n## Product Goal\nRewrite 24Hagent into Aegis.\n')
+
+      const out = execSync(cli(''), { encoding: 'utf-8', cwd: dir })
+      const state = JSON.parse(readFileSync(resolve(dir, '.aegis/state/run-state.json'), 'utf-8'))
+      const decision = readFileSync(resolve(dir, '.aegis/current/decision-request.md'), 'utf-8')
+
+      expect(out).toContain('`decision-request`')
+      expect(out).toContain('Ask mode stopped after PASS')
+      expect(state.phase).toBe('decision-request')
+      expect(decision).toContain('Codex returned PASS')
     } finally {
       rmSync(dir, { recursive: true, force: true })
     }

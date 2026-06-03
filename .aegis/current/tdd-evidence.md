@@ -2,10 +2,9 @@
 
 Tests were added or adjusted before validating the implementation behavior:
 
-- `tests/aegis-runtime.test.ts` now covers forbidden action detection and explicit prohibition statements.
-- `tests/aegis-runtime.test.ts` now covers file-scope violation hard blocks and human handoff.
-- `tests/aegis-runtime.test.ts` now covers forbidden commands in work instructions.
-- `tests/aegis-runtime.test.ts` now covers PASS-only commit suggestion rendering.
-- Existing `round:check` tests now verify safety runs before task quality, discipline, validation, and Codex prompt readiness.
+- `tests/aegis-runtime.test.ts` now covers `auto` PASS continuation, `ask` PASS decision requests, `allow` round-limit stops, and repair-limit human handoff.
+- `tests/cli-smoke.test.ts` now covers real default `aegis` ask-mode decision request generation after `PASS`.
+- Existing CLI smoke coverage still verifies auto-mode `NEED_FIX` and `PASS` transitions.
+- Controller/status tests were adjusted for the new `round_count` state field and mode-aware navigation.
 
 These tests define the behavior that the implementation must satisfy.

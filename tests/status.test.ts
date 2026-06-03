@@ -73,6 +73,7 @@ describe('formatStatus', () => {
         phase: 'waiting-for-construction',
         mode: 'auto',
         last_verdict: 'PASS',
+        round_count: 0,
         retry_count: 0,
         updated_at: '2026-06-02T20:50:00+08:00'
       },

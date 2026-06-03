@@ -2,43 +2,42 @@
 
 ## Task ID
 
-`20260603-safety-boundaries`
+`20260603-progression-modes`
 
 ## Title
 
-Enforce Aegis safety boundaries.
+Implement Aegis progression modes.
 
 ## Specification
 
-Implement executable Aegis safety boundaries for forbidden actions, file scope, hard blocks, and commit suggestions.
+Implement executable Aegis progression behavior for `auto`, `allow`, and `ask` modes.
 
-This phase must turn safety policy into runtime behavior:
+This phase must turn mode policy into runtime behavior:
 
-- detect forbidden Git, publish, release, deploy, and history rewrite actions in current task and work instructions
-- report dirty worktree state and file-scope violations
-- hard-block unsafe rounds and write human handoff
-- add `aegis safety:check`
-- add PASS-only commit suggestion rendering without executing `git commit`
+- `auto` continues through safe deterministic post-verdict transitions
+- `allow` is lower interruption but still stops at configured hard brakes
+- `ask` stops after meaningful phase boundaries and writes `decision-request.md`
+- repeated `NEED_FIX` beyond repair limits writes human handoff
+- navigation files show the mode decision that caused Aegis to continue or stop
 
-Human confirmed high-risk scope for `.gitignore` safety artifact policy in this A10 task. Aegis still must not execute forbidden actions.
+Aegis must remain non-interactive and must not launch Claude Code or execute Codex.
 
 ## File Scope
 
 - .aegis/current
 - .aegis/state/run-state.json
-- .gitignore
 - docs
 - src/core/aegis-runtime
 - src/cli
-- tests/aegis-runtime.test.ts
+- tests
 
 ## Definition of DoD
 
-- [ ] Safety gate detects forbidden actions and ignores explicit prohibition statements.
-- [ ] Safety gate reports dirty worktree and file-scope violations.
-- [ ] Hard safety failures route to `hard-blocked` and write human handoff.
-- [ ] `round:check` runs safety before other gates.
-- [ ] Commit suggestion rendering is available only after Codex `PASS`.
+- [ ] `auto` advances after Codex `PASS` to next-task selection until the round limit.
+- [ ] `ask` writes decision requests instead of silently continuing after meaningful phase boundaries.
+- [ ] `allow` still stops at configured hard brakes.
+- [ ] Repeated `NEED_FIX` at the repair limit writes human handoff.
+- [ ] Status and progress navigation render mode-decision context.
 
 ## Acceptance Checks
 
@@ -48,6 +47,7 @@ npm run build
 npm run lint
 npm test
 npx vitest run tests/aegis-runtime.test.ts
+npx vitest run tests/cli-smoke.test.ts tests/aegis-controller.test.ts tests/status.test.ts
 node dist\cli\main.js safety:check
 node dist\cli\main.js task:review
 git diff --check

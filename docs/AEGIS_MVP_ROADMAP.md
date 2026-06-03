@@ -237,6 +237,15 @@ Acceptance checks:
 - `auto` stops for high-risk scope.
 - `ask` writes decision requests.
 
+Implemented slice:
+
+- Added a mode-aware progression policy for post-Codex `PASS` and `NEED_FIX` transitions.
+- `auto` advances safe `PASS` rounds to next-task selection and bounded `NEED_FIX` rounds to construction.
+- `ask` writes `decision-request.md` after meaningful phase boundaries instead of silently continuing.
+- `allow` remains lower interruption but stops at configured round limits.
+- Repeated `NEED_FIX` at the configured repair limit writes human handoff and routes to `NEED_HUMAN`.
+- Status and project-progress navigation now include a mode-decision note.
+
 ## Phase 10: Safety Boundaries
 
 Goal: hard-code forbidden actions and Git safety checks.

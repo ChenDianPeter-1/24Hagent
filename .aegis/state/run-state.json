@@ -1,10 +1,11 @@
 {
   "schema_version": 1,
   "project_id": "aegis-rewrite",
-  "task_id": "20260603-safety-boundaries",
+  "task_id": "20260603-progression-modes",
   "phase": "validating",
   "mode": "auto",
-  "last_verdict": "round-gate-pass-with-coverage-need-fix",
+  "last_verdict": "progression-modes-in-progress",
+  "round_count": 0,
   "retry_count": 0,
-  "updated_at": "2026-06-03T17:05:00+08:00"
+  "updated_at": "2026-06-03T17:23:00+08:00"
 }

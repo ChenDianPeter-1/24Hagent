@@ -31,6 +31,7 @@ export const AegisRunStateSchema = z.object({
   phase: AegisPhaseSchema,
   mode: AegisModeSchema,
   last_verdict: z.union([AegisVerdictSchema, z.string().min(1)]).nullable().default(null),
+  round_count: z.number().int().min(0).max(100).default(0),
   retry_count: z.number().int().min(0).max(10),
   updated_at: z.string().min(1)
 })

@@ -55,12 +55,15 @@ It should stay small:
   "phase": "working",
   "mode": "auto",
   "last_verdict": "task-review-pass",
+  "round_count": 0,
   "retry_count": 0,
   "updated_at": "2026-06-02T14:20:00+08:00"
 }
 ```
 
 It must not contain full logs, full diffs, raw Codex output, chat transcripts, secrets, or long reports.
+
+`round_count` records completed `PASS` rounds for the current run sequence. It stays small and exists only to enforce progression-mode brakes.
 
 ## Navigation Files
 
@@ -151,6 +154,26 @@ aegis contract
 ```
 
 This contract is the operational rule for what Claude Code must do when the user says "Use Aegis to start/continue."
+
+## Progression Modes
+
+Aegis supports three non-interactive progression modes:
+
+```text
+auto
+allow
+ask
+```
+
+The progression policy applies after Codex verdict routing:
+
+- `auto` continues safe deterministic transitions, such as `PASS` to next-task selection and bounded `NEED_FIX` to construction.
+- `allow` is lower interruption, but still stops at configured hard brakes.
+- `ask` writes `current/decision-request.md` after meaningful phase boundaries instead of silently continuing.
+
+Hard brakes apply to every mode. When `retry_count` reaches `limits.max_repair_attempts`, Aegis writes `current/human-handoff.md` and stops. When completed rounds reach `limits.max_auto_rounds`, Aegis writes `current/decision-request.md` before selecting more work.
+
+Navigation files render a mode-decision note so Claude Code can explain why Aegis continued or stopped.
 
 ## Blueprint Flow
 

@@ -5,6 +5,7 @@ export type NavigationInput = {
   projectGoal?: string
   currentTaskTitle?: string
   nextAction?: string
+  modeDecision?: string
   lastResult?: string
   risks?: string[]
 }
@@ -24,6 +25,10 @@ export function renderStatus(input: NavigationInput): string {
     '## Mode',
     '',
     `\`${input.state.mode}\``,
+    '',
+    '## Mode Decision',
+    '',
+    input.modeDecision || 'No mode-specific transition was applied.',
     '',
     '## Current Task',
     '',
@@ -92,6 +97,10 @@ export function renderProjectProgress(input: NavigationInput): string {
     '## Next Action',
     '',
     input.nextAction || 'Run `aegis` to continue.',
+    '',
+    '## Mode Decision',
+    '',
+    input.modeDecision || 'No mode-specific transition was applied.',
     '',
     '## Risks',
     '',

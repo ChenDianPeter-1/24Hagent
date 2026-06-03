@@ -9,6 +9,7 @@ const state = (overrides: Partial<AegisRunState> = {}): AegisRunState => ({
   phase: 'task-ready',
   mode: 'auto',
   last_verdict: null,
+  round_count: 0,
   retry_count: 0,
   updated_at: '2026-06-03T01:40:00+08:00',
   ...overrides

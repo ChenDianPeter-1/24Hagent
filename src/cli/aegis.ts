@@ -1,13 +1,13 @@
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import {
+  applyProgressionPolicy,
   decideAegisNextAction,
   getAegisRuntimePaths,
   parseAegisRunStateJson,
   readNavigationContext,
   refreshNavigation,
   renderStatus,
-  stringifyAegisRunState,
-  type AegisRunState
+  writeProgressionSideEffects
 } from '../core/aegis-runtime/index.js'
 
 function reportHasPassVerdict(path: string): boolean {
@@ -15,43 +15,13 @@ function reportHasPassVerdict(path: string): boolean {
   return /^Verdict:\s*PASS\s*$/m.test(readFileSync(path, 'utf-8'))
 }
 
-function continuePostVerdictState(state: AegisRunState, timestamp: string): {
-  state: AegisRunState
-  preserveWorkInstruction: boolean
-} {
-  if (state.phase === 'need-fix') {
-    return {
-      state: {
-        ...state,
-        phase: 'waiting-for-construction',
-        updated_at: timestamp
-      },
-      preserveWorkInstruction: true
-    }
-  }
-
-  if (state.phase === 'passed') {
-    return {
-      state: {
-        ...state,
-        task_id: null,
-        phase: 'ready-for-task',
-        updated_at: timestamp
-      },
-      preserveWorkInstruction: false
-    }
-  }
-
-  return { state, preserveWorkInstruction: false }
-}
-
 export function runAegis(root: string): void {
   const paths = getAegisRuntimePaths(root)
   const initialState = parseAegisRunStateJson(readFileSync(paths.runState, 'utf-8'))
-  const continuation = continuePostVerdictState(initialState, new Date().toISOString())
+  const continuation = applyProgressionPolicy(root, initialState, new Date().toISOString())
   const state = continuation.state
   if (state !== initialState) {
-    writeFileSync(paths.runState, stringifyAegisRunState(state), 'utf-8')
+    writeProgressionSideEffects(root, continuation)
   }
   const { currentTaskTitle, projectGoal } = readNavigationContext(paths)
   const decision = decideAegisNextAction(state, {
@@ -72,11 +42,13 @@ export function runAegis(root: string): void {
     projectGoal,
     currentTaskTitle,
     nextAction: decision.nextAction,
+    modeDecision: continuation.modeDecision,
     risks: decision.risks
   }
 
   refreshNavigation(paths, input, {
-    preserveWorkInstruction: continuation.preserveWorkInstruction
+    preserveWorkInstruction: continuation.preserveWorkInstruction,
+    decisionRequest: continuation.decisionRequest
   })
 
   console.log(renderStatus(input))

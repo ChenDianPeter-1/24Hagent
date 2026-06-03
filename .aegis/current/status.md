@@ -10,19 +10,19 @@
 
 ## Current Task
 
-`20260603-safety-boundaries`
+`20260603-progression-modes`
 
 ## Current Task Title
 
-Enforce Aegis safety boundaries.
+Implement Aegis progression modes.
 
 ## Last Result
 
-round-gate-pass-with-coverage-need-fix
+progression-modes-in-progress
 
 ## Next Action
 
-Implement safety gate, verify forbidden action enforcement, then commit A10.
+Implement mode-aware post-verdict progression, verify auto/allow/ask behavior, then commit Phase 9.
 
 ## Risks
 
