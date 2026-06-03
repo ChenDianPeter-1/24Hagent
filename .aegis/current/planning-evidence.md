@@ -1,11 +1,11 @@
 # Planning Evidence
 
-Issue #14 and the current runtime were reviewed before implementation. This phase targets A5 / Phase 5: the Aegis side of the Superpower blueprint handshake.
+Issue #14 and the current runtime were reviewed before implementation. This phase targets A6 / Phase 6: formal current-task generation from the confirmed blueprint.
 
 The implementation plan is:
 
-- Add blueprint draft and summary paths to the centralized `.aegis` path map.
-- Add a blueprint runtime module for start, summary, and confirm transitions.
-- Add CLI commands: `blueprint:start`, `blueprint:summary`, and `blueprint:confirm`.
-- Keep Aegis as a state/file/instruction writer; Claude Code uses Superpower and asks the human.
-- Cover the renderer and CLI flow with focused tests before full validation.
+- Add a current-task renderer/generator in the Aegis runtime.
+- Add `aegis task:next` to write `.aegis/current/current-task.md` from the confirmed blueprint.
+- Update high-risk task quality behavior so explicit human permission is required before construction.
+- Cover generated task markdown, high-risk permission, and CLI generation with tests.
+- Keep Aegis as task selector and gatekeeper; Claude Code still performs construction.

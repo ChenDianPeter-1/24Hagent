@@ -80,6 +80,16 @@ describe('Task Quality Gate', () => {
     expect(review.findings.map(f => f.code)).toContain('HIGH_RISK_SCOPE_NEEDS_HUMAN')
   })
 
+  it('allows high-risk scope only when explicit human permission is recorded', () => {
+    const review = reviewTaskPackageQuality(task({
+      file_scope: ['package.json'],
+      stop_rule: 'Explicit human permission was recorded for this high-risk scope. Stop and ask again before any extra files.'
+    }))
+
+    expect(review.verdict).toBe('PASS')
+    expect(review.findings.map(f => f.code)).not.toContain('HIGH_RISK_SCOPE_NEEDS_HUMAN')
+  })
+
   it('turns invalid markdown into a clear NEED_FIX result', () => {
     const review = reviewCurrentTaskMarkdown('# Current Task\n\n## Task ID\n')
 

@@ -10,19 +10,19 @@
 
 ## Current Task
 
-`20260603-blueprint-flow`
+`20260603-current-task-generation`
 
 ## Current Task Title
 
-Add the Aegis blueprint flow.
+Add Aegis current-task generation.
 
 ## Last Result
 
-claude-code-contract-pass
+blueprint-flow-pass
 
 ## Next Action
 
-Implement blueprint start, summary, and confirm commands, then run full validation.
+Implement `aegis task:next`, generated current-task validation, and full task-review checks.
 
 ## Risks
 

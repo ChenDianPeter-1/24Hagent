@@ -2,23 +2,24 @@
 
 ## Task ID
 
-`20260603-blueprint-flow`
+`20260603-current-task-generation`
 
 ## Title
 
-Add the Aegis blueprint flow.
+Add Aegis current-task generation.
 
 ## Specification
 
-Implement the Aegis side of the Superpower blueprint handshake.
+Implement Aegis current-task generation from the confirmed blueprint.
 
-This phase must make blueprint drafting, summarizing, and confirmation explicit in the runtime:
+This phase must make next-task selection explicit and reviewable:
 
-- `aegis blueprint:start` prepares `.aegis/blueprint/project-blueprint.draft.md` and tells Claude Code to use Superpower discipline
-- `aegis blueprint:summary` renders `.aegis/blueprint/blueprint-summary.md` and `.aegis/current/decision-request.md`
-- `aegis blueprint:confirm` promotes the draft into `.aegis/blueprint/project-blueprint.md`
+- add a renderer/generator for formal `.aegis/current/current-task.md`
+- add `aegis task:next` to generate the next task from `.aegis/blueprint/project-blueprint.md`
+- keep generated tasks compatible with `aegis task:review`
+- require explicit human permission for high-risk file scope before construction
 
-Aegis must not directly call Superpower. It writes state, files, and instructions; Claude Code performs the Superpower-guided drafting work and asks the human for confirmation.
+Aegis may render a bounded task from blueprint text, but Claude Code remains the construction worker.
 
 ## File Scope
 
@@ -31,11 +32,11 @@ Aegis must not directly call Superpower. It writes state, files, and instruction
 
 ## Definition of DoD
 
-- [ ] Runtime paths include blueprint draft and summary files.
-- [ ] `aegis blueprint:start` prepares a draft and enters `blueprint-draft`.
-- [ ] `aegis blueprint:summary` writes a summary plus decision request and enters `decision-request`.
-- [ ] `aegis blueprint:confirm` confirms the draft and enters `ready-for-task`.
-- [ ] Tests cover renderer behavior and CLI flow.
+- [ ] Current-task generator renders all required task sections.
+- [ ] `aegis task:next` writes `.aegis/current/current-task.md` and enters `task-ready`.
+- [ ] Generated tasks pass `aegis task:review`.
+- [ ] High-risk file scope requires explicit human permission.
+- [ ] Tests cover generator behavior and CLI flow.
 
 ## Acceptance Checks
 
@@ -45,8 +46,7 @@ npm run build
 npm run lint
 npm test
 npx vitest run tests/cli-smoke.test.ts tests/aegis-runtime.test.ts
-node dist\cli\main.js blueprint:start
-node dist\cli\main.js blueprint:summary
+node dist\cli\main.js task:next
 node dist\cli\main.js task:review
 git status --short --ignored
 ```

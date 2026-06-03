@@ -128,6 +128,8 @@ Deliverables:
 - File scope validation.
 - Acceptance checks validation.
 - Stop rule validation.
+- `aegis task:next`.
+- Generated-task compatibility with `aegis task:review`.
 
 Acceptance checks:
 
@@ -135,6 +137,12 @@ Acceptance checks:
 - Missing file scope fails.
 - Missing acceptance checks fails.
 - High-risk file scope requires explicit permission.
+
+Initial implemented slice:
+
+- `task:next` renders a formal current task from the confirmed blueprint.
+- Generated tasks include all required sections and pass `task:review`.
+- High-risk file scope needs explicit human permission before construction.
 
 ## Phase 7: Superpower Discipline Gate
 

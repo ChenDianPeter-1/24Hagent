@@ -2,10 +2,12 @@ import { describe, expect, it } from 'vitest'
 import { resolve } from 'node:path'
 import {
   getAegisRuntimePaths,
+  generateCurrentTaskFromBlueprint,
   isAegisStopPhase,
   parseAegisRunStateJson,
   renderProjectProgress,
   renderBlueprintSummary,
+  renderCurrentTaskMarkdown,
   renderStatus,
   renderWorkInstruction,
   stringifyAegisRunState,
@@ -64,6 +66,33 @@ describe('Aegis blueprint flow renderers', () => {
     expect(md).toContain('Aegis = gates + Codex review')
     expect(md).toContain('- Blueprint confirmation')
     expect(md).toContain('Ask the human to confirm')
+  })
+})
+
+describe('Aegis current-task generation', () => {
+  it('generates formal current tasks from blueprint content', () => {
+    const task = generateCurrentTaskFromBlueprint([
+      '# Blueprint',
+      '',
+      '## Product Goal',
+      '',
+      'Make AI coding work reviewable.',
+      '',
+      '## MVP Scope',
+      '',
+      '- Generate formal current tasks',
+      '- Enforce task quality gates',
+      ''
+    ].join('\n'), 'T-GENERATED')
+    const md = renderCurrentTaskMarkdown(task)
+
+    expect(task.task_id).toBe('T-GENERATED')
+    expect(task.title).toContain('Generate formal current tasks')
+    expect(task.file_scope).toContain('src')
+    expect(task.definition_of_done.length).toBeGreaterThanOrEqual(2)
+    expect(task.acceptance_checks).toContain('npm run typecheck')
+    expect(md).toContain('## File Scope')
+    expect(md).toContain('## Stop Rule')
   })
 })
 

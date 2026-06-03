@@ -153,6 +153,30 @@ aegis blueprint:confirm
 
 `blueprint:confirm` promotes the draft to `blueprint/project-blueprint.md` and moves Aegis to `ready-for-task`.
 
+## Current Task Flow
+
+A confirmed blueprint can be turned into a formal current task with:
+
+```text
+aegis task:next
+```
+
+`task:next` reads `blueprint/project-blueprint.md`, renders `current/current-task.md`, refreshes navigation files, and moves run-state to `task-ready`.
+
+The generated task must include:
+
+- `Task ID`
+- `Title`
+- `Specification`
+- `File Scope`
+- `Definition of DoD`
+- `Acceptance Checks`
+- `Stop Rule`
+
+Aegis may select and render a bounded task from blueprint text. Claude Code remains responsible for construction.
+
+Generated tasks must pass `aegis task:review` before construction. High-risk file scope requires explicit human permission in the task package.
+
 ## Non-Interactive Design
 
 Aegis does not prompt in the terminal.

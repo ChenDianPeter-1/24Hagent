@@ -168,6 +168,51 @@ describe('CLI smoke', () => {
     }
   })
 
+  it('task:next generates a reviewable current task from confirmed blueprint', () => {
+    const dir = mkdtempSync(resolve(tmpdir(), 'aegis-task-next-'))
+    try {
+      mkdirSync(resolve(dir, '.aegis/state'), { recursive: true })
+      mkdirSync(resolve(dir, '.aegis/blueprint'), { recursive: true })
+      writeFileSync(resolve(dir, '.aegis/state/run-state.json'), JSON.stringify({
+        schema_version: 1,
+        project_id: 'aegis-rewrite',
+        task_id: null,
+        phase: 'ready-for-task',
+        mode: 'auto',
+        last_verdict: 'blueprint-confirmed',
+        retry_count: 0,
+        updated_at: '2026-06-03T01:30:00+08:00'
+      }))
+      writeFileSync(resolve(dir, '.aegis/blueprint/project-blueprint.md'), [
+        '# Blueprint',
+        '',
+        '## Product Goal',
+        '',
+        'Make AI coding work reviewable.',
+        '',
+        '## MVP Scope',
+        '',
+        '- Generate formal current tasks',
+        '- Enforce task quality gates',
+        ''
+      ].join('\n'))
+
+      const out = execSync(cli('task:next'), { encoding: 'utf-8', cwd: dir })
+      const task = readFileSync(resolve(dir, '.aegis/current/current-task.md'), 'utf-8')
+      const state = JSON.parse(readFileSync(resolve(dir, '.aegis/state/run-state.json'), 'utf-8'))
+
+      expect(out).toContain('## Task ID')
+      expect(task).toContain('Generate formal current tasks')
+      expect(task).toContain('npm run typecheck')
+      expect(state.phase).toBe('task-ready')
+
+      const review = execSync(cli('task:review'), { encoding: 'utf-8', cwd: dir })
+      expect(review).toContain('Verdict: PASS')
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
   it('review:render outputs PASS from fixture', () => {
     const dir = mkdtempSync(resolve(tmpdir(), 'aegis-review-render-'))
     const fixture = resolve(root, 'tests/fixtures/codex-review-pass.jsonl')

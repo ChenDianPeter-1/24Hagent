@@ -67,6 +67,16 @@ function hasHighRiskScope(path: string): boolean {
   return HIGH_RISK_PATHS.some(risk => normalized === risk || normalized.startsWith(`${risk}/`) || normalized.includes(risk))
 }
 
+function hasExplicitHighRiskPermission(task: TaskPackage): boolean {
+  return [
+    task.specification,
+    task.stop_rule,
+    task.acceptance_checks
+  ].some(text =>
+    /explicit human (confirmation|permission|approval)|human confirmed high-risk scope|human approved high-risk scope|confirmed high-risk scope|用户.*确认.*高风险|人工.*确认.*高风险/i.test(text)
+  )
+}
+
 function isWeakStopRule(text: string): boolean {
   const normalized = text.trim().toLowerCase()
   if (normalized.length < 20) return true
@@ -157,12 +167,12 @@ export function reviewTaskPackageQuality(task: TaskPackage, options: TaskQuality
   }
 
   const highRiskScopes = task.file_scope.filter(hasHighRiskScope)
-  if (highRiskScopes.length > 0) {
+  if (highRiskScopes.length > 0 && !hasExplicitHighRiskPermission(task)) {
     addFinding(findings, {
       code: 'HIGH_RISK_SCOPE_NEEDS_HUMAN',
       severity: 'NEED_HUMAN',
       reason: `Task touches high-risk configuration/dependency scope: ${highRiskScopes.join(', ')}.`,
-      suggestion: 'Get explicit human confirmation before Worker changes dependency, config, gitignore, or CI boundary files.'
+      suggestion: 'Add explicit human confirmation before Worker changes dependency, config, gitignore, or CI boundary files.'
     })
   }
 

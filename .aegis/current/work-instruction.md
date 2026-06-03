@@ -2,11 +2,11 @@
 
 ## Task
 
-Add the Aegis blueprint flow.
+Add Aegis current-task generation.
 
 ## Instruction
 
-Implement the blueprint start, summary, and confirmation commands without making Aegis call Superpower directly.
+Implement `aegis task:next`, formal current-task rendering, generated-task review compatibility, and high-risk scope permission checks.
 
 ## Boundaries
 
