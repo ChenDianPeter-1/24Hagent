@@ -1,11 +1,10 @@
 # Planning Evidence
 
-Issue #15, issue #14, the product decisions, and the previous completion audit were reviewed before implementation. This phase targets the bundled starter that still taught old 24Hagent / `.agent` onboarding.
+Issue #16, issue #15, issue #14, and the previous completion audit were reviewed before implementation. This phase targets root docs that still described starter migration as pending after the starter had already been migrated.
 
 The implementation plan is:
 
-- Replace starter onboarding identity with Aegis-first wording.
-- Replace `24hagent-install` with `aegis-install`.
-- Change setup scripts to create `.aegis/` runtime files and generated install prompt.
-- Replace old starter Orchestrator protocol with the Aegis Claude Code hosting protocol.
-- Keep CLI compatibility/fallback references explicit instead of hiding them.
+- Update README current implementation and remaining work.
+- Update HANDOFF recent commits and remaining high-value work.
+- Update HOW_TO_NEW_PROJECT starter status and starter launch section.
+- Keep compatibility wording honest rather than hiding the `24hagent-starter/` folder name.

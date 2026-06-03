@@ -94,8 +94,9 @@ Implemented slices include:
 - safety boundaries and forbidden action enforcement
 - `auto`, `allow`, and `ask` progression modes
 - completed-round archival under `.aegis/archive/<task-id>/`
+- bundled starter onboarding migrated to Aegis / `.aegis`
 
-The strongest remaining migration work is packaging and starter migration: the bundled starter still contains legacy 24Hagent / `.agent` material and should be rewritten as an Aegis starter in a separate phase.
+The strongest remaining migration work is now deeper verification and cleanup: add a real starter smoke test, audit `.agent` compatibility fallback paths, and decide whether old Python onboarding docs should be rewritten or archived.
 
 ## Verification
 

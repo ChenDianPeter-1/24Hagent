@@ -2,15 +2,12 @@
 
 Review focus for this round:
 
-- Starter README must teach Aegis as the product.
-- Setup scripts must create `.aegis/` runtime state, not `.agent/` onboarding state.
-- Generated install prompt must route Claude Code through `aegis-install`.
-- PowerShell wrappers must call the Aegis CLI without reintroducing the old runtime contract.
-- Legacy terms must remain only as compatibility or absence-check references.
+- Root docs must not say starter migration is still pending.
+- Starter status must match commit `4213e6a`.
+- Remaining work must be accurate and actionable.
+- `24hagent-starter/` may remain as a compatibility folder name, not product identity.
 
 Review result:
 
-- Starter README, setup scripts, install prompt, and install skill are Aegis-first.
-- Old PowerShell scripts are thin Aegis CLI wrappers.
-- Old `.agent` rubric scaffold was replaced by `.aegis/config/codex-rubric.md`.
-- Remaining old terms are compatibility or generated fallback references, not onboarding instructions.
+- Pending starter migration wording was replaced with implemented starter status.
+- Remaining work now names starter smoke testing, legacy fallback audit, Python docs migration, and blueprint revision hardening.

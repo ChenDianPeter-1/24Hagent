@@ -1,6 +1,6 @@
 # Use Aegis In A New Project
 
-This guide describes the current target workflow. The bundled starter package is still being migrated, so treat this as the Aegis-first operating guide rather than the legacy starter instructions.
+This guide describes the current Aegis-first workflow. The bundled starter has been migrated to Aegis onboarding, but a deeper setup smoke test is still planned.
 
 ## Prerequisites
 
@@ -18,6 +18,19 @@ D:\AAAOddsAndEnds\PROGRAM\superpowers
 ```
 
 ## Start
+
+With the bundled starter:
+
+```text
+Copy 24hagent-starter/ into the target project.
+Run 24hagent-starter/Start.ps1 or double-click Start.bat on Windows.
+```
+
+The starter installs `aegis-install`, initializes `.aegis/`, and generates:
+
+```text
+.aegis/current/next-claude-install-prompt.md
+```
 
 Inside Claude Code, ask:
 
@@ -167,6 +180,11 @@ Aegis may render suggestions, but the human controls final Git and release actio
 
 ## Current Starter Status
 
-The existing `24hagent-starter/` directory is legacy material. It still uses old 24Hagent / `.agent` assumptions and should not be treated as the finished Aegis starter.
+The existing `24hagent-starter/` directory name is retained for distribution compatibility. Its onboarding path is now Aegis-first:
 
-The next packaging phase should produce an Aegis starter that initializes `.aegis/`, installs the Claude Code-facing contract, and teaches `aegis` as the primary command.
+- installs `.claude/skills/aegis-install/`
+- initializes `.aegis/config`, `.aegis/current`, `.aegis/blueprint`, and `.aegis/state`
+- writes `.aegis/current/next-claude-install-prompt.md`
+- ships `24hagent-starter/bin/aegis.mjs`
+
+The next packaging hardening phase should add a real setup smoke test that runs the starter in a temporary target project and verifies the generated `.aegis/` layout.

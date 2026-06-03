@@ -10,19 +10,19 @@
 
 ## Current Task
 
-`20260603-starter-aegis`
+`20260603-docs-sync-after-starter`
 
 ## Current Task Title
 
-Migrate bundled starter onboarding to Aegis.
+Sync public docs after starter migration.
 
 ## Last Result
 
-starter-aegis-complete
+docs-sync-after-starter-complete
 
 ## Next Action
 
-Commit the completed starter migration phase, then record the result in GitHub issue #15.
+Commit the completed docs sync phase, then record the result in GitHub issue #16.
 
 ## Risks
 

@@ -1,11 +1,9 @@
 # TDD Evidence
 
-Validation checks planned for this starter migration phase:
+Validation checks planned for this docs-sync phase:
 
-- Search starter files for old product terms and verify remaining hits are compatibility, generated fallback, or absence-check references.
-- Run the starter layout test to prove the packaged skill and setup docs route through Aegis.
-- Rebuild the bundled starter CLI to produce `bin/aegis.mjs`.
-- Run the normal TypeScript build and test suite to ensure starter packaging changes do not disturb runtime behavior.
+- Search touched root docs for stale starter migration wording.
+- Search touched root docs for old product terms and verify remaining hits are compatibility or repository-name references.
 - Run Aegis safety and task quality checks before commit.
 
-This phase updates starter packaging and tests, not the core runtime state machine.
+This phase updates docs and evidence only, not the core runtime state machine or starter behavior.
