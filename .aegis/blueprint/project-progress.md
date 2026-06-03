@@ -10,11 +10,11 @@ Rewrite 24Hagent into Aegis: a delivery gate that lives inside Claude Code, uses
 
 ## Current Task
 
-Normalize tracked Aegis current task scaffold.
+Make discipline check require current-round evidence.
 
 ## Next Action
 
-Run `aegis task:review` to confirm the tracked current task is schema-valid, then continue migrating remaining legacy `.agent` assumptions.
+Task quality report exists. Run `aegis readiness` next.
 
 ## Risks
 

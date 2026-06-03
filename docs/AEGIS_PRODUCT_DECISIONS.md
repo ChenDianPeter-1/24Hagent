@@ -26,7 +26,7 @@ Aegis does:
 - Generate one small current task at a time.
 - Run local quality gates.
 - Build Codex review prompts and render Codex review results.
-- Decide whether the current round is `PASS`, `NEED_FIX`, or `NEED_HUMAN`.
+- Route the current round based on the Codex `PASS`, `NEED_FIX`, or `NEED_HUMAN` review verdict.
 - Maintain short navigation files for recovery and continuity.
 
 Aegis does not:
@@ -34,6 +34,8 @@ Aegis does not:
 - Write product code itself.
 - Contain its own model.
 - Directly call Superpower outside the current Claude Code session.
+- Launch Claude Code or become an autonomous coding runner.
+- Invent the final semantic review verdict after local checks.
 - Directly ask the human in an interactive CLI.
 - Automatically commit, push, merge, release, deploy, publish, or rewrite Git history.
 
@@ -48,6 +50,17 @@ Use Aegis to start this project. I want to build ...
 ```
 
 Claude Code then uses Aegis and Superpower to produce the plan, ask the user for confirmation, perform work, and run gates. The user should not manually edit `.aegis/` files and should not need to type a command after every phase.
+
+The product handshake is:
+
+```text
+Human inside Claude Code says "Use Aegis to start/continue"
+Claude Code runs `aegis`
+Aegis refreshes `.aegis/current/status.md`, `.aegis/current/work-instruction.md`, and `.aegis/blueprint/project-progress.md`
+Claude Code reads those files and performs only the instructed next step
+```
+
+Aegis itself must not start Claude Code, spawn an autonomous coding loop, or hide the construction worker role.
 
 ## Superpower Role
 
@@ -129,6 +142,48 @@ Examples:
 - Completed work should have verification-before-completion and review evidence.
 
 If the Superpower Discipline Gate fails, Aegis fails the round before Codex review.
+
+`superpower:scan` and `discipline:check` are different gates:
+
+- `superpower:scan` records whether the required Superpower source files exist.
+- `discipline:check` verifies current-round evidence that Claude Code actually followed the required discipline.
+
+`discipline:check` must fail when required round evidence is missing, even if every Superpower source skill exists.
+
+The first file-based evidence contract is:
+
+- `planning-evidence.md` for planning evidence.
+- `tdd-evidence.md` for TDD or test-first evidence when feature work requires it.
+- `debugging-evidence.md` for systematic debugging evidence when bug-fix work requires it.
+- `verification-evidence.md` for verification-before-completion evidence.
+- `review-evidence.md` for review/finishing evidence.
+
+Missing required evidence blocks the round before Codex review.
+
+## Codex Review Authority
+
+Codex is the independent read-only reviewer and the only source of the final semantic review verdict for a completed construction round.
+
+Aegis may:
+
+- Run local prerequisite gates before Codex.
+- Block before Codex if scope, quality, safety, or discipline evidence is missing.
+- Build the Codex review packet.
+- Parse and route the Codex result.
+
+Aegis must not replace Codex as the semantic judge. The final construction-round review verdict comes from Codex output:
+
+```text
+PASS
+NEED_FIX
+NEED_HUMAN
+```
+
+Routing is deterministic:
+
+- `PASS`: archive and summarize the round, then prepare continuation or completion.
+- `NEED_FIX`: generate a bounded repair instruction for Claude Code and return to construction.
+- `NEED_HUMAN`: write a human handoff packet and stop.
 
 ## Human Interaction
 

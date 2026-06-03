@@ -117,6 +117,7 @@ Goal: verify that Claude Code followed the required Superpower discipline.
 
 Deliverables:
 
+- Source availability scan remains separate from round discipline evidence.
 - Discipline evidence model.
 - TDD evidence check.
 - Planning evidence check.
@@ -127,6 +128,7 @@ Deliverables:
 Acceptance checks:
 
 - Missing discipline evidence fails before Codex review.
+- A passing Superpower source scan alone does not make `discipline:check` pass.
 - Passing discipline evidence allows validation to continue.
 
 ## Phase 8: Quality Gates And Codex Review
@@ -145,6 +147,8 @@ Deliverables:
 Acceptance checks:
 
 - Codex remains read-only.
+- Codex, not Aegis, is the final semantic `PASS` / `NEED_FIX` / `NEED_HUMAN` reviewer.
+- Aegis only packages evidence, runs local prerequisite gates, parses Codex output, and routes deterministically.
 - Aegis does not run forbidden Git or deploy actions.
 - `PASS`, `NEED_FIX`, and `NEED_HUMAN` are routed distinctly.
 

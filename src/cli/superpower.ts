@@ -3,7 +3,8 @@ import { resolve } from 'node:path'
 import { getAegisRuntimePaths } from '../core/aegis-runtime/index.js'
 import {
   buildSuperpowerSourceManifest,
-  checkSuperpowerDisciplineSources,
+  checkSuperpowerDiscipline,
+  collectRoundDisciplineEvidence,
   renderDisciplineReport,
   renderSuperpowerSummary,
   type SuperpowerSourceManifest
@@ -37,7 +38,9 @@ export function runSuperpowerScan(root: string): void {
 export function runDisciplineCheck(root: string): void {
   const paths = getAegisRuntimePaths(root)
   const manifest = JSON.parse(readFileSync(paths.superpowerSources, 'utf-8')) as SuperpowerSourceManifest
-  const result = checkSuperpowerDisciplineSources(manifest)
+  const currentTaskMarkdown = readFileSync(paths.currentTask, 'utf-8')
+  const evidence = collectRoundDisciplineEvidence(paths.currentDir, currentTaskMarkdown)
+  const result = checkSuperpowerDiscipline(manifest, evidence)
   const report = renderDisciplineReport(result, manifest)
 
   mkdirSync(paths.currentDir, { recursive: true })

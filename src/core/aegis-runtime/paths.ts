@@ -24,6 +24,11 @@ export type AegisRuntimePaths = {
   superpowerSources: string
   superpowerSummary: string
   disciplineReport: string
+  planningEvidence: string
+  tddEvidence: string
+  debuggingEvidence: string
+  verificationEvidence: string
+  reviewEvidence: string
   taskQualityReport: string
   qualityReadinessReport: string
   validationReport: string
@@ -63,6 +68,11 @@ export function getAegisRuntimePaths(root: string): AegisRuntimePaths {
     superpowerSources: resolve(currentDir, 'superpower-sources.json'),
     superpowerSummary: resolve(currentDir, 'superpower-summary.md'),
     disciplineReport: resolve(currentDir, 'discipline-report.md'),
+    planningEvidence: resolve(currentDir, 'planning-evidence.md'),
+    tddEvidence: resolve(currentDir, 'tdd-evidence.md'),
+    debuggingEvidence: resolve(currentDir, 'debugging-evidence.md'),
+    verificationEvidence: resolve(currentDir, 'verification-evidence.md'),
+    reviewEvidence: resolve(currentDir, 'review-evidence.md'),
     taskQualityReport: resolve(currentDir, 'task-quality-report.md'),
     qualityReadinessReport: resolve(currentDir, 'quality-readiness-report.md'),
     validationReport: resolve(currentDir, 'validation-report.md'),

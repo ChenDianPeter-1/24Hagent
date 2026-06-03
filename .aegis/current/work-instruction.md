@@ -2,11 +2,11 @@
 
 ## Task
 
-Normalize tracked Aegis current task scaffold.
+Make discipline check require current-round evidence.
 
 ## Instruction
 
-Update the tracked Aegis current task and navigation files so `task:review` can validate the active Aegis task package.
+Task quality report exists. Run `aegis readiness` next.
 
 ## Boundaries
 

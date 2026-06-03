@@ -25,6 +25,11 @@ This spec describes the first target runtime shape for the Aegis rewrite.
     superpower-sources.json
     superpower-summary.md
     discipline-report.md
+    planning-evidence.md
+    tdd-evidence.md
+    debugging-evidence.md
+    verification-evidence.md
+    review-evidence.md
     validation-report.md
     codex-review-prompt.md
     codex-review.jsonl
@@ -117,6 +122,8 @@ The main entrypoint reads `run-state.json`, checks the Git worktree, refreshes n
 
 Subcommands may exist for debug and compatibility, but ordinary users should think of Aegis as one entrypoint, not a command collection.
 
+Aegis does not launch Claude Code. The intended host is an already-running Claude Code session. Claude Code runs `aegis`, reads the refreshed navigation files, performs the instructed construction or review handoff work, and invokes `aegis` again when ready for routing.
+
 ## Non-Interactive Design
 
 Aegis does not prompt in the terminal.
@@ -144,6 +151,22 @@ Aegis uses file references, not directory takeover.
 
 Aegis may copy key Superpower artifacts into `archive/<task-id>/` after the round passes.
 
+`superpower:scan` is a source availability check. It proves that the required Superpower discipline materials exist.
+
+`discipline:check` is a current-round evidence gate. It must inspect evidence that Claude Code actually followed the required discipline in the active round. It fails before Codex review when required evidence is missing, even if `superpower:scan` passed.
+
+The first evidence files are:
+
+```text
+current/planning-evidence.md
+current/tdd-evidence.md
+current/debugging-evidence.md
+current/verification-evidence.md
+current/review-evidence.md
+```
+
+Planning, verification, and review evidence are required for completed construction rounds. TDD evidence is required for feature-style work. Debugging evidence is required for bug-fix work.
+
 ## Gate Order
 
 The target round order is:
@@ -158,6 +181,8 @@ Codex read-only review execution
 Codex result render
 verdict routing
 ```
+
+Local gates may fail before Codex. The final semantic construction-round verdict `PASS`, `NEED_FIX`, or `NEED_HUMAN` comes from Codex review output, not from Aegis.
 
 Verdict routing:
 

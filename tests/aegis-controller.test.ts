@@ -21,6 +21,7 @@ const artifacts = (overrides: Partial<AegisRuntimeArtifacts> = {}): AegisRuntime
   hasValidationReport: false,
   hasSuperpowerSources: false,
   hasDisciplineReport: false,
+  hasPassingDisciplineReport: false,
   hasCodexReviewPrompt: false,
   hasCodexReviewRaw: false,
   hasCodexReview: false,
@@ -76,6 +77,10 @@ describe('Aegis controller decision', () => {
     expect(decideAegisNextAction(
       state({ phase: 'discipline-check' }),
       artifacts({ hasSuperpowerSources: true, hasDisciplineReport: true })
+    ).nextAction).toContain('Repair missing current-round discipline evidence')
+    expect(decideAegisNextAction(
+      state({ phase: 'discipline-check' }),
+      artifacts({ hasSuperpowerSources: true, hasDisciplineReport: true, hasPassingDisciplineReport: true })
     ).nextAction).toContain('Continue to Codex review')
   })
 

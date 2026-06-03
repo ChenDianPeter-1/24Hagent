@@ -1,10 +1,10 @@
 {
   "schema_version": 1,
   "project_id": "aegis-rewrite",
-  "task_id": "20260603-phase9-current-task-normalization",
+  "task_id": "20260603-discipline-evidence-boundary",
   "phase": "task-ready",
   "mode": "auto",
-  "last_verdict": "phase8-pass",
+  "last_verdict": "superpower-communication-pass",
   "retry_count": 0,
-  "updated_at": "2026-06-03T01:10:00+08:00"
+  "updated_at": "2026-06-03T18:30:00+08:00"
 }

@@ -132,19 +132,105 @@ export type DisciplineCheckResult = {
   verdict: 'PASS' | 'NEED_FIX'
   missingSkills: string[]
   sourceCount: number
+  evidence: RoundDisciplineEvidence[]
 }
 
-export function checkSuperpowerDisciplineSources(manifest: SuperpowerSourceManifest): DisciplineCheckResult {
+export type DisciplineEvidenceCategory =
+  | 'planning'
+  | 'tdd'
+  | 'debugging'
+  | 'verification'
+  | 'review'
+
+export type RoundDisciplineEvidence = {
+  category: DisciplineEvidenceCategory
+  label: string
+  path: string
+  required: boolean
+  present: boolean
+  reason: string
+}
+
+const EVIDENCE_FILE_NAMES: Record<DisciplineEvidenceCategory, string> = {
+  planning: 'planning-evidence.md',
+  tdd: 'tdd-evidence.md',
+  debugging: 'debugging-evidence.md',
+  verification: 'verification-evidence.md',
+  review: 'review-evidence.md'
+}
+
+const EVIDENCE_LABELS: Record<DisciplineEvidenceCategory, string> = {
+  planning: 'Planning evidence',
+  tdd: 'TDD or test-first evidence',
+  debugging: 'Systematic debugging evidence',
+  verification: 'Verification-before-completion evidence',
+  review: 'Review/finishing evidence'
+}
+
+function taskLooksLikeBugFix(currentTaskMarkdown: string): boolean {
+  return /\b(bug|bugfix|fix|regression|debug|defect|failure|failing|broken)\b/i.test(currentTaskMarkdown)
+}
+
+function taskLooksLikeFeature(currentTaskMarkdown: string): boolean {
+  return /\b(feature|implement|add|introduce|create|build|wire|route|refactor|migrate|update)\b/i.test(currentTaskMarkdown)
+}
+
+function requiredEvidenceCategories(currentTaskMarkdown: string): Set<DisciplineEvidenceCategory> {
+  const required = new Set<DisciplineEvidenceCategory>(['planning', 'verification', 'review'])
+  if (taskLooksLikeBugFix(currentTaskMarkdown)) required.add('debugging')
+  if (!taskLooksLikeBugFix(currentTaskMarkdown) || taskLooksLikeFeature(currentTaskMarkdown)) required.add('tdd')
+  return required
+}
+
+function hasMeaningfulEvidence(markdown: string): boolean {
+  const body = markdown
+    .replace(/^#.*$/gm, '')
+    .replace(/```[\s\S]*?```/g, '')
+    .trim()
+  return body.length >= 20 && !/\b(todo|tbd|placeholder)\b/i.test(body)
+}
+
+export function collectRoundDisciplineEvidence(
+  currentDir: string,
+  currentTaskMarkdown: string
+): RoundDisciplineEvidence[] {
+  const required = requiredEvidenceCategories(currentTaskMarkdown)
+  return (Object.keys(EVIDENCE_FILE_NAMES) as DisciplineEvidenceCategory[]).map((category) => {
+    const path = resolve(currentDir, EVIDENCE_FILE_NAMES[category])
+    const fileExists = existsSync(path)
+    const present = fileExists && hasMeaningfulEvidence(readFileSync(path, 'utf-8'))
+    return {
+      category,
+      label: EVIDENCE_LABELS[category],
+      path,
+      required: required.has(category),
+      present,
+      reason: required.has(category)
+        ? `${EVIDENCE_LABELS[category]} is required for this round.`
+        : `${EVIDENCE_LABELS[category]} is optional for this round.`
+    }
+  })
+}
+
+export function checkSuperpowerDiscipline(
+  manifest: SuperpowerSourceManifest,
+  evidence: RoundDisciplineEvidence[]
+): DisciplineCheckResult {
   const present = new Set(manifest.sources.filter(source => source.kind === 'skill').map(source => source.name))
   const missingSkills = IMPORTANT_SKILLS.filter(skill => !present.has(skill))
+  const missingEvidence = evidence.filter(item => item.required && !item.present)
   return {
-    verdict: missingSkills.length === 0 ? 'PASS' : 'NEED_FIX',
+    verdict: missingSkills.length === 0 && missingEvidence.length === 0 ? 'PASS' : 'NEED_FIX',
     missingSkills,
-    sourceCount: manifest.sources.length
+    sourceCount: manifest.sources.length,
+    evidence
   }
 }
 
 export function renderDisciplineReport(result: DisciplineCheckResult, manifest: SuperpowerSourceManifest): string {
+  const requiredEvidence = result.evidence.filter(item => item.required)
+  const optionalEvidence = result.evidence.filter(item => !item.required)
+
   return [
     '# Superpower Discipline Report',
     '',
@@ -158,15 +244,31 @@ export function renderDisciplineReport(result: DisciplineCheckResult, manifest: 
       ? 'All required Superpower discipline source skills are present.'
       : result.missingSkills.map(skill => `- Missing: ${skill}`).join('\n'),
     '',
-    '## Evidence',
+    '## Source Evidence',
     '',
     ...manifest.sources
       .filter(source => source.kind === 'skill')
       .map(source => `- ${source.name}: \`${source.path}\``),
     '',
+    '## Current Round Discipline Evidence',
+    '',
+    ...requiredEvidence.map(item =>
+      `- ${item.present ? 'PASS' : 'MISSING'}: ${item.label} (${item.category}) - \`${item.path}\``
+    ),
+    '',
+    '## Optional Round Evidence',
+    '',
+    ...optionalEvidence.map(item =>
+      `- ${item.present ? 'PRESENT' : 'not required'}: ${item.label} (${item.category}) - \`${item.path}\``
+    ),
+    '',
     '## Boundary',
     '',
-    'Aegis uses these sources as evidence and instructions for Claude Code. Aegis must not modify Superpowers or claim it executed a skill without evidence.',
+    'Superpower source availability proves the discipline materials exist. Current-round evidence proves Claude Code actually followed the required discipline before Codex review.',
     ''
   ].join('\n')
+}
+
+export function checkSuperpowerDisciplineSources(manifest: SuperpowerSourceManifest): DisciplineCheckResult {
+  return checkSuperpowerDiscipline(manifest, [])
 }

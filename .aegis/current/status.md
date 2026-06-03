@@ -10,19 +10,19 @@
 
 ## Current Task
 
-`20260603-phase9-current-task-normalization`
+`20260603-discipline-evidence-boundary`
 
 ## Current Task Title
 
-Normalize tracked Aegis current task scaffold.
+Make discipline check require current-round evidence.
 
 ## Last Result
 
-phase8-pass
+superpower-communication-pass
 
 ## Next Action
 
-Run `aegis task:review` to confirm the tracked Aegis current task is schema-valid.
+Task quality report exists. Run `aegis readiness` next.
 
 ## Risks
 

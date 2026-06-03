@@ -17,6 +17,11 @@ function firstNonEmptyLine(text: string): string | undefined {
   return text.split('\n').map((line) => line.trim()).find(Boolean)
 }
 
+function reportHasPassVerdict(path: string): boolean {
+  if (!existsSync(path)) return false
+  return /^Verdict:\s*PASS\s*$/m.test(readFileSync(path, 'utf-8'))
+}
+
 export function runAegis(root: string): void {
   const paths = getAegisRuntimePaths(root)
   const state = parseAegisRunStateJson(readFileSync(paths.runState, 'utf-8'))
@@ -31,6 +36,7 @@ export function runAegis(root: string): void {
     hasValidationReport: existsSync(paths.validationReport),
     hasSuperpowerSources: existsSync(paths.superpowerSources),
     hasDisciplineReport: existsSync(paths.disciplineReport),
+    hasPassingDisciplineReport: reportHasPassVerdict(paths.disciplineReport),
     hasCodexReviewPrompt: existsSync(paths.codexReviewPrompt),
     hasCodexReviewRaw: existsSync(paths.codexReviewRaw),
     hasCodexReview: existsSync(paths.codexReview)

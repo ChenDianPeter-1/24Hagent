@@ -7,6 +7,7 @@ export type AegisRuntimeArtifacts = {
   hasValidationReport: boolean
   hasSuperpowerSources: boolean
   hasDisciplineReport: boolean
+  hasPassingDisciplineReport: boolean
   hasCodexReviewPrompt: boolean
   hasCodexReviewRaw: boolean
   hasCodexReview: boolean
@@ -85,10 +86,16 @@ export function decideAegisNextAction(
         return { nextAction: 'Run `aegis superpower:scan` to record Superpower source references.', risks }
       }
       if (!artifacts.hasDisciplineReport) {
-        return { nextAction: 'Run `aegis discipline:check` to verify required Superpower discipline sources.', risks }
+        return { nextAction: 'Run `aegis discipline:check` to verify current-round Superpower discipline evidence.', risks }
+      }
+      if (!artifacts.hasPassingDisciplineReport) {
+        return {
+          nextAction: 'Repair missing current-round discipline evidence, then rerun `aegis discipline:check` before Codex review.',
+          risks
+        }
       }
       return {
-        nextAction: 'Superpower discipline report exists. Continue to Codex review.',
+        nextAction: 'Superpower discipline evidence passed. Continue to Codex review.',
         risks
       }
     case 'codex-review':
