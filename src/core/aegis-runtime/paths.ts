@@ -14,7 +14,9 @@ export type AegisRuntimePaths = {
   qualityGates: string
   codexRubric: string
   claudeCodeContract: string
+  projectBlueprintDraft: string
   projectBlueprint: string
+  blueprintSummary: string
   projectProgress: string
   currentTask: string
   status: string
@@ -59,7 +61,9 @@ export function getAegisRuntimePaths(root: string): AegisRuntimePaths {
     qualityGates: resolve(configDir, 'quality-gates.json'),
     codexRubric: resolve(configDir, 'codex-rubric.md'),
     claudeCodeContract: resolve(configDir, 'claude-code-contract.md'),
+    projectBlueprintDraft: resolve(blueprintDir, 'project-blueprint.draft.md'),
     projectBlueprint: resolve(blueprintDir, 'project-blueprint.md'),
+    blueprintSummary: resolve(blueprintDir, 'blueprint-summary.md'),
     projectProgress: resolve(blueprintDir, 'project-progress.md'),
     currentTask: resolve(currentDir, 'current-task.md'),
     status: resolve(currentDir, 'status.md'),

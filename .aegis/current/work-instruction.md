@@ -2,11 +2,11 @@
 
 ## Task
 
-Add the Claude Code-facing Aegis contract.
+Add the Aegis blueprint flow.
 
 ## Instruction
 
-Make the Claude Code host contract explicit in docs, runtime config, and CLI output.
+Implement the blueprint start, summary, and confirmation commands without making Aegis call Superpower directly.
 
 ## Boundaries
 

@@ -1,11 +1,11 @@
 # Planning Evidence
 
-Issue #14 and the current runtime were reviewed before implementation. This phase targets the explicit Claude Code host contract that issue #14 required after the minimal Aegis controller.
+Issue #14 and the current runtime were reviewed before implementation. This phase targets A5 / Phase 5: the Aegis side of the Superpower blueprint handshake.
 
 The implementation plan is:
 
-- Add a human-facing contract document under `docs/`.
-- Add a runtime contract under `.aegis/config/`.
-- Add `aegis contract` to print the runtime contract for Claude Code sessions.
-- Update runtime path tests and CLI smoke tests.
-- Keep the contract aligned with Aegis as controller, Claude Code as constructor, and Codex as reviewer.
+- Add blueprint draft and summary paths to the centralized `.aegis` path map.
+- Add a blueprint runtime module for start, summary, and confirm transitions.
+- Add CLI commands: `blueprint:start`, `blueprint:summary`, and `blueprint:confirm`.
+- Keep Aegis as a state/file/instruction writer; Claude Code uses Superpower and asks the human.
+- Cover the renderer and CLI flow with focused tests before full validation.

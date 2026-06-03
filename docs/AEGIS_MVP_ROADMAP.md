@@ -105,8 +105,17 @@ Deliverables:
 - Blueprint confirmation `decision-request.md`.
 - Blueprint revision state.
 - Light blueprint structure check.
+- `aegis blueprint:start`.
+- `aegis blueprint:summary`.
+- `aegis blueprint:confirm`.
 
 Important boundary: Aegis does not directly call Superpower. It generates instructions for Claude Code to use Superpower.
+
+Initial implemented slice:
+
+- `blueprint:start` prepares draft storage and navigation.
+- `blueprint:summary` writes the summary and human decision request.
+- `blueprint:confirm` promotes the draft and returns Aegis to `ready-for-task`.
 
 ## Phase 6: Current Task Generation
 

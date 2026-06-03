@@ -10,11 +10,11 @@ Rewrite 24Hagent into Aegis: a delivery gate that lives inside Claude Code, uses
 
 ## Current Task
 
-Add the Claude Code-facing Aegis contract.
+Add the Aegis blueprint flow.
 
 ## Next Action
 
-Run contract CLI smoke, runtime path tests, full validation, and task review.
+Run blueprint CLI smoke, runtime path tests, full validation, and task review.
 
 ## Risks
 

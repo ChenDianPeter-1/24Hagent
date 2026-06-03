@@ -10,19 +10,19 @@
 
 ## Current Task
 
-`20260603-claude-code-contract`
+`20260603-blueprint-flow`
 
 ## Current Task Title
 
-Add the Claude Code-facing Aegis contract.
+Add the Aegis blueprint flow.
 
 ## Last Result
 
-post-verdict-continuation-pass
+claude-code-contract-pass
 
 ## Next Action
 
-Add tracked contract docs and `aegis contract`, then run full validation.
+Implement blueprint start, summary, and confirm commands, then run full validation.
 
 ## Risks
 

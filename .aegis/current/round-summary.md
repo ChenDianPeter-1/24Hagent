@@ -2,17 +2,17 @@
 
 ## Summary
 
-This round makes the Claude Code-facing Aegis contract explicit and runnable.
+This round adds the Aegis blueprint flow and verifies it with focused and full tests.
 
 ## What Changed
 
-- Added a product-level Claude Code contract document.
-- Added a runtime contract file under `.aegis/config/`.
-- Added `aegis contract` so Claude Code can print the contract in-session.
-- Added tests for the runtime path and CLI output.
+- Added blueprint draft and summary runtime paths.
+- Added `aegis blueprint:start`, `aegis blueprint:summary`, and `aegis blueprint:confirm`.
+- Added tests for blueprint summary rendering and CLI state transitions.
+- Updated runtime docs and roadmap notes for the implemented blueprint handshake.
 
 ## What Did Not Change
 
-- Aegis still does not launch Claude Code.
-- Aegis still does not replace Codex as reviewer.
+- Aegis still does not call Superpower directly.
+- Aegis still does not become an autonomous product planner.
 - No Git, release, deploy, publish, or history rewrite behavior was added.

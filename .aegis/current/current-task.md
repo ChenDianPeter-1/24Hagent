@@ -2,27 +2,26 @@
 
 ## Task ID
 
-`20260603-claude-code-contract`
+`20260603-blueprint-flow`
 
 ## Title
 
-Add the Claude Code-facing Aegis contract.
+Add the Aegis blueprint flow.
 
 ## Specification
 
-Make the host contract for Claude Code explicit, tracked, and runnable.
+Implement the Aegis side of the Superpower blueprint handshake.
 
-This phase must turn the issue #14 boundary from an issue comment into project artifacts:
+This phase must make blueprint drafting, summarizing, and confirmation explicit in the runtime:
 
-- a product-level contract document for humans and maintainers
-- an Aegis runtime contract file that Claude Code can read
-- a CLI command that prints the runtime contract
+- `aegis blueprint:start` prepares `.aegis/blueprint/project-blueprint.draft.md` and tells Claude Code to use Superpower discipline
+- `aegis blueprint:summary` renders `.aegis/blueprint/blueprint-summary.md` and `.aegis/current/decision-request.md`
+- `aegis blueprint:confirm` promotes the draft into `.aegis/blueprint/project-blueprint.md`
 
-The contract must state that Aegis is not a Claude Code launcher, Claude Code is the construction worker, Aegis is the state controller and Codex communication layer, and Codex is the final read-only `PASS / NEED_FIX / NEED_HUMAN` reviewer.
+Aegis must not directly call Superpower. It writes state, files, and instructions; Claude Code performs the Superpower-guided drafting work and asks the human for confirmation.
 
 ## File Scope
 
-- .aegis/config/claude-code-contract.md
 - .aegis/current
 - .aegis/blueprint/project-progress.md
 - .aegis/state/run-state.json
@@ -32,10 +31,11 @@ The contract must state that Aegis is not a Claude Code launcher, Claude Code is
 
 ## Definition of DoD
 
-- [ ] `docs/AEGIS_CLAUDE_CODE_CONTRACT.md` defines the host contract.
-- [ ] `.aegis/config/claude-code-contract.md` provides the runtime contract.
-- [ ] `aegis contract` prints the runtime contract.
-- [ ] Tests cover the new runtime path and CLI command.
+- [ ] Runtime paths include blueprint draft and summary files.
+- [ ] `aegis blueprint:start` prepares a draft and enters `blueprint-draft`.
+- [ ] `aegis blueprint:summary` writes a summary plus decision request and enters `decision-request`.
+- [ ] `aegis blueprint:confirm` confirms the draft and enters `ready-for-task`.
+- [ ] Tests cover renderer behavior and CLI flow.
 
 ## Acceptance Checks
 
@@ -45,7 +45,8 @@ npm run build
 npm run lint
 npm test
 npx vitest run tests/cli-smoke.test.ts tests/aegis-runtime.test.ts
-node dist\cli\main.js contract
+node dist\cli\main.js blueprint:start
+node dist\cli\main.js blueprint:summary
 node dist\cli\main.js task:review
 git status --short --ignored
 ```

@@ -2,8 +2,8 @@
 
 Review focus for this round:
 
-- The contract must explicitly say Aegis is not a Claude Code launcher.
-- The contract must tell Claude Code to read Aegis navigation files.
-- The contract must tell Claude Code to leave discipline evidence.
-- The contract must keep Codex as the final three-state reviewer.
-- The contract must forbid scope expansion and forbidden Git/release/deploy actions through Aegis.
+- Blueprint start must not call Superpower directly.
+- Blueprint start must tell Claude Code to revise the draft using Superpower discipline.
+- Blueprint summary must produce a human-facing decision request.
+- Blueprint confirmation must be explicit and must promote the draft to the confirmed project blueprint.
+- The flow must preserve Aegis as state controller, not autonomous product planner.

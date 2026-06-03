@@ -5,6 +5,7 @@ import {
   isAegisStopPhase,
   parseAegisRunStateJson,
   renderProjectProgress,
+  renderBlueprintSummary,
   renderStatus,
   renderWorkInstruction,
   stringifyAegisRunState,
@@ -30,9 +31,39 @@ describe('Aegis runtime paths', () => {
     expect(paths.runtimeDir).toBe(resolve('D:/repo', '.aegis'))
     expect(paths.qualityGates).toBe(resolve('D:/repo', '.aegis/config/quality-gates.json'))
     expect(paths.claudeCodeContract).toBe(resolve('D:/repo', '.aegis/config/claude-code-contract.md'))
+    expect(paths.projectBlueprintDraft).toBe(resolve('D:/repo', '.aegis/blueprint/project-blueprint.draft.md'))
+    expect(paths.blueprintSummary).toBe(resolve('D:/repo', '.aegis/blueprint/blueprint-summary.md'))
     expect(paths.projectProgress).toBe(resolve('D:/repo', '.aegis/blueprint/project-progress.md'))
     expect(paths.currentTask).toBe(resolve('D:/repo', '.aegis/current/current-task.md'))
     expect(paths.runState).toBe(resolve('D:/repo', '.aegis/state/run-state.json'))
+  })
+})
+
+describe('Aegis blueprint flow renderers', () => {
+  it('summarizes blueprint drafts for human confirmation', () => {
+    const md = renderBlueprintSummary([
+      '# Draft',
+      '',
+      '## Product Goal',
+      '',
+      'Make AI coding work reviewable.',
+      '',
+      '## Product Formula',
+      '',
+      'Aegis = gates + Codex review',
+      '',
+      '## MVP Scope',
+      '',
+      '- Blueprint confirmation',
+      '- Task generation',
+      ''
+    ].join('\n'))
+
+    expect(md).toContain('# Blueprint Summary')
+    expect(md).toContain('Make AI coding work reviewable.')
+    expect(md).toContain('Aegis = gates + Codex review')
+    expect(md).toContain('- Blueprint confirmation')
+    expect(md).toContain('Ask the human to confirm')
   })
 })
 

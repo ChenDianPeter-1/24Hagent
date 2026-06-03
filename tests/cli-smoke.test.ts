@@ -129,6 +129,45 @@ describe('CLI smoke', () => {
     expect(out).toContain('Codex = read-only reviewer')
   })
 
+  it('blueprint flow prepares draft, asks for confirmation, and confirms blueprint', () => {
+    const dir = mkdtempSync(resolve(tmpdir(), 'aegis-blueprint-'))
+    try {
+      mkdirSync(resolve(dir, '.aegis/state'), { recursive: true })
+      writeFileSync(resolve(dir, '.aegis/state/run-state.json'), JSON.stringify({
+        schema_version: 1,
+        project_id: 'aegis-rewrite',
+        task_id: null,
+        phase: 'ready-for-task',
+        mode: 'auto',
+        last_verdict: null,
+        retry_count: 0,
+        updated_at: '2026-06-03T01:30:00+08:00'
+      }))
+
+      const startOut = execSync(cli('blueprint:start'), { encoding: 'utf-8', cwd: dir })
+      expect(startOut).toContain('`blueprint-draft`')
+      expect(readFileSync(resolve(dir, '.aegis/blueprint/project-blueprint.draft.md'), 'utf-8'))
+        .toContain('Aegis does not call Superpower directly')
+
+      const summaryOut = execSync(cli('blueprint:summary'), { encoding: 'utf-8', cwd: dir })
+      expect(summaryOut).toContain('# Decision Request')
+      expect(summaryOut).toContain('Confirm the Aegis project blueprint')
+      expect(readFileSync(resolve(dir, '.aegis/current/decision-request.md'), 'utf-8'))
+        .toContain('aegis blueprint:confirm')
+      expect(JSON.parse(readFileSync(resolve(dir, '.aegis/state/run-state.json'), 'utf-8')).phase)
+        .toBe('decision-request')
+
+      const confirmOut = execSync(cli('blueprint:confirm'), { encoding: 'utf-8', cwd: dir })
+      const state = JSON.parse(readFileSync(resolve(dir, '.aegis/state/run-state.json'), 'utf-8'))
+      expect(confirmOut).toContain('`ready-for-task`')
+      expect(state.phase).toBe('ready-for-task')
+      expect(readFileSync(resolve(dir, '.aegis/blueprint/project-blueprint.md'), 'utf-8'))
+        .toContain('Aegis Project Blueprint Draft')
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
   it('review:render outputs PASS from fixture', () => {
     const dir = mkdtempSync(resolve(tmpdir(), 'aegis-review-render-'))
     const fixture = resolve(root, 'tests/fixtures/codex-review-pass.jsonl')
