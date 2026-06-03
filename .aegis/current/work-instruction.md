@@ -2,11 +2,11 @@
 
 ## Task
 
-Route Codex review verdicts through Aegis runtime.
+Continue Aegis after Codex verdict routing.
 
 ## Instruction
 
-Add Aegis runtime routing for Codex `PASS`, `NEED_FIX`, and `NEED_HUMAN` after `review:render`, while preserving legacy `.agent` render compatibility.
+Make default `aegis` continue from Codex-routed states without clobbering bounded repair instructions or launching Claude Code.
 
 ## Boundaries
 

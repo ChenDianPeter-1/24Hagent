@@ -2,9 +2,9 @@
 
 Tests were added or adjusted before validating the implementation behavior:
 
-- `tests/review-cli.test.ts` now covers `PASS` routing into `passed` state.
-- `tests/review-cli.test.ts` now covers `NEED_FIX` routing into bounded repair instructions.
-- `tests/review-cli.test.ts` now covers `NEED_HUMAN` routing into a human handoff packet.
-- Existing review result and renderer tests are rerun to guard parser and Markdown compatibility.
+- `tests/cli-smoke.test.ts` now covers default `aegis` continuing `need-fix` into `waiting-for-construction`.
+- `tests/cli-smoke.test.ts` now proves the bounded Codex repair instruction is not clobbered.
+- `tests/cli-smoke.test.ts` now covers default `aegis` continuing `passed` into `ready-for-task`.
+- `tests/aegis-controller.test.ts` is rerun to guard existing phase routing.
 
 These tests define the behavior that the implementation must satisfy.

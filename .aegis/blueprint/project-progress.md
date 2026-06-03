@@ -10,11 +10,11 @@ Rewrite 24Hagent into Aegis: a delivery gate that lives inside Claude Code, uses
 
 ## Current Task
 
-Route Codex review verdicts through Aegis runtime.
+Continue Aegis after Codex verdict routing.
 
 ## Next Action
 
-Run review-focused tests, full validation, and confirm post-render verdict routing for PASS, NEED_FIX, and NEED_HUMAN.
+Run CLI smoke coverage for `need-fix` and `passed` continuation, then full validation.
 
 ## Risks
 

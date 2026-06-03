@@ -10,19 +10,19 @@
 
 ## Current Task
 
-`20260603-codex-verdict-routing`
+`20260603-post-verdict-continuation`
 
 ## Current Task Title
 
-Route Codex review verdicts through Aegis runtime.
+Continue Aegis after Codex verdict routing.
 
 ## Last Result
 
-discipline-evidence-pass
+codex-routing-pass
 
 ## Next Action
 
-Implement Codex verdict routing, then run review-focused tests and full validation.
+Implement post-verdict continuation for `need-fix` and `passed`, then run full validation.
 
 ## Risks
 

@@ -2,39 +2,42 @@
 
 ## Task ID
 
-`20260603-codex-verdict-routing`
+`20260603-post-verdict-continuation`
 
 ## Title
 
-Route Codex review verdicts through Aegis runtime.
+Continue Aegis after Codex verdict routing.
 
 ## Specification
 
-Implement the first real Aegis runtime routing step after Codex review rendering.
+Extend the default `aegis` controller so Codex verdict routing does not become a dead end.
 
-`aegis review:render` already parses Codex JSONL and writes `codex-review.md`. Extend the Aegis runtime path so the rendered Codex verdict is consumed as the authoritative three-state result:
+The behavior must preserve the Aegis role split:
 
-- `PASS` updates `run-state.json` to `passed`, clears retry count, and writes a concise `round-summary.md`.
-- `NEED_FIX` updates `run-state.json` to `need-fix`, increments retry count, and writes a bounded `work-instruction.md` for Claude Code.
-- `NEED_HUMAN` updates `run-state.json` to `human-handoff` and writes `human-handoff.md`.
+- Aegis must not repair code by itself.
+- Aegis must not launch Claude Code.
+- Aegis should write deterministic navigation state and instructions for Claude Code to follow.
 
-Legacy `.agent` review rendering must remain compatible and should not require Aegis run-state files.
+Required continuation behavior:
+
+- When run-state is `need-fix`, default `aegis` advances to `waiting-for-construction` and preserves the bounded Codex repair instruction already written by `review:render`.
+- When run-state is `passed`, default `aegis` advances to `ready-for-task`, clears the current task id, and asks for the next concrete task.
+- Normal status, work instruction, and project progress refresh should continue to work for other phases.
 
 ## File Scope
 
 - .aegis/current
 - .aegis/blueprint/project-progress.md
 - .aegis/state/run-state.json
-- src/cli
-- src/core/aegis-runtime
-- tests
+- src/cli/aegis.ts
+- tests/cli-smoke.test.ts
 
 ## Definition of DoD
 
-- [ ] `review:render` routes `PASS` to Aegis `passed` state and writes a round summary.
-- [ ] `review:render` routes `NEED_FIX` to Aegis `need-fix` state and writes bounded repair instructions.
-- [ ] `review:render` routes `NEED_HUMAN` to Aegis `human-handoff` state and writes a human handoff packet.
-- [ ] Existing review parsing and legacy runtime behavior remain covered by tests.
+- [ ] Default `aegis` turns `need-fix` into `waiting-for-construction`.
+- [ ] Default `aegis` preserves bounded Codex repair instructions when entering construction.
+- [ ] Default `aegis` turns `passed` into `ready-for-task`.
+- [ ] CLI smoke tests cover both continuation paths.
 
 ## Acceptance Checks
 
@@ -43,7 +46,7 @@ npm run typecheck
 npm run build
 npm run lint
 npm test
-npx vitest run tests/review-cli.test.ts tests/review-result.test.ts tests/result-renderer.test.ts
+npx vitest run tests/cli-smoke.test.ts tests/aegis-controller.test.ts
 node dist\cli\main.js task:review
 git status --short --ignored
 ```
