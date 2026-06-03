@@ -182,6 +182,13 @@ Acceptance checks:
 - A passing Superpower source scan alone does not make `discipline:check` pass.
 - Passing discipline evidence allows validation to continue.
 
+Implemented slice:
+
+- `discipline:check` now uses a structured evidence model with status, summary, and failure issues.
+- Placeholder or too-short evidence fails.
+- Category-mismatched evidence fails even when the file exists.
+- Source availability remains a separate check from current-round discipline evidence.
+
 ## Phase 8: Quality Gates And Codex Review
 
 Goal: preserve and migrate the strongest existing 24Hagent value: Codex read-only review.

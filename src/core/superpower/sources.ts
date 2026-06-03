@@ -148,7 +148,18 @@ export type RoundDisciplineEvidence = {
   path: string
   required: boolean
   present: boolean
+  status: 'PASS' | 'OPTIONAL' | 'MISSING' | 'INSUFFICIENT'
   reason: string
+  summary: string
+  issues: string[]
+}
+
+export type DisciplineEvidenceRequirement = {
+  category: DisciplineEvidenceCategory
+  label: string
+  required: boolean
+  reason: string
+  expectedSignals: string[]
 }
 
 const EVIDENCE_FILE_NAMES: Record<DisciplineEvidenceCategory, string> = {
@@ -167,8 +178,32 @@ const EVIDENCE_LABELS: Record<DisciplineEvidenceCategory, string> = {
   review: 'Review/finishing evidence'
 }
 
+const EVIDENCE_SIGNALS: Record<DisciplineEvidenceCategory, RegExp[]> = {
+  planning: [
+    /\b(plan|planned|scope|scoped|steps?|sequence|approach|decision|task shape)\b/i,
+    /\b(acceptance|risk|boundary|file scope|implementation order)\b/i
+  ],
+  tdd: [
+    /\b(test|tests|failing|red|green|assert|coverage|regression test)\b/i,
+    /\b(before implementation|before coding|test-first|made .* pass)\b/i
+  ],
+  debugging: [
+    /\b(reproduce|reproduced|root cause|hypothesis|trace|diagnos|debug|failure|failing scenario)\b/i,
+    /\b(observed|isolated|regression|fix verified|broken path)\b/i
+  ],
+  verification: [
+    /\b(ran|passed|verified|verification|typecheck|build|lint|test|tests|smoke)\b/i,
+    /\b(full validation|focused tests|npm test|diff --check)\b/i
+  ],
+  review: [
+    /\b(review|reviewed|diff|scope|acceptance|codex|verdict|pass|need_fix|need_human)\b/i,
+    /\b(changed files|out-of-scope|final check|finishing|commit boundary)\b/i
+  ]
+}
+
 function taskLooksLikeBugFix(currentTaskMarkdown: string): boolean {
-  return /\b(bug|bugfix|fix|regression|debug|defect|failure|failing|broken)\b/i.test(currentTaskMarkdown)
+  return /\b(fix|repair|resolve)\s+(?:a|an|the)?\s*(?:bug|regression|defect|failure|failing|broken)\b/i.test(currentTaskMarkdown) ||
+    /\b(regression|defect|broken path|failing scenario)\b/i.test(currentTaskMarkdown)
 }
 
 function taskLooksLikeFeature(currentTaskMarkdown: string): boolean {
@@ -182,12 +217,70 @@ function requiredEvidenceCategories(currentTaskMarkdown: string): Set<Discipline
   return required
 }
 
-function hasMeaningfulEvidence(markdown: string): boolean {
-  const body = markdown
+function stripMarkdownNoise(markdown: string): string {
+  return markdown
     .replace(/^#.*$/gm, '')
     .replace(/```[\s\S]*?```/g, '')
+    .replace(/\[[^\]]+\]\([^)]+\)/g, '')
     .trim()
-  return body.length >= 20 && !/\b(todo|tbd|placeholder)\b/i.test(body)
+}
+
+function firstEvidenceSummary(markdown: string): string {
+  const body = stripMarkdownNoise(markdown)
+  const firstLine = body.split(/\r?\n/).map(line => line.trim()).find(Boolean) ?? ''
+  return firstLine.length > 140 ? `${firstLine.slice(0, 137)}...` : firstLine
+}
+
+function expectedSignals(category: DisciplineEvidenceCategory): string[] {
+  switch (category) {
+    case 'planning':
+      return ['planned scope/steps', 'acceptance/risk/boundary decision']
+    case 'tdd':
+      return ['test-first or failing-test work', 'tests made to pass']
+    case 'debugging':
+      return ['reproduction/root-cause work', 'observed failure or regression path']
+    case 'verification':
+      return ['commands/checks run', 'passing validation result']
+    case 'review':
+      return ['diff/scope review', 'acceptance or verdict review']
+  }
+}
+
+function evidenceIssues(markdown: string, category: DisciplineEvidenceCategory): string[] {
+  const body = markdown
+    .split(/\r?\n/)
+    .filter(line => !/^#/.test(line.trim()))
+    .join('\n')
+    .trim()
+  const plainBody = stripMarkdownNoise(markdown)
+  const issues: string[] = []
+
+  if (plainBody.length < 40) {
+    issues.push('Evidence is too short to prove the discipline was followed.')
+  }
+  if (/\b(todo|tbd|fill this|coming soon|not yet)\b/i.test(plainBody) || /\bplaceholder\b.*\b(later|todo|tbd|fill)\b/i.test(plainBody)) {
+    issues.push('Evidence contains placeholder language.')
+  }
+  if (!EVIDENCE_SIGNALS[category].some(signal => signal.test(body))) {
+    issues.push(`Evidence does not mention expected ${category} signals: ${expectedSignals(category).join('; ')}.`)
+  }
+
+  return issues
+}
+
+function buildEvidenceRequirement(
+  category: DisciplineEvidenceCategory,
+  required: boolean
+): DisciplineEvidenceRequirement {
+  return {
+    category,
+    label: EVIDENCE_LABELS[category],
+    required,
+    reason: required
+      ? `${EVIDENCE_LABELS[category]} is required for this round.`
+      : `${EVIDENCE_LABELS[category]} is optional for this round.`,
+    expectedSignals: expectedSignals(category)
+  }
 }
 
 export function collectRoundDisciplineEvidence(
@@ -198,16 +291,25 @@ export function collectRoundDisciplineEvidence(
   return (Object.keys(EVIDENCE_FILE_NAMES) as DisciplineEvidenceCategory[]).map((category) => {
     const path = resolve(currentDir, EVIDENCE_FILE_NAMES[category])
     const fileExists = existsSync(path)
-    const present = fileExists && hasMeaningfulEvidence(readFileSync(path, 'utf-8'))
+    const markdown = fileExists ? readFileSync(path, 'utf-8') : ''
+    const issues = fileExists ? evidenceIssues(markdown, category) : ['Evidence file is missing.']
+    const requirement = buildEvidenceRequirement(category, required.has(category))
+    const present = fileExists && issues.length === 0
+    const status = present
+      ? 'PASS'
+      : requirement.required
+        ? fileExists ? 'INSUFFICIENT' : 'MISSING'
+        : 'OPTIONAL'
     return {
       category,
-      label: EVIDENCE_LABELS[category],
+      label: requirement.label,
       path,
-      required: required.has(category),
+      required: requirement.required,
       present,
-      reason: required.has(category)
-        ? `${EVIDENCE_LABELS[category]} is required for this round.`
-        : `${EVIDENCE_LABELS[category]} is optional for this round.`
+      status,
+      reason: requirement.reason,
+      summary: fileExists ? firstEvidenceSummary(markdown) : '',
+      issues: requirement.required || fileExists ? issues : []
     }
   })
 }
@@ -253,13 +355,22 @@ export function renderDisciplineReport(result: DisciplineCheckResult, manifest: 
     '## Current Round Discipline Evidence',
     '',
     ...requiredEvidence.map(item =>
-      `- ${item.present ? 'PASS' : 'MISSING'}: ${item.label} (${item.category}) - \`${item.path}\``
+      [
+        `- ${item.status}: ${item.label} (${item.category}) - \`${item.path}\``,
+        `  - Reason: ${item.reason}`,
+        item.summary ? `  - Summary: ${item.summary}` : '  - Summary: none',
+        item.issues.length > 0 ? `  - Issues: ${item.issues.join(' ')}` : '  - Issues: none'
+      ].join('\n')
     ),
     '',
     '## Optional Round Evidence',
     '',
     ...optionalEvidence.map(item =>
-      `- ${item.present ? 'PRESENT' : 'not required'}: ${item.label} (${item.category}) - \`${item.path}\``
+      [
+        `- ${item.present ? 'PRESENT' : 'not required'}: ${item.label} (${item.category}) - \`${item.path}\``,
+        item.summary ? `  - Summary: ${item.summary}` : '  - Summary: none',
+        item.issues.length > 0 ? `  - Issues: ${item.issues.join(' ')}` : '  - Issues: none'
+      ].join('\n')
     ),
     '',
     '## Boundary',

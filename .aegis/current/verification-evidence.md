@@ -2,19 +2,24 @@
 
 Verification completed for this round:
 
-- Automatic navigation rendering implementation complete.
+- Superpower Discipline Gate strengthening implementation complete.
 
-Planned checks:
+Checks run:
 
 - `npm run typecheck`
 - `npm run build`
 - `npm run lint`
 - `npm test`
-- `npx vitest run tests/cli-smoke.test.ts tests/aegis-runtime.test.ts`
+- `npx vitest run tests/superpower-sources.test.ts tests/superpower-cli.test.ts`
+- `node dist\cli\main.js superpower:scan`
+- `node dist\cli\main.js discipline:check`
 - `node dist\cli\main.js task:review`
 - `npm run typecheck`: PASS.
 - `npm run build`: PASS.
-- `npx vitest run tests/aegis-runtime.test.ts tests/cli-smoke.test.ts`: PASS.
-- `npm test`: PASS, 26 files / 184 tests.
+- `npx vitest run tests/superpower-sources.test.ts tests/superpower-cli.test.ts`: PASS, 2 files / 10 tests.
+- `npm test`: PASS, 26 files / 188 tests.
+- `node dist\cli\main.js superpower:scan`: PASS, 16 sources.
+- `node dist\cli\main.js discipline:check`: PASS.
 - `node dist\cli\main.js task:review`: PASS.
-- `npm run lint`: PASS after rerunning sequentially; the first parallel run collided with the boundary test's temporary violation file.
+- `npm run lint`: PASS.
+- `git diff --check`: PASS.

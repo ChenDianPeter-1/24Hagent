@@ -10,19 +10,19 @@
 
 ## Current Task
 
-`20260603-navigation-refresh`
+`20260603-superpower-discipline-gate`
 
 ## Current Task Title
 
-Add automatic Aegis navigation rendering.
+Strengthen the Superpower Discipline Gate.
 
 ## Last Result
 
-current-task-generation-pass
+navigation-refresh-pass
 
 ## Next Action
 
-Implement centralized navigation refresh and stale derived-file recovery, then run full validation.
+Strengthen structured Superpower discipline evidence, run full validation, then commit A8.
 
 ## Risks
 

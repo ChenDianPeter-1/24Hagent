@@ -96,6 +96,66 @@ describe('Superpower source manifest', () => {
     }
   })
 
+  it('rejects placeholder evidence even when the required file exists', () => {
+    const root = mkdtempSync(join(tmpdir(), 'aegis-superpower-'))
+    try {
+      write('planning-evidence.md', 'TODO placeholder planning evidence will be filled later.', root)
+      write('tdd-evidence.md', 'Wrote a failing test before implementation and made the focused tests pass.', root)
+      write('verification-evidence.md', 'Ran typecheck, build, lint, and test verification before completion.', root)
+      write('review-evidence.md', 'Reviewed the changed files, scope, and acceptance checks before finishing.', root)
+
+      const evidence = collectRoundDisciplineEvidence(root, 'Implement a new feature.')
+      const planning = evidence.find(item => item.category === 'planning')
+
+      expect(planning?.present).toBe(false)
+      expect(planning?.status).toBe('INSUFFICIENT')
+      expect(planning?.issues.join(' ')).toContain('placeholder')
+    } finally {
+      rmSync(root, { recursive: true, force: true })
+    }
+  })
+
+  it('rejects category-mismatched evidence for required categories', () => {
+    const root = mkdtempSync(join(tmpdir(), 'aegis-superpower-'))
+    try {
+      write('planning-evidence.md', 'Ran typecheck, build, lint, and tests before completion.', root)
+      write('tdd-evidence.md', 'Wrote a failing test before implementation and made the focused tests pass.', root)
+      write('verification-evidence.md', 'Ran typecheck, build, lint, and test verification before completion.', root)
+      write('review-evidence.md', 'Reviewed the changed files, scope, and acceptance checks before finishing.', root)
+
+      const evidence = collectRoundDisciplineEvidence(root, 'Implement a new feature.')
+      const planning = evidence.find(item => item.category === 'planning')
+
+      expect(planning?.present).toBe(false)
+      expect(planning?.issues.join(' ')).toContain('planning')
+    } finally {
+      rmSync(root, { recursive: true, force: true })
+    }
+  })
+
+  it('passes bug-fix discipline when systematic debugging evidence is present', () => {
+    const root = mkdtempSync(join(tmpdir(), 'aegis-superpower-'))
+    try {
+      for (const skill of requiredSkills) {
+        write(`skills/${skill}/SKILL.md`, `# ${skill}\n\nSkill body.`, root)
+      }
+      write('planning-evidence.md', 'Planned the scoped regression repair and file boundary before editing.', root)
+      write('debugging-evidence.md', 'Reproduced the failing scenario, isolated the root cause, and traced the broken path.', root)
+      write('verification-evidence.md', 'Ran regression tests, typecheck, build, lint, and full validation before completion.', root)
+      write('review-evidence.md', 'Reviewed the diff against scope, acceptance checks, and the Codex verdict boundary.', root)
+
+      const manifest = buildSuperpowerSourceManifest(root, '2026-06-03T01:50:00+08:00')
+      const evidence = collectRoundDisciplineEvidence(root, 'Fix a regression in validation routing.')
+      const result = checkSuperpowerDiscipline(manifest, evidence)
+
+      expect(evidence.find(item => item.category === 'debugging')?.status).toBe('PASS')
+      expect(evidence.find(item => item.category === 'tdd')?.required).toBe(false)
+      expect(result.verdict).toBe('PASS')
+    } finally {
+      rmSync(root, { recursive: true, force: true })
+    }
+  })
+
   it('fails discipline source check when required skills are missing', () => {
     const root = mkdtempSync(join(tmpdir(), 'aegis-superpower-'))
     try {

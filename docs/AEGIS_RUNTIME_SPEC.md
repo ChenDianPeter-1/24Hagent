@@ -221,7 +221,7 @@ Aegis may copy key Superpower artifacts into `archive/<task-id>/` after the roun
 
 `superpower:scan` is a source availability check. It proves that the required Superpower discipline materials exist.
 
-`discipline:check` is a current-round evidence gate. It must inspect evidence that Claude Code actually followed the required discipline in the active round. It fails before Codex review when required evidence is missing, even if `superpower:scan` passed.
+`discipline:check` is a current-round evidence gate. It must inspect evidence that Claude Code actually followed the required discipline in the active round. It fails before Codex review when required evidence is missing or insufficient, even if `superpower:scan` passed.
 
 The first evidence files are:
 
@@ -234,6 +234,16 @@ current/review-evidence.md
 ```
 
 Planning, verification, and review evidence are required for completed construction rounds. TDD evidence is required for feature-style work. Debugging evidence is required for bug-fix work.
+
+Each evidence file must contain category-specific current-round evidence:
+
+- planning evidence must describe the scope, approach, steps, risk, or acceptance boundary;
+- TDD evidence must describe test-first or failing-test work and the passing result;
+- debugging evidence must describe reproduction, diagnosis, root cause, trace, or the failing path;
+- verification evidence must list the checks that were run and their passing result;
+- review evidence must describe diff, scope, acceptance, Codex-verdict, or finishing review.
+
+Placeholder text, generic status notes, and evidence copied into the wrong category are insufficient. The discipline report renders requirement reasons, a short evidence summary, and concrete failure issues for each required category.
 
 ## Gate Order
 

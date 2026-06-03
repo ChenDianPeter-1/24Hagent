@@ -86,4 +86,38 @@ describe('Superpower CLI integration', () => {
       rmSync(superpowerRoot, { recursive: true, force: true })
     }
   })
+
+  it('reports insufficient structured evidence through the discipline CLI', () => {
+    const root = mkdtempSync(join(tmpdir(), 'aegis-superpower-cli-'))
+    const superpowerRoot = mkdtempSync(join(tmpdir(), 'aegis-superpowers-'))
+    try {
+      write('.aegis/config/aegis.json', JSON.stringify({
+        schema_version: 1,
+        superpower: { local_path_hint: superpowerRoot }
+      }), root)
+      write('.aegis/current/current-task.md', '# Current Task\n\n## Specification\n\nImplement a feature.\n', root)
+      write('.aegis/current/planning-evidence.md', 'TODO placeholder planning evidence.', root)
+      write('.aegis/current/tdd-evidence.md', 'Wrote failing tests before implementation and made them pass.', root)
+      write('.aegis/current/verification-evidence.md', 'Ran typecheck, build, lint, and tests before completion.', root)
+      write('.aegis/current/review-evidence.md', 'Reviewed the changed files against scope and acceptance checks.', root)
+      for (const skill of requiredSkills) {
+        write(`skills/${skill}/SKILL.md`, `# ${skill}\n`, superpowerRoot)
+      }
+      const spy = vi.spyOn(console, 'log').mockImplementation(() => {})
+
+      runSuperpowerScan(root)
+      runDisciplineCheck(root)
+
+      const report = readFileSync(join(root, '.aegis/current/discipline-report.md'), 'utf-8')
+      expect(report).toContain('Verdict: NEED_FIX')
+      expect(report).toContain('INSUFFICIENT: Planning evidence')
+      expect(report).toContain('Evidence contains placeholder language.')
+      expect(process.exitCode).toBe(1)
+      spy.mockRestore()
+    } finally {
+      process.exitCode = undefined
+      rmSync(root, { recursive: true, force: true })
+      rmSync(superpowerRoot, { recursive: true, force: true })
+    }
+  })
 })
