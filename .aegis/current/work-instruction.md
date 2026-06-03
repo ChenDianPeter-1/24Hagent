@@ -2,11 +2,11 @@
 
 ## Task
 
-Add Aegis current-task generation.
+Add automatic Aegis navigation rendering.
 
 ## Instruction
 
-Implement `aegis task:next`, formal current-task rendering, generated-task review compatibility, and high-risk scope permission checks.
+Implement centralized navigation refresh, decision-request rendering, stale navigation recovery, and bounded work-instruction preservation.
 
 ## Boundaries
 

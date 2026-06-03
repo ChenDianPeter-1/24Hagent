@@ -10,19 +10,19 @@
 
 ## Current Task
 
-`20260603-current-task-generation`
+`20260603-navigation-refresh`
 
 ## Current Task Title
 
-Add Aegis current-task generation.
+Add automatic Aegis navigation rendering.
 
 ## Last Result
 
-blueprint-flow-pass
+current-task-generation-pass
 
 ## Next Action
 
-Implement `aegis task:next`, generated current-task validation, and full task-review checks.
+Implement centralized navigation refresh and stale derived-file recovery, then run full validation.
 
 ## Risks
 

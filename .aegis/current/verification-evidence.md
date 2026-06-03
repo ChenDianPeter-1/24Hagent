@@ -2,7 +2,7 @@
 
 Verification completed for this round:
 
-- Current-task generation implementation complete.
+- Automatic navigation rendering implementation complete.
 
 Planned checks:
 
@@ -11,11 +11,10 @@ Planned checks:
 - `npm run lint`
 - `npm test`
 - `npx vitest run tests/cli-smoke.test.ts tests/aegis-runtime.test.ts`
-- `npx vitest run tests/cli-smoke.test.ts tests/aegis-runtime.test.ts tests/task-quality-gate.test.ts`
 - `node dist\cli\main.js task:review`
 - `npm run typecheck`: PASS.
-- `npm run build`: PASS after rerunning outside the sandbox because `dist/` writes were blocked.
-- `npx vitest run tests/cli-smoke.test.ts tests/aegis-runtime.test.ts tests/task-quality-gate.test.ts`: PASS after rerunning outside the sandbox because Vitest/esbuild spawn was blocked.
-- `npm run lint`: PASS.
-- `npm test`: PASS after rerunning outside the sandbox because Vitest/esbuild spawn was blocked.
-- `node dist\cli\main.js task:review`: PASS after rerunning outside the sandbox because report writes were blocked.
+- `npm run build`: PASS.
+- `npx vitest run tests/aegis-runtime.test.ts tests/cli-smoke.test.ts`: PASS.
+- `npm test`: PASS, 26 files / 184 tests.
+- `node dist\cli\main.js task:review`: PASS.
+- `npm run lint`: PASS after rerunning sequentially; the first parallel run collided with the boundary test's temporary violation file.

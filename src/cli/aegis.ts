@@ -1,23 +1,14 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import {
   decideAegisNextAction,
   getAegisRuntimePaths,
   parseAegisRunStateJson,
-  renderProjectProgress,
+  readNavigationContext,
+  refreshNavigation,
   renderStatus,
-  renderWorkInstruction,
   stringifyAegisRunState,
   type AegisRunState
 } from '../core/aegis-runtime/index.js'
-
-function section(md: string, heading: string): string {
-  const re = new RegExp(`## ${heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\n+([\\s\\S]*?)(?=\\n## |$)`)
-  return (md.match(re)?.[1] ?? '').trim()
-}
-
-function firstNonEmptyLine(text: string): string | undefined {
-  return text.split('\n').map((line) => line.trim()).find(Boolean)
-}
 
 function reportHasPassVerdict(path: string): boolean {
   if (!existsSync(path)) return false
@@ -62,10 +53,7 @@ export function runAegis(root: string): void {
   if (state !== initialState) {
     writeFileSync(paths.runState, stringifyAegisRunState(state), 'utf-8')
   }
-  const currentTaskMd = existsSync(paths.currentTask) ? readFileSync(paths.currentTask, 'utf-8') : ''
-  const projectBlueprintMd = existsSync(paths.projectBlueprint) ? readFileSync(paths.projectBlueprint, 'utf-8') : ''
-  const currentTaskTitle = firstNonEmptyLine(section(currentTaskMd, 'Title'))
-  const projectGoal = firstNonEmptyLine(section(projectBlueprintMd, 'Product Goal'))
+  const { currentTaskTitle, projectGoal } = readNavigationContext(paths)
   const decision = decideAegisNextAction(state, {
     hasCurrentTask: existsSync(paths.currentTask),
     hasTaskQualityReport: existsSync(paths.taskQualityReport),
@@ -87,13 +75,9 @@ export function runAegis(root: string): void {
     risks: decision.risks
   }
 
-  mkdirSync(paths.currentDir, { recursive: true })
-  mkdirSync(paths.blueprintDir, { recursive: true })
-  writeFileSync(paths.status, renderStatus(input), 'utf-8')
-  if (!continuation.preserveWorkInstruction) {
-    writeFileSync(paths.workInstruction, renderWorkInstruction(input), 'utf-8')
-  }
-  writeFileSync(paths.projectProgress, renderProjectProgress(input), 'utf-8')
+  refreshNavigation(paths, input, {
+    preserveWorkInstruction: continuation.preserveWorkInstruction
+  })
 
   console.log(renderStatus(input))
 }

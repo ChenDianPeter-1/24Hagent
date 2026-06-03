@@ -10,11 +10,11 @@ Rewrite 24Hagent into Aegis: a delivery gate that lives inside Claude Code, uses
 
 ## Current Task
 
-Add Aegis current-task generation.
+Add automatic Aegis navigation rendering.
 
 ## Next Action
 
-Run current-task generator tests, CLI smoke, full validation, and task review.
+Run navigation refresh tests, CLI smoke, full validation, and task review.
 
 ## Risks
 

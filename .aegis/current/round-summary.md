@@ -2,17 +2,17 @@
 
 ## Summary
 
-This round adds Aegis current-task generation from the confirmed blueprint.
+This round adds centralized Aegis navigation refresh and stale derived-file recovery.
 
 ## What Changed
 
-- Added a formal current-task renderer and generator.
-- Added `aegis task:next` to create a reviewable task from the confirmed blueprint.
-- Strengthened high-risk scope handling so explicit human permission is required.
-- Added tests for generated task markdown, CLI generation, and high-risk permission.
+- Added a reusable navigation refresh runtime service.
+- Moved default `aegis`, blueprint flow, and current-task flow to the shared refresh path.
+- Added automatic decision-request rendering.
+- Added tests for stale navigation recovery and bounded work-instruction preservation.
 
 ## What Did Not Change
 
 - Aegis still does not perform construction.
-- Aegis still does not execute forbidden Git or release actions.
+- Bounded Codex repair instructions are still preserved during `NEED_FIX` continuation.
 - No Git, release, deploy, publish, or history rewrite behavior was added.

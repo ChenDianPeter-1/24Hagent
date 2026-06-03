@@ -2,8 +2,8 @@
 
 Review focus for this round:
 
-- Generated current tasks must contain all required task sections.
-- Generated current tasks must stay small enough for `aegis task:review`.
-- `aegis task:next` must require a confirmed project blueprint.
-- High-risk file scope must require explicit human permission before construction.
-- Aegis must remain the selector/gatekeeper, not the constructor.
+- Navigation files must be derived from run-state/current task/blueprint context, not hand-maintained.
+- Running Aegis should recover stale `status.md`.
+- Decision-request state must write a concrete `.aegis/current/decision-request.md`.
+- `NEED_FIX` continuation must still preserve bounded Codex repair instructions.
+- State-moving commands should reuse the central refresh service.

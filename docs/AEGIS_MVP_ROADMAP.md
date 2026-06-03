@@ -144,6 +144,24 @@ Initial implemented slice:
 - Generated tasks include all required sections and pass `task:review`.
 - High-risk file scope needs explicit human permission before construction.
 
+## Phase 6B: Automatic Navigation Rendering
+
+Goal: make navigation files deterministic derived artifacts.
+
+Deliverables:
+
+- Shared navigation refresh service.
+- Stale `status.md` recovery.
+- Stale `work-instruction.md` and `project-progress.md` recovery.
+- Automatic `decision-request.md` rendering.
+- Preserve bounded repair instructions for Codex `NEED_FIX`.
+
+Acceptance checks:
+
+- Running `aegis` regenerates stale navigation from run-state and task context.
+- Decision-request states write a readable decision request.
+- `NEED_FIX` continuation does not clobber bounded Codex repair instructions.
+
 ## Phase 7: Superpower Discipline Gate
 
 Goal: verify that Claude Code followed the required Superpower discipline.

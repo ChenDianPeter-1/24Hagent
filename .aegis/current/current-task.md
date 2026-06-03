@@ -2,24 +2,25 @@
 
 ## Task ID
 
-`20260603-current-task-generation`
+`20260603-navigation-refresh`
 
 ## Title
 
-Add Aegis current-task generation.
+Add automatic Aegis navigation rendering.
 
 ## Specification
 
-Implement Aegis current-task generation from the confirmed blueprint.
+Implement automatic navigation file rendering and stale derived-file recovery.
 
-This phase must make next-task selection explicit and reviewable:
+This phase must make Aegis navigation files deterministic and centrally refreshed:
 
-- add a renderer/generator for formal `.aegis/current/current-task.md`
-- add `aegis task:next` to generate the next task from `.aegis/blueprint/project-blueprint.md`
-- keep generated tasks compatible with `aegis task:review`
-- require explicit human permission for high-risk file scope before construction
+- add a reusable navigation refresh service
+- make default `aegis` recover stale `status.md`, `work-instruction.md`, and `project-progress.md`
+- render `decision-request.md` when the phase needs human input
+- preserve bounded Codex repair instructions when `NEED_FIX` continues into construction
+- let state-moving commands reuse the same navigation refresh service
 
-Aegis may render a bounded task from blueprint text, but Claude Code remains the construction worker.
+Aegis owns navigation files as derived artifacts. Claude Code reads them and performs only the instructed next step.
 
 ## File Scope
 
@@ -32,11 +33,11 @@ Aegis may render a bounded task from blueprint text, but Claude Code remains the
 
 ## Definition of DoD
 
-- [ ] Current-task generator renders all required task sections.
-- [ ] `aegis task:next` writes `.aegis/current/current-task.md` and enters `task-ready`.
-- [ ] Generated tasks pass `aegis task:review`.
-- [ ] High-risk file scope requires explicit human permission.
-- [ ] Tests cover generator behavior and CLI flow.
+- [ ] Navigation refresh service writes status, work instruction, and project progress.
+- [ ] Stale navigation files are regenerated from run-state and runtime context.
+- [ ] Decision-request phase writes `.aegis/current/decision-request.md`.
+- [ ] Bounded repair work instructions can be preserved.
+- [ ] Tests cover refresh, decision request, and preserve behavior.
 
 ## Acceptance Checks
 
@@ -46,7 +47,6 @@ npm run build
 npm run lint
 npm test
 npx vitest run tests/cli-smoke.test.ts tests/aegis-runtime.test.ts
-node dist\cli\main.js task:next
 node dist\cli\main.js task:review
 git status --short --ignored
 ```

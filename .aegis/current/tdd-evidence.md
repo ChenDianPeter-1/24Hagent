@@ -2,9 +2,9 @@
 
 Tests were added or adjusted before validating the implementation behavior:
 
-- `tests/aegis-runtime.test.ts` now covers formal current-task generation from blueprint content.
-- `tests/cli-smoke.test.ts` now covers `aegis task:next` writing a reviewable current task.
-- `tests/cli-smoke.test.ts` now proves the generated task passes `aegis task:review`.
-- `tests/task-quality-gate.test.ts` now covers explicit human permission for high-risk file scope.
+- `tests/aegis-runtime.test.ts` now covers stale navigation recovery.
+- `tests/aegis-runtime.test.ts` now covers automatic decision-request rendering.
+- `tests/aegis-runtime.test.ts` now covers preserving bounded repair work instructions.
+- Existing CLI smoke tests guard default `aegis`, blueprint flow, and task generation behavior after the refactor.
 
 These tests define the behavior that the implementation must satisfy.

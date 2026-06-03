@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import type { TaskPackage } from '../schemas/task-package.js'
-import { renderProjectProgress, renderStatus, renderWorkInstruction } from './navigation.js'
+import { refreshNavigation } from './navigation-refresh.js'
 import type { AegisRuntimePaths } from './paths.js'
 import { parseAegisRunStateJson, stringifyAegisRunState } from './run-state.js'
 
@@ -137,9 +137,7 @@ export function generateNextCurrentTask(paths: AegisRuntimePaths): string {
     risks: []
   }
 
-  writeFileSync(paths.status, renderStatus(input), 'utf-8')
-  writeFileSync(paths.workInstruction, renderWorkInstruction(input), 'utf-8')
-  writeFileSync(paths.projectProgress, renderProjectProgress(input), 'utf-8')
+  refreshNavigation(paths, input)
 
   return taskMd
 }

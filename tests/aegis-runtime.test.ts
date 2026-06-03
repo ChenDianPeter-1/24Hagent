@@ -1,10 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import { resolve } from 'node:path'
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
 import {
   getAegisRuntimePaths,
   generateCurrentTaskFromBlueprint,
   isAegisStopPhase,
   parseAegisRunStateJson,
+  refreshNavigation,
   renderProjectProgress,
   renderBlueprintSummary,
   renderCurrentTaskMarkdown,
@@ -164,5 +167,74 @@ describe('Aegis navigation renderers', () => {
     expect(md).toContain('# Aegis Project Progress')
     expect(md).toContain('Rewrite 24Hagent into Aegis.')
     expect(md).toContain('Continue Phase 4.')
+  })
+})
+
+describe('Aegis navigation refresh', () => {
+  it('recovers stale derived navigation files from current state', () => {
+    const dir = mkdtempSync(resolve(tmpdir(), 'aegis-nav-refresh-'))
+    try {
+      const paths = getAegisRuntimePaths(dir)
+      mkdirSync(paths.currentDir, { recursive: true })
+      mkdirSync(paths.blueprintDir, { recursive: true })
+      writeFileSync(paths.status, 'stale status', 'utf-8')
+
+      refreshNavigation(paths, {
+        state: state({ phase: 'task-ready', task_id: 'T-NAV' }),
+        currentTaskTitle: 'Refresh navigation',
+        projectGoal: 'Rewrite 24Hagent into Aegis.',
+        nextAction: 'Run `aegis task:review`.',
+        risks: []
+      })
+
+      expect(readFileSync(paths.status, 'utf-8')).toContain('`task-ready`')
+      expect(readFileSync(paths.status, 'utf-8')).toContain('Refresh navigation')
+      expect(readFileSync(paths.projectProgress, 'utf-8')).toContain('Rewrite 24Hagent into Aegis.')
+      expect(readFileSync(paths.workInstruction, 'utf-8')).toContain('Run `aegis task:review`.')
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  it('renders decision requests when state needs human input', () => {
+    const dir = mkdtempSync(resolve(tmpdir(), 'aegis-nav-decision-'))
+    try {
+      const paths = getAegisRuntimePaths(dir)
+
+      refreshNavigation(paths, {
+        state: state({ phase: 'decision-request', task_id: null }),
+        projectGoal: 'Rewrite 24Hagent into Aegis.',
+        nextAction: 'Ask the user to confirm the blueprint.',
+        risks: ['Blueprint is not confirmed.']
+      })
+
+      const decision = readFileSync(paths.decisionRequest, 'utf-8')
+      expect(decision).toContain('# Decision Request')
+      expect(decision).toContain('Ask the user to confirm the blueprint.')
+      expect(decision).toContain('Blueprint is not confirmed.')
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  it('preserves bounded work instructions when requested', () => {
+    const dir = mkdtempSync(resolve(tmpdir(), 'aegis-nav-preserve-'))
+    try {
+      const paths = getAegisRuntimePaths(dir)
+      mkdirSync(paths.currentDir, { recursive: true })
+      writeFileSync(paths.workInstruction, 'keep bounded Codex repair', 'utf-8')
+
+      refreshNavigation(paths, {
+        state: state({ phase: 'waiting-for-construction', task_id: 'T-FIX' }),
+        currentTaskTitle: 'Repair task',
+        nextAction: 'Claude Code should repair only bounded fixes.',
+        risks: []
+      }, { preserveWorkInstruction: true })
+
+      expect(readFileSync(paths.workInstruction, 'utf-8')).toBe('keep bounded Codex repair')
+      expect(readFileSync(paths.status, 'utf-8')).toContain('`waiting-for-construction`')
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
   })
 })

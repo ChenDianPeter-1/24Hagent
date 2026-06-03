@@ -1,10 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import type { AegisRuntimePaths } from './paths.js'
-import {
-  renderProjectProgress,
-  renderStatus,
-  renderWorkInstruction
-} from './navigation.js'
+import { renderStatus } from './navigation.js'
+import { refreshNavigation } from './navigation-refresh.js'
 import {
   parseAegisRunStateJson,
   stringifyAegisRunState,
@@ -31,6 +28,14 @@ function updateState(paths: AegisRuntimePaths, patch: Partial<AegisRunState>): A
   }
   writeFileSync(paths.runState, stringifyAegisRunState(next), 'utf-8')
   return next
+}
+
+function refreshBlueprintNavigation(
+  paths: AegisRuntimePaths,
+  input: Parameters<typeof refreshNavigation>[1]
+): string {
+  refreshNavigation(paths, input)
+  return renderStatus(input)
 }
 
 function renderDraftTemplate(existingBlueprint: string): string {
@@ -147,10 +152,7 @@ export function startBlueprintFlow(paths: AegisRuntimePaths): string {
     risks: ['Blueprint is not confirmed yet.']
   }
 
-  writeFileSync(paths.status, renderStatus(input), 'utf-8')
-  writeFileSync(paths.workInstruction, renderWorkInstruction(input), 'utf-8')
-  writeFileSync(paths.projectProgress, renderProjectProgress(input), 'utf-8')
-  return renderStatus(input)
+  return refreshBlueprintNavigation(paths, input)
 }
 
 export function summarizeBlueprintFlow(paths: AegisRuntimePaths): string {
@@ -178,9 +180,16 @@ export function summarizeBlueprintFlow(paths: AegisRuntimePaths): string {
     risks: ['Blueprint confirmation is pending.']
   }
 
-  writeFileSync(paths.status, renderStatus(input), 'utf-8')
-  writeFileSync(paths.workInstruction, renderWorkInstruction(input), 'utf-8')
-  writeFileSync(paths.projectProgress, renderProjectProgress(input), 'utf-8')
+  refreshNavigation(paths, input, {
+    decisionRequest: {
+      decision: 'Confirm the Aegis project blueprint or request a revision.',
+      options: [
+        'Confirm: Claude Code may run `aegis blueprint:confirm`.',
+        'Revise: Claude Code should edit `.aegis/blueprint/project-blueprint.draft.md` and rerun `aegis blueprint:summary`.'
+      ],
+      context: summary.trim()
+    }
+  })
   return decisionRequest
 }
 
@@ -207,8 +216,5 @@ export function confirmBlueprintFlow(paths: AegisRuntimePaths): string {
     risks: []
   }
 
-  writeFileSync(paths.status, renderStatus(input), 'utf-8')
-  writeFileSync(paths.workInstruction, renderWorkInstruction(input), 'utf-8')
-  writeFileSync(paths.projectProgress, renderProjectProgress(input), 'utf-8')
-  return renderStatus(input)
+  return refreshBlueprintNavigation(paths, input)
 }
