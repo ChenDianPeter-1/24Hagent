@@ -10,19 +10,19 @@
 
 ## Current Task
 
-`20260603-public-docs-aegis`
+`20260603-starter-aegis`
 
 ## Current Task Title
 
-Migrate public docs to Aegis.
+Migrate bundled starter onboarding to Aegis.
 
 ## Last Result
 
-public-docs-aegis-complete
+starter-aegis-complete
 
 ## Next Action
 
-Commit the completed public docs migration phase, then record the result in GitHub issue #14.
+Commit the completed starter migration phase, then record the result in GitHub issue #15.
 
 ## Risks
 

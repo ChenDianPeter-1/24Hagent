@@ -2,13 +2,15 @@
 
 Verification completed for this round:
 
-- `rg -n "24Hagent|24hagent|`24h|24h |\\.agent/|\\.agent" README.md docs/HANDOFF.md docs/HOW_TO_NEW_PROJECT.md`: remaining hits are compatibility or remaining-migration notes.
+- `npm run build:starter`: passed after rerun outside the sandbox because esbuild process spawn was blocked with `spawn EPERM`; generated `24hagent-starter/bin/aegis.mjs`.
+- `rg -n "24Hagent|24hagent|\\.agent|24h" 24hagent-starter scripts/build-starter.mjs tests/starter-layout.test.ts`: remaining hits are the starter folder name, `24h` compatibility note, generated CLI legacy fallback paths, or tests asserting old skill/runtime paths are absent.
 - `npm run typecheck`: passed.
 - `npm run build`: passed.
 - `npm run lint`: passed.
-- `npm test`: passed after rerun outside the sandbox because the sandbox blocked Vitest/esbuild process spawn with `spawn EPERM`; result was 26 files / 206 tests passed.
-- `node dist\cli\main.js safety:check`: passed after rerun outside the sandbox because the sandbox blocked Git process spawn.
-- `node dist\cli\main.js task:review`: passed after rerun outside the sandbox because the sandbox blocked writing the ignored task-quality report.
+- `npx vitest run tests/starter-layout.test.ts`: passed after rerun outside the sandbox because Vitest/esbuild process spawn was blocked with `spawn EPERM`; 1 file / 4 tests passed.
+- `npm test`: passed outside the sandbox; 26 files / 206 tests passed.
+- `node dist\cli\main.js safety:check`: passed.
+- `node dist\cli\main.js task:review`: passed.
 - `git diff --check`: passed.
 
-The public docs now teach Aegis as the product identity and primary command. Legacy 24Hagent, `24h`, and `.agent` mentions in the touched docs are limited to compatibility or remaining-migration notes.
+The starter now installs `aegis-install`, initializes `.aegis/` runtime state, generates `.aegis/current/next-claude-install-prompt.md`, and ships `bin/aegis.mjs`.

@@ -1,4 +1,4 @@
-﻿param(
+param(
     [string]$ProjectRoot = (Get-Location).Path,
     [switch]$SkipReadiness,
     [switch]$NoClaude
@@ -72,24 +72,24 @@ function Copy-PromptToClipboard {
         Set-Clipboard -Value $Prompt
         Write-Ok "Install prompt copied to clipboard."
     } catch {
-        Write-Warn "Could not copy the prompt to clipboard. You can open .agent/NEXT_CLAUDE_INSTALL_PROMPT.md manually."
+        Write-Warn "Could not copy the prompt to clipboard. You can open .aegis/current/next-claude-install-prompt.md manually."
     }
 }
 
 $STARTER_DIR = Split-Path -Parent $MyInvocation.MyCommand.Path
-$BIN = Join-Path $STARTER_DIR "bin/24hagent.mjs"
+$BIN = Join-Path $STARTER_DIR "bin/aegis.mjs"
 $PROJECT_ROOT_FULL = [System.IO.Path]::GetFullPath($ProjectRoot)
 
 if (-not (Test-Path $BIN)) {
-    Write-Host "[ERROR] 24Hagent CLI was not found: $BIN" -ForegroundColor Red
-    Write-Host "Run this in the 24Hagent repository first: npm run build:starter"
+    Write-Host "[ERROR] Aegis CLI was not found: $BIN" -ForegroundColor Red
+    Write-Host "Run this in the Aegis repository first: npm run build:starter"
     exit 1
 }
 
 Set-Location $PROJECT_ROOT_FULL
 
-Write-Host "24Hagent Starter" -ForegroundColor Cyan
-Write-Host "================"
+Write-Host "Aegis Starter" -ForegroundColor Cyan
+Write-Host "============="
 Write-Host "Project root: $PROJECT_ROOT_FULL"
 
 Write-Step "1. Detecting project signals"
@@ -123,13 +123,16 @@ dev = ["pytest", "pytest-cov", "ruff", "mypy"]
     Write-Ok "pyproject.toml created."
 } else {
     Write-Warn "No package.json, pyproject.toml, requirements.txt, or shallow Python files were found."
-    Write-Warn "Project type is unknown. 24Hagent will defer stack selection to Claude onboarding."
+    Write-Warn "Project type is unknown. Aegis will defer stack selection to Claude onboarding."
 }
 
 Write-Step "2. Creating runtime directories"
-New-Item -ItemType Directory -Path ".agent" -Force | Out-Null
+New-Item -ItemType Directory -Path ".aegis/config" -Force | Out-Null
+New-Item -ItemType Directory -Path ".aegis/blueprint" -Force | Out-Null
+New-Item -ItemType Directory -Path ".aegis/current" -Force | Out-Null
+New-Item -ItemType Directory -Path ".aegis/state" -Force | Out-Null
 New-Item -ItemType Directory -Path ".claude/skills" -Force | Out-Null
-Write-Ok ".agent/"
+Write-Ok ".aegis/"
 Write-Ok ".claude/skills/"
 
 Write-Step "3. Installing Claude Code skills"
@@ -138,13 +141,13 @@ $superpowerDst = ".claude/skills/superpower"
 Copy-DirectoryFresh $superpowerSrc $superpowerDst
 Write-Ok ".claude/skills/superpower/"
 
-$installSkillSrc = Join-Path $STARTER_DIR ".claude/skills/24hagent-install"
-$installSkillDst = ".claude/skills/24hagent-install"
+$installSkillSrc = Join-Path $STARTER_DIR ".claude/skills/aegis-install"
+$installSkillDst = ".claude/skills/aegis-install"
 Copy-DirectoryFresh $installSkillSrc $installSkillDst
-Write-Ok ".claude/skills/24hagent-install/"
+Write-Ok ".claude/skills/aegis-install/"
 
 Write-Step "4. Creating quality gates"
-$GATES_PATH = ".agent/QUALITY_GATES.json"
+$GATES_PATH = ".aegis/config/quality-gates.json"
 if (-not (Test-Path $GATES_PATH)) {
     if ($PROJECT_TYPE -eq "python") {
         $gates = @{
@@ -182,12 +185,12 @@ if (-not (Test-Path $GATES_PATH)) {
         }
     }
     Write-TextUtf8NoBom $GATES_PATH ($gates | ConvertTo-Json -Depth 5)
-    Write-Ok ".agent/QUALITY_GATES.json created."
+    Write-Ok ".aegis/config/quality-gates.json created."
 } else {
-    Write-Skip ".agent/QUALITY_GATES.json already exists."
+    Write-Skip ".aegis/config/quality-gates.json already exists."
 }
 
-Write-Step "5. Copying 24Hagent runtime helpers"
+Write-Step "5. Copying Aegis runtime helpers"
 $COPY_LIST = @(
     @{Src="scripts/check_quality_readiness.ps1"; Dst="scripts/check_quality_readiness.ps1"},
     @{Src="scripts/validate_task.ps1";           Dst="scripts/validate_task.ps1"},
@@ -209,13 +212,32 @@ foreach ($item in $COPY_LIST) {
     }
 }
 
-$RUBRIC_SRC = Join-Path $STARTER_DIR ".agent/CODEX_REVIEW_RUBRIC.md"
-$RUBRIC_DST = ".agent/CODEX_REVIEW_RUBRIC.md"
+$RUBRIC_SRC = Join-Path $STARTER_DIR ".aegis/config/codex-rubric.md"
+$RUBRIC_DST = ".aegis/config/codex-rubric.md"
 if ((-not (Test-Path $RUBRIC_DST)) -and (Test-Path $RUBRIC_SRC)) {
     Copy-Item $RUBRIC_SRC $RUBRIC_DST
-    Write-Ok ".agent/CODEX_REVIEW_RUBRIC.md"
+    Write-Ok ".aegis/config/codex-rubric.md"
 } elseif (Test-Path $RUBRIC_DST) {
-    Write-Skip ".agent/CODEX_REVIEW_RUBRIC.md already exists."
+    Write-Skip ".aegis/config/codex-rubric.md already exists."
+}
+
+$STATE_PATH = ".aegis/state/run-state.json"
+if (-not (Test-Path $STATE_PATH)) {
+    $runState = @{
+        schema_version = 1
+        project_id = (Split-Path -Leaf $PROJECT_ROOT_FULL)
+        task_id = "starter-onboarding"
+        phase = "blueprint-draft"
+        mode = "ask"
+        last_verdict = "starter-installed"
+        round_count = 0
+        retry_count = 0
+        updated_at = (Get-Date).ToString("s")
+    }
+    Write-TextUtf8NoBom $STATE_PATH ($runState | ConvertTo-Json -Depth 5)
+    Write-Ok ".aegis/state/run-state.json created."
+} else {
+    Write-Skip ".aegis/state/run-state.json already exists."
 }
 
 Write-Step "6. Generating Claude install prompt"
@@ -224,25 +246,24 @@ if (Test-Path $promptTemplate) {
     $prompt = [System.IO.File]::ReadAllText($promptTemplate)
 } else {
     $prompt = @"
-# 24Hagent Install Onboarding
+# Aegis Install Onboarding
 
-You are now inside a project where 24Hagent starter has completed local setup.
+You are now inside a project where Aegis Starter has completed local setup.
 
 Please read and strictly follow:
 
-.claude/skills/24hagent-install/SKILL.md
+.claude/skills/aegis-install/SKILL.md
 
 Important rules:
 - Start with read-only project intake.
 - Do not modify business code during intake.
 - Use the bundled Superpower Pack at .claude/skills/superpower/.
-- Use Superpower to clarify project intent, current goal, scope, forbidden paths, and stopping condition.
-- Generate only minimal .agent onboarding files.
-- Stop before entering the Orchestrator loop unless the user confirms.
+- Generate only minimal .aegis onboarding files.
+- Stop before entering construction unless the user confirms.
 "@
 }
-Write-TextUtf8NoBom ".agent/NEXT_CLAUDE_INSTALL_PROMPT.md" $prompt
-Write-Ok ".agent/NEXT_CLAUDE_INSTALL_PROMPT.md"
+Write-TextUtf8NoBom ".aegis/current/next-claude-install-prompt.md" $prompt
+Write-Ok ".aegis/current/next-claude-install-prompt.md"
 Copy-PromptToClipboard $prompt
 
 Write-Step "7. Running readiness check"
@@ -256,7 +277,7 @@ if ($PROJECT_TYPE -eq "unknown") {
     $ErrorActionPreference = $oldErrorActionPreference
     Write-Host $result
     if ($readinessExitCode -ne 0) {
-        Write-Warn "Readiness found blocking issues. Fix the reported toolchain gaps before starting the orchestrator loop."
+        Write-Warn "Readiness found blocking issues. Fix the reported toolchain gaps before starting the Aegis delivery loop."
     }
 } else {
     Write-Skip "Readiness check skipped."
@@ -287,16 +308,16 @@ if ($NoClaude) {
     } else {
         Write-Warn "Claude CLI was not found on PATH."
         Write-Host ""
-        Write-Host "24Hagent setup is complete."
+        Write-Host "Aegis setup is complete."
         Write-Host "The install prompt has been copied to your clipboard."
         Write-Host ""
         Write-Host "Next steps:"
         Write-Host "1. Open Claude Code in this project directory."
-        Write-Host "2. Paste the prompt from .agent/NEXT_CLAUDE_INSTALL_PROMPT.md."
-        Write-Host "3. Claude will read .claude/skills/24hagent-install/SKILL.md."
+        Write-Host "2. Paste the prompt from .aegis/current/next-claude-install-prompt.md."
+        Write-Host "3. Claude will read .claude/skills/aegis-install/SKILL.md."
         Write-Host "4. The install skill will use .claude/skills/superpower/ for project onboarding."
     }
 }
 
 Write-Host ""
-Write-Host "24Hagent starter setup finished." -ForegroundColor Green
+Write-Host "Aegis starter setup finished." -ForegroundColor Green

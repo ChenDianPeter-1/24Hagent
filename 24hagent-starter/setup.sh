@@ -14,16 +14,16 @@ done
 
 STARTER_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(pwd)"
-BIN="$STARTER_DIR/bin/24hagent.mjs"
+BIN="$STARTER_DIR/bin/aegis.mjs"
 
 if [ ! -f "$BIN" ]; then
-  echo "[ERROR] 24Hagent CLI was not found: $BIN"
-  echo "Run this in the 24Hagent repository first: npm run build:starter"
+  echo "[ERROR] Aegis CLI was not found: $BIN"
+  echo "Run this in the Aegis repository first: npm run build:starter"
   exit 1
 fi
 
-echo "24Hagent Starter"
-echo "================"
+echo "Aegis Starter"
+echo "============="
 echo "Project root: $PROJECT_ROOT"
 
 echo ""
@@ -50,28 +50,28 @@ TOMLEOF
   echo "[OK] pyproject.toml created."
 else
   echo "[WARN] No package.json, pyproject.toml, requirements.txt, or shallow Python files were found."
-  echo "[WARN] Project type is unknown. 24Hagent will defer stack selection to Claude onboarding."
+  echo "[WARN] Project type is unknown. Aegis will defer stack selection to Claude onboarding."
 fi
 
 echo ""
 echo "2. Creating runtime directories"
-mkdir -p .agent .claude/skills
-echo "[OK] .agent/"
+mkdir -p .aegis/config .aegis/blueprint .aegis/current .aegis/state .claude/skills
+echo "[OK] .aegis/"
 echo "[OK] .claude/skills/"
 
 echo ""
 echo "3. Installing Claude Code skills"
-mkdir -p .claude/skills/superpower .claude/skills/24hagent-install
+mkdir -p .claude/skills/superpower .claude/skills/aegis-install
 cp -R "$STARTER_DIR/.claude/skills/superpower/." .claude/skills/superpower/
-cp -R "$STARTER_DIR/.claude/skills/24hagent-install/." .claude/skills/24hagent-install/
+cp -R "$STARTER_DIR/.claude/skills/aegis-install/." .claude/skills/aegis-install/
 echo "[OK] .claude/skills/superpower/"
-echo "[OK] .claude/skills/24hagent-install/"
+echo "[OK] .claude/skills/aegis-install/"
 
 echo ""
 echo "4. Creating quality gates"
-if [ ! -f ".agent/QUALITY_GATES.json" ]; then
+if [ ! -f ".aegis/config/quality-gates.json" ]; then
   if [ "$PROJECT_TYPE" = "python" ]; then
-    cat > .agent/QUALITY_GATES.json << 'JSONEOF'
+    cat > .aegis/config/quality-gates.json << 'JSONEOF'
 {
   "project_type": "python",
   "tdd_required": true,
@@ -90,7 +90,7 @@ if [ ! -f ".agent/QUALITY_GATES.json" ]; then
 }
 JSONEOF
   elif [ "$PROJECT_TYPE" = "node" ]; then
-    cat > .agent/QUALITY_GATES.json << 'JSONEOF'
+    cat > .aegis/config/quality-gates.json << 'JSONEOF'
 {
   "project_type": "node",
   "tdd_required": true,
@@ -109,7 +109,7 @@ JSONEOF
 }
 JSONEOF
   else
-    cat > .agent/QUALITY_GATES.json << 'JSONEOF'
+    cat > .aegis/config/quality-gates.json << 'JSONEOF'
 {
   "project_type": "unknown",
   "tdd_required": true,
@@ -143,13 +143,13 @@ JSONEOF
 }
 JSONEOF
   fi
-  echo "[OK] .agent/QUALITY_GATES.json created."
+  echo "[OK] .aegis/config/quality-gates.json created."
 else
-  echo "[SKIP] .agent/QUALITY_GATES.json already exists."
+  echo "[SKIP] .aegis/config/quality-gates.json already exists."
 fi
 
 echo ""
-echo "5. Copying 24Hagent runtime helpers"
+echo "5. Copying Aegis runtime helpers"
 for item in "scripts/check_quality_readiness.ps1" "scripts/validate_task.ps1" "scripts/codex_review.ps1" "CLAUDE_ORCHESTRATOR_PROTOCOL.md" "START_ORCHESTRATOR.md"; do
   if [ ! -f "$item" ] && [ -f "$STARTER_DIR/$item" ]; then
     mkdir -p "$(dirname "$item")"
@@ -160,22 +160,39 @@ for item in "scripts/check_quality_readiness.ps1" "scripts/validate_task.ps1" "s
   fi
 done
 
-if [ ! -f ".agent/CODEX_REVIEW_RUBRIC.md" ] && [ -f "$STARTER_DIR/.agent/CODEX_REVIEW_RUBRIC.md" ]; then
-  cp "$STARTER_DIR/.agent/CODEX_REVIEW_RUBRIC.md" .agent/CODEX_REVIEW_RUBRIC.md
-  echo "[OK] .agent/CODEX_REVIEW_RUBRIC.md"
+if [ ! -f ".aegis/config/codex-rubric.md" ] && [ -f "$STARTER_DIR/.aegis/config/codex-rubric.md" ]; then
+  cp "$STARTER_DIR/.aegis/config/codex-rubric.md" .aegis/config/codex-rubric.md
+  echo "[OK] .aegis/config/codex-rubric.md"
+fi
+
+if [ ! -f ".aegis/state/run-state.json" ]; then
+  cat > .aegis/state/run-state.json << JSONEOF
+{
+  "schema_version": 1,
+  "project_id": "$(basename "$PROJECT_ROOT")",
+  "task_id": "starter-onboarding",
+  "phase": "blueprint-draft",
+  "mode": "ask",
+  "last_verdict": "starter-installed",
+  "round_count": 0,
+  "retry_count": 0,
+  "updated_at": "$(date +%Y-%m-%dT%H:%M:%S)"
+}
+JSONEOF
+  echo "[OK] .aegis/state/run-state.json created."
 fi
 
 echo ""
 echo "6. Generating Claude install prompt"
-cp "$STARTER_DIR/templates/NEXT_CLAUDE_INSTALL_PROMPT.template.md" .agent/NEXT_CLAUDE_INSTALL_PROMPT.md
+cp "$STARTER_DIR/templates/NEXT_CLAUDE_INSTALL_PROMPT.template.md" .aegis/current/next-claude-install-prompt.md
 if command -v pbcopy >/dev/null 2>&1; then
-  pbcopy < .agent/NEXT_CLAUDE_INSTALL_PROMPT.md
+  pbcopy < .aegis/current/next-claude-install-prompt.md
   echo "[OK] Install prompt copied to clipboard."
 elif command -v xclip >/dev/null 2>&1; then
-  xclip -selection clipboard < .agent/NEXT_CLAUDE_INSTALL_PROMPT.md
+  xclip -selection clipboard < .aegis/current/next-claude-install-prompt.md
   echo "[OK] Install prompt copied to clipboard."
 else
-  echo "[WARN] Clipboard copy is not available. Open .agent/NEXT_CLAUDE_INSTALL_PROMPT.md manually."
+  echo "[WARN] Clipboard copy is not available. Open .aegis/current/next-claude-install-prompt.md manually."
 fi
 
 echo ""
@@ -183,7 +200,7 @@ echo "7. Running readiness check"
 if [ "$PROJECT_TYPE" = "unknown" ]; then
   echo "[SKIP] Readiness check skipped because project type is unknown. Claude onboarding will clarify the stack first."
 elif [ "$SKIP_READINESS" = false ]; then
-  node "$BIN" readiness || echo "[WARN] Readiness found blocking issues. Fix them before starting the orchestrator loop."
+  node "$BIN" readiness || echo "[WARN] Readiness found blocking issues. Fix them before starting the Aegis delivery loop."
 else
   echo "[SKIP] Readiness check skipped."
 fi
@@ -196,24 +213,24 @@ elif command -v claude >/dev/null 2>&1; then
   echo "[OK] Claude CLI found."
   if claude --help 2>&1 | grep -Eq '\[prompt\]|Arguments:.*prompt'; then
     echo "Launching Claude Code with the install prompt from the project root."
-    claude "$(cat .agent/NEXT_CLAUDE_INSTALL_PROMPT.md)"
+    claude "$(cat .aegis/current/next-claude-install-prompt.md)"
   else
     echo "Launching Claude Code from the project root."
-    echo "Your Claude CLI does not advertise prompt injection. Paste .agent/NEXT_CLAUDE_INSTALL_PROMPT.md."
+    echo "Your Claude CLI does not advertise prompt injection. Paste .aegis/current/next-claude-install-prompt.md."
     claude
   fi
 else
   echo "[WARN] Claude CLI was not found on PATH."
   echo ""
-  echo "24Hagent setup is complete."
-  echo "The install prompt is available at .agent/NEXT_CLAUDE_INSTALL_PROMPT.md."
+  echo "Aegis setup is complete."
+  echo "The install prompt is available at .aegis/current/next-claude-install-prompt.md."
   echo ""
   echo "Next steps:"
   echo "1. Open Claude Code in this project directory."
-  echo "2. Paste the prompt from .agent/NEXT_CLAUDE_INSTALL_PROMPT.md."
-  echo "3. Claude will read .claude/skills/24hagent-install/SKILL.md."
+  echo "2. Paste the prompt from .aegis/current/next-claude-install-prompt.md."
+  echo "3. Claude will read .claude/skills/aegis-install/SKILL.md."
   echo "4. The install skill will use .claude/skills/superpower/ for project onboarding."
 fi
 
 echo ""
-echo "24Hagent starter setup finished."
+echo "Aegis starter setup finished."

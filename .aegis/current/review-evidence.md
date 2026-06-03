@@ -2,14 +2,15 @@
 
 Review focus for this round:
 
-- Public docs must not teach `24h` as the primary command.
-- Public docs must not teach `.agent/` as the current runtime.
-- Legacy starter gaps should be named honestly as remaining migration work.
-- The Aegis role boundary must remain explicit: Claude Code constructs, Codex reviews, Aegis gates and routes.
-- Git/release forbidden-action boundaries must remain visible.
+- Starter README must teach Aegis as the product.
+- Setup scripts must create `.aegis/` runtime state, not `.agent/` onboarding state.
+- Generated install prompt must route Claude Code through `aegis-install`.
+- PowerShell wrappers must call the Aegis CLI without reintroducing the old runtime contract.
+- Legacy terms must remain only as compatibility or absence-check references.
 
 Review result:
 
-- README, handoff, and new-project guide now present Aegis as the primary product.
-- `24h` is described only as a compatibility alias.
-- `.agent` and 24Hagent references are retained only where they identify legacy starter or remaining migration work.
+- Starter README, setup scripts, install prompt, and install skill are Aegis-first.
+- Old PowerShell scripts are thin Aegis CLI wrappers.
+- Old `.agent` rubric scaffold was replaced by `.aegis/config/codex-rubric.md`.
+- Remaining old terms are compatibility or generated fallback references, not onboarding instructions.

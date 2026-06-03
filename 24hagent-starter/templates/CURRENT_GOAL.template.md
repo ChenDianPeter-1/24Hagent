@@ -1,7 +1,7 @@
 # Current Goal
 
 ## Goal
-<!-- What 24Hagent should help with right now. -->
+<!-- What Aegis should help Claude Code control right now. -->
 
 ## Work Type
 <!-- bug fix, tests, new feature, refactor, or quality-gate setup -->

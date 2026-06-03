@@ -39,6 +39,64 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
   mod
 ));
 
+// src/core/aegis-runtime/paths.ts
+import { resolve } from "node:path";
+function getAegisRuntimePaths(root) {
+  const runtimeDir = resolve(root, AEGIS_DIR);
+  const configDir = resolve(runtimeDir, "config");
+  const blueprintDir = resolve(runtimeDir, "blueprint");
+  const currentDir = resolve(runtimeDir, "current");
+  const stateDir = resolve(runtimeDir, "state");
+  const archiveDir = resolve(runtimeDir, "archive");
+  return {
+    root,
+    runtimeDir,
+    configDir,
+    blueprintDir,
+    currentDir,
+    stateDir,
+    archiveDir,
+    aegisConfig: resolve(configDir, "aegis.json"),
+    qualityGates: resolve(configDir, "quality-gates.json"),
+    codexRubric: resolve(configDir, "codex-rubric.md"),
+    claudeCodeContract: resolve(configDir, "claude-code-contract.md"),
+    projectBlueprintDraft: resolve(blueprintDir, "project-blueprint.draft.md"),
+    projectBlueprint: resolve(blueprintDir, "project-blueprint.md"),
+    blueprintSummary: resolve(blueprintDir, "blueprint-summary.md"),
+    projectProgress: resolve(blueprintDir, "project-progress.md"),
+    currentTask: resolve(currentDir, "current-task.md"),
+    status: resolve(currentDir, "status.md"),
+    workInstruction: resolve(currentDir, "work-instruction.md"),
+    decisionRequest: resolve(currentDir, "decision-request.md"),
+    humanHandoff: resolve(currentDir, "human-handoff.md"),
+    roundSummary: resolve(currentDir, "round-summary.md"),
+    superpowerSources: resolve(currentDir, "superpower-sources.json"),
+    superpowerSummary: resolve(currentDir, "superpower-summary.md"),
+    disciplineReport: resolve(currentDir, "discipline-report.md"),
+    planningEvidence: resolve(currentDir, "planning-evidence.md"),
+    tddEvidence: resolve(currentDir, "tdd-evidence.md"),
+    debuggingEvidence: resolve(currentDir, "debugging-evidence.md"),
+    verificationEvidence: resolve(currentDir, "verification-evidence.md"),
+    reviewEvidence: resolve(currentDir, "review-evidence.md"),
+    taskQualityReport: resolve(currentDir, "task-quality-report.md"),
+    qualityReadinessReport: resolve(currentDir, "quality-readiness-report.md"),
+    validationReport: resolve(currentDir, "validation-report.md"),
+    safetyReport: resolve(currentDir, "safety-report.md"),
+    commitSuggestion: resolve(currentDir, "commit-suggestion.md"),
+    codexReviewPrompt: resolve(currentDir, "codex-review-prompt.md"),
+    codexReviewRaw: resolve(currentDir, "codex-review.jsonl"),
+    codexReview: resolve(currentDir, "codex-review.md"),
+    runState: resolve(stateDir, "run-state.json")
+  };
+}
+var AEGIS_DIR;
+var init_paths = __esm({
+  "src/core/aegis-runtime/paths.ts"() {
+    "use strict";
+    AEGIS_DIR = ".aegis";
+  }
+});
+
 // node_modules/zod/v3/helpers/util.js
 var util, objectUtil, ZodParsedType, getParsedType;
 var init_util = __esm({
@@ -4145,419 +4203,812 @@ var init_zod = __esm({
   }
 });
 
-// src/core/schemas/run-state.ts
-function parseRunStateJson(raw) {
-  return RunStateSchema.parse(JSON.parse(raw));
+// src/core/aegis-runtime/run-state.ts
+function parseAegisRunStateJson(raw) {
+  return AegisRunStateSchema.parse(JSON.parse(raw));
 }
-var FixHistoryEntry, RunStateSchema;
+function stringifyAegisRunState(state) {
+  return `${JSON.stringify(state, null, 2)}
+`;
+}
+var AegisPhaseSchema, AegisModeSchema, AegisVerdictSchema, AegisRunStateSchema;
 var init_run_state = __esm({
-  "src/core/schemas/run-state.ts"() {
+  "src/core/aegis-runtime/run-state.ts"() {
     "use strict";
     init_zod();
-    FixHistoryEntry = external_exports.object({
-      attempt: external_exports.number().int().min(1),
-      timestamp: external_exports.string().min(1),
-      verdict: external_exports.enum(["PASS", "NEED_FIX", "NEED_HUMAN"]).optional(),
-      required_fixes: external_exports.array(external_exports.string()).optional(),
-      blocking_issue_ids: external_exports.array(external_exports.string()).optional(),
-      reason: external_exports.string().optional()
-    });
-    RunStateSchema = external_exports.object({
-      active_task_id: external_exports.string().nullable(),
-      phase: external_exports.string().min(1),
-      retry_count: external_exports.number().int().min(0).max(3),
-      last_verdict: external_exports.enum(["PASS", "NEED_FIX", "NEED_HUMAN"]).nullable(),
-      consecutive_failures: external_exports.number().int().min(0),
-      fix_history: external_exports.array(FixHistoryEntry).default([]),
-      updated_at: external_exports.string().nullable()
+    AegisPhaseSchema = external_exports.enum([
+      "uninitialized",
+      "blueprint-draft",
+      "blueprint-confirmation",
+      "blueprint-revision",
+      "ready-for-task",
+      "task-ready",
+      "waiting-for-construction",
+      "validating",
+      "discipline-check",
+      "codex-review",
+      "need-fix",
+      "passed",
+      "paused",
+      "blocked",
+      "hard-blocked",
+      "decision-request",
+      "human-handoff",
+      "archived"
+    ]);
+    AegisModeSchema = external_exports.enum(["auto", "allow", "ask"]);
+    AegisVerdictSchema = external_exports.enum(["PASS", "NEED_FIX", "NEED_HUMAN"]);
+    AegisRunStateSchema = external_exports.object({
+      schema_version: external_exports.literal(1),
+      project_id: external_exports.string().min(1),
+      task_id: external_exports.string().min(1).nullable(),
+      phase: AegisPhaseSchema,
+      mode: AegisModeSchema,
+      last_verdict: external_exports.union([AegisVerdictSchema, external_exports.string().min(1)]).nullable().default(null),
+      round_count: external_exports.number().int().min(0).max(100).default(0),
+      retry_count: external_exports.number().int().min(0).max(10),
+      updated_at: external_exports.string().min(1)
     });
   }
 });
 
-// src/core/schemas/task-package.ts
-function escapeRe(s) {
-  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-function section(md, heading) {
-  const re = new RegExp(`## ${escapeRe(heading)}\\s*\\n+([\\s\\S]*?)(?=\\n## |$)`);
-  const m = md.match(re);
-  return (m?.[1] ?? "").trim();
-}
-function parseBulletList(text) {
-  if (!text) return [];
-  return text.split("\n").map((l) => l.replace(/^-\s*/, "").trim()).filter(Boolean);
-}
-function parseDoDList(text) {
-  if (!text) return [];
-  return text.split("\n").map((l) => l.match(/^-\s*\[([ x])\]\s*(.+)/)).filter((m) => m !== null).map((m) => ({ content: m[2].trim(), checked: m[1] === "x" }));
-}
-function extractAcceptanceChecks(text) {
-  const m = text.match(/```[\s\S]*?\n([\s\S]*?)```/);
-  return m ? m[1].trim() : text.trim();
-}
-function parseCurrentTaskMarkdown(rawMd) {
-  return TaskPackageSchema.parse({
-    task_id: section(rawMd, "Task ID"),
-    title: section(rawMd, "Title"),
-    specification: section(rawMd, "Specification"),
-    file_scope: parseBulletList(section(rawMd, "File Scope")),
-    definition_of_done: parseDoDList(section(rawMd, "Definition of DoD")),
-    acceptance_checks: extractAcceptanceChecks(section(rawMd, "Acceptance Checks")),
-    stop_rule: section(rawMd, "Stop Rule")
-  });
-}
-var DoDItem, TaskPackageSchema;
-var init_task_package = __esm({
-  "src/core/schemas/task-package.ts"() {
-    "use strict";
-    init_zod();
-    DoDItem = external_exports.object({
-      content: external_exports.string(),
-      checked: external_exports.boolean()
-    });
-    TaskPackageSchema = external_exports.object({
-      task_id: external_exports.string().min(1),
-      title: external_exports.string().min(1),
-      specification: external_exports.string().min(1),
-      file_scope: external_exports.array(external_exports.string()).min(1),
-      definition_of_done: external_exports.array(DoDItem).min(1),
-      acceptance_checks: external_exports.string().min(1),
-      stop_rule: external_exports.string().min(1)
-    });
-  }
-});
-
-// src/cli/status.ts
-var status_exports = {};
-__export(status_exports, {
-  formatStatus: () => formatStatus,
-  runStatus: () => runStatus
-});
-import { readFileSync } from "node:fs";
-import { resolve } from "node:path";
-function formatStatus(rs, tp) {
+// src/core/aegis-runtime/navigation.ts
+function renderStatus(input) {
+  const risks = input.risks?.length ? input.risks.map((risk) => `- ${risk}`).join("\n") : "- None recorded.";
   return [
-    `\u5F53\u524D\u9636\u6BB5: ${rs.phase}`,
-    `\u5F53\u524D\u4EFB\u52A1: ${tp.task_id} - ${tp.title}`,
-    `\u4E0A\u6B21\u5BA1\u67E5: ${rs.last_verdict ?? "\u65E0"}`
+    "# Aegis Status",
+    "",
+    "## Phase",
+    "",
+    `\`${input.state.phase}\``,
+    "",
+    "## Mode",
+    "",
+    `\`${input.state.mode}\``,
+    "",
+    "## Mode Decision",
+    "",
+    input.modeDecision || "No mode-specific transition was applied.",
+    "",
+    "## Current Task",
+    "",
+    input.state.task_id ? `\`${input.state.task_id}\`` : "No current task.",
+    "",
+    "## Current Task Title",
+    "",
+    input.currentTaskTitle || "Not set.",
+    "",
+    "## Last Result",
+    "",
+    input.lastResult || input.state.last_verdict || "Not set.",
+    "",
+    "## Next Action",
+    "",
+    input.nextAction || "Run `aegis` to refresh status.",
+    "",
+    "## Risks",
+    "",
+    risks,
+    ""
   ].join("\n");
 }
-function runStatus(root) {
-  const rs = parseRunStateJson(readFileSync(resolve(root, ".agent/RUN_STATE.json"), "utf-8"));
-  const tp = parseCurrentTaskMarkdown(readFileSync(resolve(root, ".agent/CURRENT_TASK.md"), "utf-8"));
-  console.log(formatStatus(rs, tp));
+function renderWorkInstruction(input) {
+  return [
+    "# Work Instruction",
+    "",
+    "## Task",
+    "",
+    input.currentTaskTitle || input.state.task_id || "No current task.",
+    "",
+    "## Instruction",
+    "",
+    input.nextAction || "Claude Code should wait for Aegis to generate the next instruction.",
+    "",
+    "## Boundaries",
+    "",
+    "- Do not exceed `current-task.md` file scope.",
+    "- Do not perform forbidden Git or release actions.",
+    "- Leave evidence for the required Superpower discipline.",
+    ""
+  ].join("\n");
 }
-var init_status = __esm({
-  "src/cli/status.ts"() {
+function renderProjectProgress(input) {
+  const risks = input.risks?.length ? input.risks.map((risk) => `- ${risk}`).join("\n") : "- None recorded.";
+  return [
+    "# Aegis Project Progress",
+    "",
+    "## Project Goal",
+    "",
+    input.projectGoal || "Not set.",
+    "",
+    "## Current Phase",
+    "",
+    `\`${input.state.phase}\``,
+    "",
+    "## Current Task",
+    "",
+    input.currentTaskTitle || input.state.task_id || "No current task.",
+    "",
+    "## Next Action",
+    "",
+    input.nextAction || "Run `aegis` to continue.",
+    "",
+    "## Mode Decision",
+    "",
+    input.modeDecision || "No mode-specific transition was applied.",
+    "",
+    "## Risks",
+    "",
+    risks,
+    ""
+  ].join("\n");
+}
+var init_navigation = __esm({
+  "src/core/aegis-runtime/navigation.ts"() {
     "use strict";
-    init_run_state();
-    init_task_package();
   }
 });
 
-// src/core/quality/readiness-engine.ts
-function identifyPlaceholder(script) {
-  if (!script) return true;
-  if (script.includes("no test specified")) return true;
-  if (/\bexit 1\b/.test(script) && !KNOWN_CMDS.test(script)) return true;
-  if (/^\s*echo\s+/.test(script) && !RUNNERS.test(script)) return true;
-  return false;
+// src/core/aegis-runtime/navigation-refresh.ts
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+function section(md, heading) {
+  const re = new RegExp(`## ${heading.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*\\n+([\\s\\S]*?)(?=\\n## |$)`);
+  return (md.match(re)?.[1] ?? "").trim();
 }
-function detectToolchain(pkg) {
-  const deps = { ...pkg.devDependencies, ...pkg.dependencies };
-  const scripts = pkg.scripts ?? {};
-  const warnings = [];
-  const hasDep = (name) => Object.keys(deps).some((k) => k.toLowerCase() === name);
-  const testCmd = scripts.test;
-  const testPlaceholder = identifyPlaceholder(testCmd);
-  const testRunner = hasDep("vitest") ? "vitest" : hasDep("jest") ? "jest" : hasDep("mocha") ? "mocha" : null;
-  const testEvidence = testRunner ? `${testRunner} in dependencies` : testPlaceholder ? "placeholder script" : "unknown";
-  const hasEslint = hasDep("eslint");
-  const linter = hasEslint ? "eslint" : null;
-  const lintEvidence = hasEslint ? "eslint in dependencies" : "unknown";
-  const hasTsc = hasDep("typescript");
-  const typechecker = hasTsc ? "tsc" : null;
-  const typecheckEvidence = hasTsc ? "tsconfig.json exists" : "unknown";
-  const coverageTool = testRunner ? `${testRunner} built-in` : null;
-  const coverageEvidence = testRunner ? "vitest --coverage" : "unknown";
-  if (!testRunner && !testPlaceholder) warnings.push("No recognized test runner detected");
+function firstNonEmptyLine(text) {
+  return text.split("\n").map((line) => line.trim()).find(Boolean);
+}
+function readNavigationContext(paths) {
+  const currentTaskMd = existsSync(paths.currentTask) ? readFileSync(paths.currentTask, "utf-8") : "";
+  const projectBlueprintMd = existsSync(paths.projectBlueprint) ? readFileSync(paths.projectBlueprint, "utf-8") : "";
   return {
-    testRunner,
-    testCommand: testRunner ? "npm run test" : null,
-    testEvidence,
-    linter,
-    lintCommand: hasEslint ? "npm run lint" : null,
-    lintEvidence,
-    typechecker,
-    typecheckCommand: hasTsc ? "npm run typecheck" : null,
-    typecheckEvidence,
-    coverageTool,
-    coverageCommand: testRunner ? "npm run coverage" : null,
-    coverageEvidence,
-    coverageProfile: "vitest",
-    packageManager: "npm",
-    projectTypes: ["node"],
-    confidence: "high",
-    warnings
+    currentTaskTitle: firstNonEmptyLine(section(currentTaskMd, "Title")),
+    projectGoal: firstNonEmptyLine(section(projectBlueprintMd, "Product Goal"))
   };
 }
-function parsePyprojectDeps(toml) {
-  const deps = /* @__PURE__ */ new Set();
-  const toolSections = /* @__PURE__ */ new Set();
-  const arrayRe = /(?:dependencies|dev)\s*=\s*\[([\s\S]*?)\]/g;
-  for (const m of toml.matchAll(arrayRe)) {
-    for (const item of m[1].match(/"([^"]+)"/g) ?? []) {
-      const name = item.replace(/"/g, "").split(/[><=!~\[\s;]/)[0].trim().toLowerCase();
-      if (name && name !== "." && name !== "..") deps.add(name);
-    }
-  }
-  const projectSection = toml.match(/\[project\]([\s\S]*?)(?=\[|$)/)?.[1] ?? "";
-  for (const line of projectSection.match(/^\s*"([^"]+)"/gm) ?? []) {
-    const name = line.replace(/"/g, "").trim().split(/[><=!~\[\s;]/)[0].trim().toLowerCase();
-    if (name && name !== "." && name !== "..") deps.add(name);
-  }
-  for (const section2 of toml.matchAll(/\[tool\.poetry\.(?:group\.\w+\.)?dependencies\]([\s\S]*?)(?=\[|$)/g)) {
-    for (const line of section2[1].match(/^\s*(\w[\w-]*)\s*=/gm) ?? []) {
-      deps.add(line.replace(/^\s+/, "").split(/\s*=/)[0].trim().toLowerCase());
-    }
-  }
-  for (const m of toml.matchAll(/^\[tool\.(\w+)(?:\.\w+)*\]/gm)) {
-    toolSections.add(m[1].toLowerCase());
-  }
-  return { deps, toolSections };
+function renderDecisionRequest(input) {
+  return [
+    "# Decision Request",
+    "",
+    "## Decision",
+    "",
+    input.decision,
+    "",
+    "## Options",
+    "",
+    ...input.options.map((option) => `- ${option}`),
+    "",
+    "## Context",
+    "",
+    input.context || "No additional context.",
+    ""
+  ].join("\n");
 }
-function detectPythonToolchain(tomlText, packageManager) {
-  const warnings = [];
-  const { deps, toolSections } = parsePyprojectDeps(tomlText);
-  const hasDep = (name) => deps.has(name);
-  const hasTool = (name) => toolSections.has(name);
-  const hasPytest = hasDep("pytest") || hasDep("pytest-cov") || hasTool("pytest");
-  const testRunner = hasPytest ? "pytest" : null;
-  const testCommand = hasPytest ? "pytest" : null;
-  const testEvidence = hasPytest ? hasDep("pytest") ? "pytest in dependencies" : "pytest config found" : "unknown";
-  let linter = null;
-  let lintCommand = null;
-  let lintEvidence = "unknown";
-  for (const [dep, name, cmd2] of PY_LINTERS) {
-    if (hasDep(dep) || hasTool(dep)) {
-      linter = name;
-      lintCommand = cmd2;
-      lintEvidence = hasDep(dep) ? `${dep} in dependencies` : `${dep} config found`;
-      break;
-    }
-  }
-  let typechecker = null;
-  let typecheckCommand = null;
-  let typecheckEvidence = "unknown";
-  for (const [dep, name, cmd2] of PY_TYPECHECKERS) {
-    if (hasDep(dep) || hasTool(dep)) {
-      typechecker = name;
-      typecheckCommand = cmd2;
-      typecheckEvidence = hasDep(dep) ? `${dep} in dependencies` : `${dep} config found`;
-      break;
-    }
-  }
-  const hasPytestCov = hasDep("pytest-cov");
-  const hasCoveragePy = hasDep("coverage");
-  const coverageTool = hasPytestCov ? "pytest-cov" : hasCoveragePy ? "coverage" : null;
-  const coverageCommand = hasPytestCov ? "pytest --cov --cov-report=json" : hasCoveragePy ? "coverage run -m pytest && coverage json -o -" : null;
-  const coverageEvidence = coverageTool ? `${coverageTool} in dependencies` : "unknown";
-  if (!testRunner) warnings.push("No recognized Python test runner detected (pytest)");
-  if (!linter) warnings.push("No recognized Python linter detected (ruff/pylint/flake8)");
+function defaultDecisionRequest(input) {
   return {
-    testRunner,
-    testCommand,
-    testEvidence,
-    linter,
-    lintCommand,
-    lintEvidence,
-    typechecker,
-    typecheckCommand,
-    typecheckEvidence,
-    coverageTool,
-    coverageCommand,
-    coverageEvidence,
-    coverageProfile: "coverage_py",
-    packageManager,
-    projectTypes: ["python"],
-    confidence: hasPytest ? "high" : "medium",
-    warnings
+    decision: input.nextAction || "Aegis needs a human decision before continuing.",
+    options: [
+      "Confirm the requested action and rerun Aegis.",
+      "Revise the relevant Aegis file, then rerun Aegis."
+    ],
+    context: [
+      `Phase: ${input.state.phase}`,
+      `Current task: ${input.currentTaskTitle || input.state.task_id || "No current task."}`,
+      input.risks?.length ? `Risks: ${input.risks.join("; ")}` : "Risks: none recorded."
+    ].join("\n")
   };
 }
-function compareGates(tc, gateConfig) {
-  const order = ["test", "lint", "typecheck", "coverage"];
-  const label = { test: "test", lint: "lint", typecheck: "typecheck", coverage: "coverage" };
-  const suggest = {
-    test: tc.testCommand,
-    lint: tc.lintCommand,
-    typecheck: tc.typecheckCommand,
-    coverage: tc.coverageCommand
-  };
-  return order.filter((g) => gateConfig[g]?.enabled).map((g) => {
-    const cur = gateConfig[g].command;
-    const sug = suggest[g];
-    const match = !sug ? "MISSING_TOOL" : cur === sug ? "MATCH" : g === "test" && (cur === "npm test" && sug === "npm run test" || cur === "npm run test" && sug === "npm test") ? "MATCH" : "MISMATCH";
-    return { gate: label[g], currentCommand: cur, suggestedCommand: sug ?? "(needs config)", match };
-  });
+function refreshNavigation(paths, input, options = {}) {
+  mkdirSync(paths.currentDir, { recursive: true });
+  mkdirSync(paths.blueprintDir, { recursive: true });
+  const status = renderStatus(input);
+  const projectProgress = renderProjectProgress(input);
+  writeFileSync(paths.status, status, "utf-8");
+  writeFileSync(paths.projectProgress, projectProgress, "utf-8");
+  const result = { status, projectProgress };
+  if (!options.preserveWorkInstruction) {
+    const workInstruction = renderWorkInstruction(input);
+    writeFileSync(paths.workInstruction, workInstruction, "utf-8");
+    result.workInstruction = workInstruction;
+  }
+  if (input.state.phase === "decision-request" || options.decisionRequest) {
+    const decisionRequest2 = renderDecisionRequest(options.decisionRequest || defaultDecisionRequest(input));
+    writeFileSync(paths.decisionRequest, decisionRequest2, "utf-8");
+    result.decisionRequest = decisionRequest2;
+  }
+  return result;
 }
-function classifyReadiness(audit, tc) {
-  const issues = [];
-  const testAudit = audit.find((a) => a.gate === "test");
-  const isPython = tc.projectTypes.includes("python");
-  if (!tc.testRunner) {
-    if (isPython) {
-      if (!tc.testCommand) issues.push("No Python test runner detected (pytest). Install: pip install pytest pytest-cov");
-    } else {
-      if (identifyPlaceholder(tc.testCommand ?? void 0)) {
-        issues.push("No real test runner detected (placeholder or missing). Test gate cannot execute.");
+var init_navigation_refresh = __esm({
+  "src/core/aegis-runtime/navigation-refresh.ts"() {
+    "use strict";
+    init_navigation();
+  }
+});
+
+// src/core/aegis-runtime/controller.ts
+function decideAegisNextAction(state, artifacts) {
+  const risks = [];
+  if (!artifacts.hasCurrentTask && [
+    "task-ready",
+    "waiting-for-construction",
+    "validating",
+    "discipline-check",
+    "codex-review",
+    "need-fix"
+  ].includes(state.phase)) {
+    risks.push("Current task is missing; Aegis cannot safely continue gate execution.");
+    return {
+      nextAction: "Create `.aegis/current/current-task.md` or enter `decision-request` before allowing construction.",
+      risks
+    };
+  }
+  switch (state.phase) {
+    case "uninitialized":
+      return {
+        nextAction: "Create `.aegis/` runtime scaffold and draft the project blueprint.",
+        risks
+      };
+    case "blueprint-draft":
+    case "blueprint-revision":
+      return {
+        nextAction: "Claude Code should refine `.aegis/blueprint/project-blueprint.md` before task execution.",
+        risks
+      };
+    case "blueprint-confirmation":
+      return {
+        nextAction: "Claude Code should ask the user to confirm the blueprint.",
+        risks
+      };
+    case "ready-for-task":
+      return {
+        nextAction: "Write a concrete `.aegis/current/current-task.md` before construction begins.",
+        risks
+      };
+    case "task-ready":
+      return {
+        nextAction: artifacts.hasTaskQualityReport ? "Task quality report exists. Run `aegis readiness` next." : "Run `aegis task:review` to check the current task before construction.",
+        risks
+      };
+    case "waiting-for-construction":
+      return {
+        nextAction: "Claude Code should read `.aegis/current/work-instruction.md`, perform the scoped work, and leave evidence.",
+        risks
+      };
+    case "validating":
+      if (!artifacts.hasQualityReadinessReport) {
+        return { nextAction: "Run `aegis readiness` to verify local toolchain readiness.", risks };
       }
-    }
+      if (!artifacts.hasValidationReport) {
+        return { nextAction: "Run `aegis validate` to execute configured quality gates.", risks };
+      }
+      return { nextAction: "Validation evidence exists. Continue to Superpower discipline check.", risks };
+    case "discipline-check":
+      if (!artifacts.hasSuperpowerSources) {
+        return { nextAction: "Run `aegis superpower:scan` to record Superpower source references.", risks };
+      }
+      if (!artifacts.hasDisciplineReport) {
+        return { nextAction: "Run `aegis discipline:check` to verify current-round Superpower discipline evidence.", risks };
+      }
+      if (!artifacts.hasPassingDisciplineReport) {
+        return {
+          nextAction: "Repair missing current-round discipline evidence, then rerun `aegis discipline:check` before Codex review.",
+          risks
+        };
+      }
+      return {
+        nextAction: "Superpower discipline evidence passed. Continue to Codex review.",
+        risks
+      };
+    case "codex-review":
+      if (!artifacts.hasCodexReviewPrompt) {
+        return { nextAction: "Run `aegis review:prompt` to generate the Codex review prompt.", risks };
+      }
+      if (!artifacts.hasCodexReviewRaw) {
+        return { nextAction: "Ask Codex for read-only review and save raw output to `.aegis/current/codex-review.jsonl`.", risks };
+      }
+      if (!artifacts.hasCodexReview) {
+        return { nextAction: "Run `aegis review:render` to render the Codex decision.", risks };
+      }
+      return { nextAction: "Codex review is rendered. Route PASS / NEED_FIX / NEED_HUMAN.", risks };
+    case "need-fix":
+      return {
+        nextAction: "Claude Code should repair only the required fixes inside current task scope, then rerun gates.",
+        risks
+      };
+    case "passed":
+      return {
+        nextAction: "Archive the round, update project progress, and prepare the next task.",
+        risks
+      };
+    case "paused":
+      return {
+        nextAction: "Run `aegis` to refresh status, or update run-state phase to resume the next gate.",
+        risks
+      };
+    case "blocked":
+    case "hard-blocked":
+      return {
+        nextAction: "Stop. Claude Code should surface the blocker to the user before continuing.",
+        risks
+      };
+    case "decision-request":
+      return {
+        nextAction: "Claude Code should ask the user using `.aegis/current/decision-request.md`.",
+        risks
+      };
+    case "human-handoff":
+      return {
+        nextAction: "Stop and give the user `.aegis/current/human-handoff.md`.",
+        risks
+      };
+    case "archived":
+      return {
+        nextAction: "Round is archived. Prepare or select the next task.",
+        risks
+      };
   }
-  if (!tc.linter) {
-    issues.push(isPython ? "No Python linter detected (ruff/pylint/flake8). Install: pip install ruff" : "No linter detected. Lint gate cannot execute.");
-  }
-  if (!tc.coverageTool) {
-    issues.push(isPython ? "No Python coverage tool detected (pytest-cov/coverage). Install: pip install pytest-cov" : "No coverage tool detected. Coverage gate (100% threshold) cannot execute.");
-  }
-  if (!isPython && testAudit?.match === "MISSING_TOOL")
-    issues.push("package.json test script is an npm default placeholder (contains 'no test specified' / 'exit 1'). Replace with a real test command.");
-  const hasMismatch = audit.some((a) => a.match === "MISMATCH");
-  const verdict = issues.length > 0 ? "BLOCKED" : hasMismatch ? "NEEDS_CONFIG" : "READY";
-  return { verdict, toolchain: tc, audit, blockingIssues: issues };
 }
-function renderReadinessReport(r) {
-  const tc = r.toolchain;
-  const lines = [
-    "# Quality Readiness Report",
-    "",
-    `Generated: ${(/* @__PURE__ */ new Date()).toISOString().replace(/\.\d{3}Z$/, "+08:00")}`,
-    "",
-    "## Project Detection",
-    "",
-    "| Property | Value |",
-    "|----------|-------|",
-    `| Project Types | ${tc.projectTypes.join(", ")} |`,
-    `| Package Manager | ${tc.packageManager} |`,
-    `| Test Runner | ${tc.testRunner ?? (identifyPlaceholder(tc.testCommand ?? void 0) ? "placeholder script" : "unknown")} |`,
-    `| Linter | ${tc.linter ?? "unknown"} |`,
-    `| Typechecker | ${tc.typechecker ?? "unknown"} |`,
-    `| Coverage Tool | ${tc.coverageTool ?? "unknown"} |`,
-    `| Detection Confidence | ${tc.confidence} |`,
-    "",
-    ...tc.warnings.length > 0 ? ["## Detection Warnings", "", ...tc.warnings.map((w) => `- ${w}`), ""] : [],
-    "## QUALITY_GATES.json Command Audit",
-    "",
-    "| Gate | Current Command | Suggested Command | Match |",
-    "|------|-----------------|-------------------|-------|",
-    ...r.audit.map((a) => `| ${a.gate} | \`${a.currentCommand}\` | \`${a.suggestedCommand}\` | ${a.match} |`),
-    "",
-    "## Coverage Threshold",
-    "",
-    "Threshold is 100% for lines/branches/functions/statements. This is an MVP hard requirement.",
-    "Missing coverage tool does NOT lower the threshold -- it means the project is BLOCKED until tooling is set up.",
-    "",
-    "## Readiness Verdict",
-    "",
-    `**${r.verdict}**`
-  ];
-  if (r.blockingIssues.length) {
-    lines.push("", "## Blocking Issues", "", ...r.blockingIssues.map((i) => `- ${i}`));
-  }
-  const isPython = tc.projectTypes.includes("python");
-  lines.push("", "## Next Steps");
-  if (r.verdict === "BLOCKED") {
-    if (isPython) {
-      lines.push(
-        "",
-        "1. Install test runner: pip install pytest pytest-cov",
-        "2. Install linter: pip install ruff (or pylint/flake8)",
-        "3. Install typechecker: pip install mypy",
-        "4. Ensure pyproject.toml declares dev dependencies (pytest, ruff, mypy)",
-        "5. Run this script again to verify toolchain",
-        "6. Python coverage.py does not track function coverage \u2014 set coverage.threshold.functions=null in QUALITY_GATES.json"
-      );
-    } else {
-      lines.push(
-        "",
-        "1. Install test runner: npm install --save-dev vitest (or jest)",
-        "2. Install linter: npm install --save-dev eslint",
-        "3. Add test/lint scripts to package.json",
-        "4. Run this script again to verify toolchain",
-        "5. If JS-only (no TypeScript), set typecheck gate enabled=false in QUALITY_GATES.json"
-      );
-    }
-  }
-  lines.push("", `> Note: QUALITY_GATES.json has NOT been modified.`);
-  return lines.join("\n") + "\n";
-}
-function computeReadinessExitCode(verdict) {
-  return verdict === "BLOCKED" ? 1 : 0;
-}
-var RUNNERS, KNOWN_CMDS, PY_LINTERS, PY_TYPECHECKERS;
-var init_readiness_engine = __esm({
-  "src/core/quality/readiness-engine.ts"() {
+var init_controller = __esm({
+  "src/core/aegis-runtime/controller.ts"() {
     "use strict";
-    RUNNERS = /\b(vitest|jest|mocha|ava|tap|tape)\b/;
-    KNOWN_CMDS = /\b(vitest|jest|mocha|ava|tap|tape|node|python|pytest|go test|cargo test|dotnet test|rspec|unittest)\b/;
-    PY_LINTERS = [
-      ["ruff", "ruff", "ruff check ."],
-      ["pylint", "pylint", "pylint src/"],
-      ["flake8", "flake8", "flake8 src/"]
-    ];
-    PY_TYPECHECKERS = [
-      ["mypy", "mypy", "mypy src/"],
-      ["pyright", "pyright", "pyright src/"]
-    ];
   }
 });
 
-// src/cli/readiness.ts
-var readiness_exports = {};
-__export(readiness_exports, {
-  runReadiness: () => runReadiness
-});
-import { readFileSync as readFileSync2, writeFileSync, existsSync } from "node:fs";
-import { resolve as resolve2 } from "node:path";
-function readJsonSafe(path) {
-  let raw = readFileSync2(path, "utf-8");
-  if (raw.charCodeAt(0) === 65279) raw = raw.slice(1);
-  return JSON.parse(raw);
+// src/core/aegis-runtime/review-routing.ts
+import { existsSync as existsSync2, readFileSync as readFileSync2, writeFileSync as writeFileSync2 } from "node:fs";
+function bulletList(items) {
+  return items.length > 0 ? items.map((item) => `- ${item}`).join("\n") : "- None.";
 }
-function detectPackageManager(root) {
-  const locks = ["uv.lock", "poetry.lock", "pdm.lock", "Pipfile"];
-  const pms = ["uv", "poetry", "pdm", "pipenv"];
-  for (let i = 0; i < locks.length; i++) {
-    if (existsSync(resolve2(root, locks[i]))) return pms[i];
-  }
-  return "pip";
+function blockingIssues(result) {
+  return result.blocking_issues.length > 0 ? result.blocking_issues.map((issue) => [
+    `- ${issue.id}: ${issue.issue}`,
+    `  Evidence: ${issue.evidence}`,
+    `  Required fix: ${issue.required_fix}`
+  ].join("\n")).join("\n") : "- None.";
 }
-function runReadiness(root) {
-  const pkgPath = resolve2(root, "package.json");
-  const pyprojectPath = resolve2(root, "pyproject.toml");
-  const gatesPath = resolve2(root, ".agent/QUALITY_GATES.json");
-  let tc;
-  if (existsSync(pkgPath)) {
-    const pkg = readJsonSafe(pkgPath);
-    tc = detectToolchain(pkg);
-  } else if (existsSync(pyprojectPath)) {
-    const tomlText = readFileSync2(pyprojectPath, "utf-8");
-    tc = detectPythonToolchain(tomlText, detectPackageManager(root));
+function humanQuestions(result) {
+  return result.human_questions.length > 0 ? result.human_questions.map((question) => [
+    `- ${question.question}`,
+    ...question.options.map((option) => `  - ${option}`)
+  ].join("\n")).join("\n") : "- None provided by Codex.";
+}
+function renderNeedFixInstruction(result) {
+  const fixes = result.required_fixes.length > 0 ? result.required_fixes : result.blocking_issues.map((issue) => issue.required_fix);
+  return [
+    "# Work Instruction",
+    "",
+    "## Task",
+    "",
+    "Repair the current task based on Codex review.",
+    "",
+    "## Instruction",
+    "",
+    "Claude Code must repair only the bounded fixes below, stay inside `current-task.md` file scope, leave updated discipline evidence, then rerun Aegis gates.",
+    "",
+    "## Required Fixes",
+    "",
+    bulletList(fixes),
+    "",
+    "## Blocking Issues",
+    "",
+    blockingIssues(result),
+    "",
+    "## Boundaries",
+    "",
+    "- Do not expand scope without human confirmation.",
+    "- Do not commit, push, merge, release, deploy, publish, or rewrite Git history.",
+    "- Run validation and request Codex review again after the repair.",
+    ""
+  ].join("\n");
+}
+function renderHumanHandoff(result) {
+  return [
+    "# Human Handoff",
+    "",
+    "## Reason",
+    "",
+    "Codex returned `NEED_HUMAN`; Aegis is stopping instead of asking Claude Code to guess.",
+    "",
+    "## Human Questions",
+    "",
+    humanQuestions(result),
+    "",
+    "## Blocking Issues",
+    "",
+    blockingIssues(result),
+    "",
+    "## Boundary",
+    "",
+    "Claude Code must wait for human direction before continuing this round.",
+    ""
+  ].join("\n");
+}
+function renderPassSummary(result, taskId, timestamp) {
+  return [
+    "# Round Summary",
+    "",
+    "## Summary",
+    "",
+    `Codex returned \`PASS\` for ${taskId ?? "the current task"}. Aegis marked the round as passed and ready for archive or next-task selection.`,
+    "",
+    "## Timestamp",
+    "",
+    timestamp,
+    "",
+    "## Codex Confidence",
+    "",
+    result.confidence,
+    "",
+    "## Non-Blocking Suggestions",
+    "",
+    result.non_blocking_suggestions.length > 0 ? result.non_blocking_suggestions.map((item) => `- ${item.issue}: ${item.rationale}`).join("\n") : "- None.",
+    ""
+  ].join("\n");
+}
+function routeCodexReviewResult(root, result, timestamp) {
+  const paths = getAegisRuntimePaths(root);
+  const state = parseAegisRunStateJson(readFileSync2(paths.runState, "utf-8"));
+  const writtenFiles = [];
+  const nextState = {
+    ...state,
+    last_verdict: result.verdict,
+    updated_at: timestamp
+  };
+  if (result.verdict === "PASS") {
+    nextState.phase = "passed";
+    nextState.retry_count = 0;
+    writeFileSync2(paths.roundSummary, renderPassSummary(result, state.task_id, timestamp), "utf-8");
+    writtenFiles.push(paths.roundSummary);
+  } else if (result.verdict === "NEED_FIX") {
+    nextState.phase = "need-fix";
+    nextState.retry_count = state.retry_count + 1;
+    writeFileSync2(paths.workInstruction, renderNeedFixInstruction(result), "utf-8");
+    writtenFiles.push(paths.workInstruction);
   } else {
-    console.error("readiness: no project file found (package.json or pyproject.toml required)");
-    process.exit(1);
+    nextState.phase = "human-handoff";
+    writeFileSync2(paths.humanHandoff, renderHumanHandoff(result), "utf-8");
+    writtenFiles.push(paths.humanHandoff);
   }
-  const gatesRaw = existsSync(gatesPath) ? readJsonSafe(gatesPath) : null;
-  const audit = gatesRaw ? compareGates(tc, gatesRaw.gates) : [];
-  const result = classifyReadiness(audit, tc);
-  const report = renderReadinessReport(result);
-  writeFileSync(resolve2(root, ".agent/QUALITY_READINESS_REPORT.md"), report, "utf-8");
-  console.log(`Verdict: **${result.verdict}**`);
-  process.exitCode = computeReadinessExitCode(result.verdict);
+  writeFileSync2(paths.runState, stringifyAegisRunState(nextState), "utf-8");
+  writtenFiles.push(paths.runState);
+  if (existsSync2(paths.status)) {
+    writtenFiles.push(paths.status);
+  }
+  return {
+    state: nextState,
+    writtenFiles
+  };
 }
-var init_readiness = __esm({
-  "src/cli/readiness.ts"() {
+var init_review_routing = __esm({
+  "src/core/aegis-runtime/review-routing.ts"() {
     "use strict";
-    init_readiness_engine();
+    init_paths();
+    init_run_state();
+  }
+});
+
+// src/core/aegis-runtime/blueprint-flow.ts
+import { existsSync as existsSync3, mkdirSync as mkdirSync2, readFileSync as readFileSync3, writeFileSync as writeFileSync3 } from "node:fs";
+function section2(md, heading) {
+  const re = new RegExp(`## ${heading.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*\\n+([\\s\\S]*?)(?=\\n## |$)`);
+  return (md.match(re)?.[1] ?? "").trim();
+}
+function firstNonEmptyLine2(text) {
+  return text.split("\n").map((line) => line.trim()).find(Boolean);
+}
+function updateState(paths, patch) {
+  const state = parseAegisRunStateJson(readFileSync3(paths.runState, "utf-8"));
+  const next = {
+    ...state,
+    ...patch,
+    updated_at: (/* @__PURE__ */ new Date()).toISOString()
+  };
+  writeFileSync3(paths.runState, stringifyAegisRunState(next), "utf-8");
+  return next;
+}
+function refreshBlueprintNavigation(paths, input) {
+  refreshNavigation(paths, input);
+  return renderStatus(input);
+}
+function renderDraftTemplate(existingBlueprint) {
+  if (existingBlueprint.trim()) {
+    return [
+      existingBlueprint.trim(),
+      "",
+      "## Draft Notes",
+      "",
+      `- Claude Code should revise this draft using Superpower source discipline from \`${SUPERPOWER_SOURCE}\`.`,
+      "- Aegis does not call Superpower directly; it records this draft for human confirmation.",
+      ""
+    ].join("\n");
+  }
+  return [
+    "# Aegis Project Blueprint Draft",
+    "",
+    "## Product Goal",
+    "",
+    "Rewrite 24Hagent into Aegis.",
+    "",
+    "## Product Formula",
+    "",
+    "Aegis = Superpower discipline + Claude Code construction + Aegis gates + Codex review",
+    "",
+    "## MVP Scope",
+    "",
+    "- Define the confirmed project blueprint.",
+    "- Generate scoped current tasks from the confirmed blueprint.",
+    "- Preserve Aegis as a non-interactive delivery gate inside Claude Code.",
+    "",
+    "## Out Of Scope",
+    "",
+    "- Aegis directly calling Superpower.",
+    "- Aegis acting as an autonomous coding agent.",
+    "",
+    "## Draft Notes",
+    "",
+    `- Claude Code should revise this draft using Superpower source discipline from \`${SUPERPOWER_SOURCE}\`.`,
+    "- Aegis does not call Superpower directly; it records this draft for human confirmation.",
+    ""
+  ].join("\n");
+}
+function renderBlueprintSummary(draft) {
+  const productGoal = firstNonEmptyLine2(section2(draft, "Product Goal")) || "Not specified.";
+  const productFormula = firstNonEmptyLine2(section2(draft, "Product Formula")) || "Not specified.";
+  const mvpScope = section2(draft, "MVP Scope") || "Not specified.";
+  return [
+    "# Blueprint Summary",
+    "",
+    "## Product Goal",
+    "",
+    productGoal,
+    "",
+    "## Product Formula",
+    "",
+    productFormula,
+    "",
+    "## MVP Scope",
+    "",
+    mvpScope,
+    "",
+    "## Confirmation",
+    "",
+    "Ask the human to confirm this blueprint or request a revision before current-task generation.",
+    ""
+  ].join("\n");
+}
+function renderBlueprintDecisionRequest(summary) {
+  return [
+    "# Decision Request",
+    "",
+    "## Decision",
+    "",
+    "Confirm the Aegis project blueprint or request a revision.",
+    "",
+    "## Options",
+    "",
+    "- Confirm: Claude Code may run `aegis blueprint:confirm`.",
+    "- Revise: Claude Code should edit `.aegis/blueprint/project-blueprint.draft.md` and rerun `aegis blueprint:summary`.",
+    "",
+    "## Blueprint Summary",
+    "",
+    summary.trim(),
+    ""
+  ].join("\n");
+}
+function startBlueprintFlow(paths) {
+  mkdirSync2(paths.blueprintDir, { recursive: true });
+  mkdirSync2(paths.currentDir, { recursive: true });
+  const existingBlueprint = existsSync3(paths.projectBlueprint) ? readFileSync3(paths.projectBlueprint, "utf-8") : "";
+  if (!existsSync3(paths.projectBlueprintDraft)) {
+    writeFileSync3(paths.projectBlueprintDraft, renderDraftTemplate(existingBlueprint), "utf-8");
+  }
+  const state = updateState(paths, {
+    task_id: null,
+    phase: "blueprint-draft",
+    last_verdict: "blueprint-draft-started"
+  });
+  const nextAction = "Claude Code should use Superpower discipline to revise `.aegis/blueprint/project-blueprint.draft.md`, then run `aegis blueprint:summary`.";
+  const input = {
+    state,
+    projectGoal: "Rewrite 24Hagent into Aegis.",
+    nextAction,
+    risks: ["Blueprint is not confirmed yet."]
+  };
+  return refreshBlueprintNavigation(paths, input);
+}
+function summarizeBlueprintFlow(paths) {
+  if (!existsSync3(paths.projectBlueprintDraft)) {
+    throw new Error("Missing `.aegis/blueprint/project-blueprint.draft.md`; run `aegis blueprint:start` first.");
+  }
+  mkdirSync2(paths.currentDir, { recursive: true });
+  const draft = readFileSync3(paths.projectBlueprintDraft, "utf-8");
+  const summary = renderBlueprintSummary(draft);
+  const decisionRequest2 = renderBlueprintDecisionRequest(summary);
+  writeFileSync3(paths.blueprintSummary, summary, "utf-8");
+  writeFileSync3(paths.decisionRequest, decisionRequest2, "utf-8");
+  const state = updateState(paths, {
+    task_id: null,
+    phase: "decision-request",
+    last_verdict: "blueprint-confirmation-needed"
+  });
+  const nextAction = "Claude Code should ask the user to confirm `.aegis/current/decision-request.md` before running `aegis blueprint:confirm`.";
+  const input = {
+    state,
+    projectGoal: firstNonEmptyLine2(section2(draft, "Product Goal")),
+    nextAction,
+    risks: ["Blueprint confirmation is pending."]
+  };
+  refreshNavigation(paths, input, {
+    decisionRequest: {
+      decision: "Confirm the Aegis project blueprint or request a revision.",
+      options: [
+        "Confirm: Claude Code may run `aegis blueprint:confirm`.",
+        "Revise: Claude Code should edit `.aegis/blueprint/project-blueprint.draft.md` and rerun `aegis blueprint:summary`."
+      ],
+      context: summary.trim()
+    }
+  });
+  return decisionRequest2;
+}
+function confirmBlueprintFlow(paths) {
+  if (!existsSync3(paths.projectBlueprintDraft)) {
+    throw new Error("Missing `.aegis/blueprint/project-blueprint.draft.md`; run `aegis blueprint:start` first.");
+  }
+  const draft = readFileSync3(paths.projectBlueprintDraft, "utf-8");
+  writeFileSync3(paths.projectBlueprint, `${draft.trim()}
+`, "utf-8");
+  const summary = renderBlueprintSummary(draft);
+  writeFileSync3(paths.blueprintSummary, summary, "utf-8");
+  const state = updateState(paths, {
+    task_id: null,
+    phase: "ready-for-task",
+    last_verdict: "blueprint-confirmed"
+  });
+  const nextAction = "Generate or select the next concrete current task from the confirmed blueprint.";
+  const input = {
+    state,
+    projectGoal: firstNonEmptyLine2(section2(draft, "Product Goal")),
+    nextAction,
+    risks: []
+  };
+  return refreshBlueprintNavigation(paths, input);
+}
+var SUPERPOWER_SOURCE;
+var init_blueprint_flow = __esm({
+  "src/core/aegis-runtime/blueprint-flow.ts"() {
+    "use strict";
+    init_navigation();
+    init_navigation_refresh();
+    init_run_state();
+    SUPERPOWER_SOURCE = "D:\\AAAOddsAndEnds\\PROGRAM\\superpowers";
+  }
+});
+
+// src/core/aegis-runtime/current-task-flow.ts
+import { existsSync as existsSync4, mkdirSync as mkdirSync3, readFileSync as readFileSync4, writeFileSync as writeFileSync4 } from "node:fs";
+function section3(md, heading) {
+  const re = new RegExp(`## ${heading.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*\\n+([\\s\\S]*?)(?=\\n## |$)`);
+  return (md.match(re)?.[1] ?? "").trim();
+}
+function bullets(text) {
+  return text.split(/\r?\n/).map((line) => line.match(/^-\s+(?:\[[ x]\]\s*)?(.+)$/)?.[1]?.trim()).filter((line) => Boolean(line));
+}
+function slug(text) {
+  return text.toLowerCase().replace(/`/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 36) || "next-task";
+}
+function taskTitleFromBlueprint(blueprint) {
+  const scopeItems = bullets(section3(blueprint, "MVP Scope"));
+  const next = scopeItems.find((item) => !/reposition|introduce|preserve existing/i.test(item)) || scopeItems[0];
+  return next ? `Deliver ${next.replace(/\.$/, "")}` : "Deliver the next Aegis blueprint task";
+}
+function renderCurrentTaskMarkdown(task) {
+  const fileScope = task.file_scope.map((item) => `- ${item}`).join("\n");
+  const dod = task.definition_of_done.map((item) => `- [${item.checked ? "x" : " "}] ${item.content}`).join("\n");
+  return [
+    "# Current Task",
+    "",
+    "## Task ID",
+    "",
+    `\`${task.task_id}\``,
+    "",
+    "## Title",
+    "",
+    task.title,
+    "",
+    "## Specification",
+    "",
+    task.specification,
+    "",
+    "## File Scope",
+    "",
+    fileScope,
+    "",
+    "## Definition of DoD",
+    "",
+    dod,
+    "",
+    "## Acceptance Checks",
+    "",
+    "```bash",
+    task.acceptance_checks,
+    "```",
+    "",
+    "## Stop Rule",
+    "",
+    task.stop_rule,
+    ""
+  ].join("\n");
+}
+function generateCurrentTaskFromBlueprint(blueprint, taskId) {
+  const title = taskTitleFromBlueprint(blueprint);
+  const id = taskId || `task-${slug(title)}`;
+  return {
+    task_id: id,
+    title,
+    specification: [
+      "Turn the next confirmed blueprint item into one bounded Aegis implementation step.",
+      "",
+      "Claude Code must keep the change small, use the current Aegis gates, and leave round evidence before Codex review.",
+      "",
+      `Blueprint item: ${title.replace(/^Deliver\s+/, "")}`
+    ].join("\n"),
+    file_scope: [
+      ".aegis/current",
+      ".aegis/blueprint/project-progress.md",
+      ".aegis/state/run-state.json",
+      "docs",
+      "src",
+      "tests"
+    ],
+    definition_of_done: [
+      { content: "The selected blueprint item is implemented as one bounded Aegis change", checked: false },
+      { content: "Task evidence files describe planning, tests, verification, and review focus", checked: false },
+      { content: "Focused tests and full validation pass before Codex review", checked: false }
+    ],
+    acceptance_checks: [
+      "npm run typecheck",
+      "npm run build",
+      "npm run lint",
+      "npm test",
+      "node dist\\cli\\main.js task:review"
+    ].join("\n"),
+    stop_rule: "Stop and ask for human confirmation before changing dependency files, GitHub configuration, release/publish/deploy behavior, forbidden Git actions, high-risk file scope, or files outside File Scope."
+  };
+}
+function generateNextCurrentTask(paths) {
+  if (!existsSync4(paths.projectBlueprint)) {
+    throw new Error("Missing confirmed `.aegis/blueprint/project-blueprint.md`; confirm a blueprint before generating a task.");
+  }
+  mkdirSync3(paths.currentDir, { recursive: true });
+  const blueprint = readFileSync4(paths.projectBlueprint, "utf-8");
+  const task = generateCurrentTaskFromBlueprint(blueprint, `next-${slug(taskTitleFromBlueprint(blueprint))}`);
+  const taskMd = renderCurrentTaskMarkdown(task);
+  writeFileSync4(paths.currentTask, taskMd, "utf-8");
+  const previousState = parseAegisRunStateJson(readFileSync4(paths.runState, "utf-8"));
+  const state = {
+    ...previousState,
+    task_id: task.task_id,
+    phase: "task-ready",
+    last_verdict: "current-task-generated",
+    updated_at: (/* @__PURE__ */ new Date()).toISOString()
+  };
+  writeFileSync4(paths.runState, stringifyAegisRunState(state), "utf-8");
+  const nextAction = "Run `aegis task:review` to check the generated current task before construction.";
+  const input = {
+    state,
+    projectGoal: section3(blueprint, "Product Goal").split(/\r?\n/).find(Boolean),
+    currentTaskTitle: task.title,
+    nextAction,
+    risks: []
+  };
+  refreshNavigation(paths, input);
+  return taskMd;
+}
+var init_current_task_flow = __esm({
+  "src/core/aegis-runtime/current-task-flow.ts"() {
+    "use strict";
+    init_navigation_refresh();
+    init_run_state();
   }
 });
 
@@ -4570,7 +5021,7 @@ function parseCoverageFromRawOutput(rawOutput) {
 }
 function parseVitestJson(raw) {
   const jsonStart = raw.indexOf('{"total":');
-  const jsonStr = jsonStart >= 0 ? raw.slice(jsonStart) : raw;
+  const jsonStr = jsonStart >= 0 ? extractJsonObject(raw, jsonStart) : raw;
   let parsed;
   try {
     parsed = JSON.parse(jsonStr);
@@ -4585,6 +5036,33 @@ function parseVitestJson(raw) {
     return v;
   };
   return { lines: pct("lines"), branches: pct("branches"), functions: pct("functions"), statements: pct("statements"), profile: "vitest" };
+}
+function extractJsonObject(raw, start) {
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+  for (let index = start; index < raw.length; index++) {
+    const char = raw[index];
+    if (escaped) {
+      escaped = false;
+      continue;
+    }
+    if (char === "\\") {
+      escaped = true;
+      continue;
+    }
+    if (char === '"') {
+      inString = !inString;
+      continue;
+    }
+    if (inString) continue;
+    if (char === "{") depth++;
+    if (char === "}") {
+      depth--;
+      if (depth === 0) return raw.slice(start, index + 1);
+    }
+  }
+  return raw.slice(start);
 }
 function parseCoveragePyJson(raw) {
   const jsonStart = raw.indexOf('{"meta":') >= 0 ? raw.indexOf('{"meta":') : raw.indexOf('{"files":') >= 0 ? raw.indexOf('{"files":') : raw.indexOf('{"totals":');
@@ -4745,15 +5223,15 @@ ${rows.join("\n")}
 `;
   }
   const scopeFiles = fileScopeCheck?.files.length ? fileScopeCheck.files.map((f) => `- ${f}`).join("\n") : "- (no changes detected)";
-  const scopeAll = fileScopeCheck?.inScope ? "YES" : "NO";
-  const scopeStatus = fileScopeCheck?.inScope ? "PASS" : "FAIL";
+  const scopeAll = fileScopeCheck ? fileScopeCheck.inScope ? "YES" : "NO" : "NOT_EVALUATED";
+  const scopeStatus = fileScopeCheck ? fileScopeCheck.inScope ? "PASS" : "FAIL" : "NOT_RUN";
   const scopeViolations = fileScopeCheck?.violations.length ? fileScopeCheck.violations.map((v) => `- ${v}`).join("\n") : "- None.";
   const blockingSection = verdict.blockingFailures.length === 0 ? "None." : verdict.blockingFailures.map((f) => `- ${f}`).join("\n");
   const nextSteps = verdict.overall === "PASS" ? "1. All quality gates passed. Ready for Codex review.\n2. Run: scripts/codex_review.ps1" : "1. Review blocking failures above.\n2. Fix issues and re-run validation.\n3. Run: scripts/validate_task.ps1";
   return [
     "# Validation Report",
     "",
-    `<!-- Auto-generated by 24h validate at ${timestamp} -->`,
+    `<!-- Auto-generated by aegis validate at ${timestamp} -->`,
     "<!-- Orchestrator runs this independently. Never trust Worker self-report. -->",
     "",
     "## Task ID",
@@ -4833,107 +5311,378 @@ var init_validation_engine = __esm({
   }
 });
 
-// src/adapters/shell/command-runner.ts
-import { exec } from "node:child_process";
-function classifyExecError(error, command) {
-  if (error.killed) throw new Error(`Command timed out: ${command}`);
-  if (typeof error.code === "number") return error.code;
-  throw new Error(`${error.code ?? "SPAWN_ERROR"}: ${error.message}`);
+// src/core/schemas/task-package.ts
+function escapeRe(s) {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
-var RealCommandRunner;
-var init_command_runner = __esm({
-  "src/adapters/shell/command-runner.ts"() {
+function section4(md, heading) {
+  const re = new RegExp(`## ${escapeRe(heading)}\\s*\\n+([\\s\\S]*?)(?=\\n## |$)`);
+  const m = md.match(re);
+  return (m?.[1] ?? "").trim();
+}
+function parseBulletList(text) {
+  if (!text) return [];
+  return text.split("\n").map((l) => l.replace(/^-\s*/, "").trim()).filter(Boolean);
+}
+function parseDoDList(text) {
+  if (!text) return [];
+  return text.split("\n").map((l) => l.match(/^-\s*\[([ x])\]\s*(.+)/)).filter((m) => m !== null).map((m) => ({ content: m[2].trim(), checked: m[1] === "x" }));
+}
+function extractAcceptanceChecks(text) {
+  const m = text.match(/```[\s\S]*?\n([\s\S]*?)```/);
+  return m ? m[1].trim() : text.trim();
+}
+function parseCurrentTaskMarkdown(rawMd) {
+  return TaskPackageSchema.parse({
+    task_id: section4(rawMd, "Task ID"),
+    title: section4(rawMd, "Title"),
+    specification: section4(rawMd, "Specification"),
+    file_scope: parseBulletList(section4(rawMd, "File Scope")),
+    definition_of_done: parseDoDList(section4(rawMd, "Definition of DoD")),
+    acceptance_checks: extractAcceptanceChecks(section4(rawMd, "Acceptance Checks")),
+    stop_rule: section4(rawMd, "Stop Rule")
+  });
+}
+var DoDItem, TaskPackageSchema;
+var init_task_package = __esm({
+  "src/core/schemas/task-package.ts"() {
     "use strict";
-    RealCommandRunner = class {
-      async run(command, opts) {
-        return new Promise((resolve5, reject) => {
-          exec(command, {
-            cwd: opts?.cwd,
-            timeout: opts?.timeoutMs,
-            maxBuffer: 10 * 1024 * 1024
-          }, (error, stdout, stderr) => {
-            if (!error) {
-              resolve5({ exitCode: 0, stdout, stderr });
-              return;
-            }
-            try {
-              resolve5({ exitCode: classifyExecError(error, command), stdout, stderr });
-            } catch (e) {
-              reject(e);
-            }
-          });
-        });
-      }
-    };
+    init_zod();
+    DoDItem = external_exports.object({
+      content: external_exports.string(),
+      checked: external_exports.boolean()
+    });
+    TaskPackageSchema = external_exports.object({
+      task_id: external_exports.string().min(1),
+      title: external_exports.string().min(1),
+      specification: external_exports.string().min(1),
+      file_scope: external_exports.array(external_exports.string()).min(1),
+      definition_of_done: external_exports.array(DoDItem).min(1),
+      acceptance_checks: external_exports.string().min(1),
+      stop_rule: external_exports.string().min(1)
+    });
   }
 });
 
-// src/cli/validate.ts
-var validate_exports = {};
-__export(validate_exports, {
-  runValidate: () => runValidate,
-  runValidatePlan: () => runValidatePlan
-});
-import { readFileSync as readFileSync3, writeFileSync as writeFileSync2 } from "node:fs";
-import { resolve as resolve3 } from "node:path";
-function readJsonSafe2(path) {
-  let raw = readFileSync3(path, "utf-8");
-  if (raw.charCodeAt(0) === 65279) raw = raw.slice(1);
-  return JSON.parse(raw);
+// src/core/quality/task-quality-gate.ts
+function normalizePath(path) {
+  return path.replace(/\\/g, "/").replace(/^\.\/+/, "").trim();
 }
-async function runValidate(root) {
-  const gatesRaw = readJsonSafe2(resolve3(root, ".agent/QUALITY_GATES.json"));
-  const configs = loadGateConfig(gatesRaw);
-  const plans = planGateExecutions(configs);
-  const results = await runConfiguredGates(plans, new RealCommandRunner());
-  const verdict = evaluateGateResults(results, configs);
-  const report = renderValidationReport({
-    verdict,
-    taskId: "N/A",
-    timestamp: (/* @__PURE__ */ new Date()).toISOString(),
-    readinessVerdict: "READY"
-  });
-  writeFileSync2(resolve3(root, ".agent/VALIDATION_REPORT.md"), report, "utf-8");
-  console.log(`Overall: ${verdict.overall}`);
-  process.exitCode = verdict.overall === "PASS" ? 0 : 1;
+function addFinding(findings, finding) {
+  findings.push(finding);
 }
-function runValidatePlan(root) {
-  const gatesRaw = readJsonSafe2(resolve3(root, ".agent/QUALITY_GATES.json"));
-  const configs = loadGateConfig(gatesRaw);
-  const plans = planGateExecutions(configs);
-  for (const p of plans) {
-    const status = p.disabled ? "SKIPPED" : "PENDING";
-    console.log(`${p.name} (${p.blocking ? "blocking" : "non-blocking"}): ${status} -- ${p.command}`);
+function hasExecutableCheck(text) {
+  return COMMAND_PATTERNS.some((pattern) => pattern.test(text));
+}
+function isBroadScope(path) {
+  const normalized = normalizePath(path);
+  return normalized === "." || normalized === "*" || normalized === "/" || normalized.endsWith("/**");
+}
+function hasHighRiskScope(path) {
+  const normalized = normalizePath(path);
+  return HIGH_RISK_PATHS.some((risk) => normalized === risk || normalized.startsWith(`${risk}/`) || normalized.includes(risk));
+}
+function hasExplicitHighRiskPermission(task) {
+  return [
+    task.specification,
+    task.stop_rule,
+    task.acceptance_checks
+  ].some(
+    (text) => /explicit human (confirmation|permission|approval)|human confirmed high-risk scope|human approved high-risk scope|confirmed high-risk scope|用户.*确认.*高风险|人工.*确认.*高风险/i.test(text)
+  );
+}
+function isWeakStopRule(text) {
+  const normalized = text.trim().toLowerCase();
+  if (normalized.length < 20) return true;
+  return !/(stop|halt|pause|blocked|human|handoff|ask|confirm|停止|人工|阻断|确认)/i.test(normalized);
+}
+function isVagueDod(text) {
+  const normalized = text.trim().toLowerCase();
+  return normalized.length < 12 || /^(done|ok|works|fixed|完成|搞定|通过)$/.test(normalized);
+}
+function computeVerdict(findings) {
+  if (findings.some((finding) => finding.severity === "NEED_HUMAN")) return "NEED_HUMAN";
+  if (findings.some((finding) => finding.severity === "NEED_FIX")) return "NEED_FIX";
+  return "PASS";
+}
+function reviewTaskPackageQuality(task, options = {}) {
+  const maxFileScopeItems = options.maxFileScopeItems ?? 8;
+  const minDodItems = options.minDodItems ?? 2;
+  const maxSpecificationLines = options.maxSpecificationLines ?? 40;
+  const findings = [];
+  const specLines = task.specification.split(/\r?\n/).filter(Boolean).length;
+  if (specLines > maxSpecificationLines) {
+    addFinding(findings, {
+      code: "TASK_TOO_LARGE",
+      severity: "NEED_FIX",
+      reason: `Specification has ${specLines} non-empty lines, which suggests multiple tasks are bundled together.`,
+      suggestion: "Split the task into a smaller CURRENT_TASK.md with one objective and one acceptance path."
+    });
+  }
+  if (task.file_scope.length > maxFileScopeItems) {
+    addFinding(findings, {
+      code: "FILE_SCOPE_TOO_WIDE",
+      severity: "NEED_FIX",
+      reason: `File Scope lists ${task.file_scope.length} entries; limit is ${maxFileScopeItems}.`,
+      suggestion: "Narrow File Scope to the exact files or smallest directories the Worker may edit."
+    });
+  }
+  const broadScopes = task.file_scope.filter(isBroadScope);
+  if (broadScopes.length > 0) {
+    addFinding(findings, {
+      code: "FILE_SCOPE_BROAD_PATTERN",
+      severity: "NEED_FIX",
+      reason: `File Scope contains broad entries: ${broadScopes.join(", ")}.`,
+      suggestion: "Replace broad scope entries with concrete files or narrowly bounded directories."
+    });
+  }
+  if (task.definition_of_done.length < minDodItems) {
+    addFinding(findings, {
+      code: "DOD_TOO_FEW",
+      severity: "NEED_FIX",
+      reason: `Definition of DoD has ${task.definition_of_done.length} item(s); minimum is ${minDodItems}.`,
+      suggestion: "Add concrete, independently verifiable DoD items."
+    });
+  }
+  const vagueDodItems = task.definition_of_done.filter((item) => isVagueDod(item.content));
+  if (vagueDodItems.length > 0) {
+    addFinding(findings, {
+      code: "DOD_TOO_VAGUE",
+      severity: "NEED_FIX",
+      reason: `DoD contains vague item(s): ${vagueDodItems.map((item) => item.content).join("; ")}.`,
+      suggestion: "Rewrite DoD items so each can be checked from code, tests, generated reports, or CLI output."
+    });
+  }
+  if (!hasExecutableCheck(task.acceptance_checks)) {
+    addFinding(findings, {
+      code: "ACCEPTANCE_CHECKS_NOT_EXECUTABLE",
+      severity: "NEED_FIX",
+      reason: "Acceptance Checks do not appear to include an executable command.",
+      suggestion: "Add concrete commands such as npm run test, npm run typecheck, pytest, or scripts/validate_task.ps1."
+    });
+  }
+  if (isWeakStopRule(task.stop_rule)) {
+    addFinding(findings, {
+      code: "STOP_RULE_TOO_WEAK",
+      severity: "NEED_FIX",
+      reason: "Stop Rule does not clearly say when to stop, ask, hand off, or block execution.",
+      suggestion: "State the exact condition that requires Worker to stop and ask the Orchestrator or human."
+    });
+  }
+  const highRiskScopes = task.file_scope.filter(hasHighRiskScope);
+  if (highRiskScopes.length > 0 && !hasExplicitHighRiskPermission(task)) {
+    addFinding(findings, {
+      code: "HIGH_RISK_SCOPE_NEEDS_HUMAN",
+      severity: "NEED_HUMAN",
+      reason: `Task touches high-risk configuration/dependency scope: ${highRiskScopes.join(", ")}.`,
+      suggestion: "Add explicit human confirmation before Worker changes dependency, config, gitignore, or CI boundary files."
+    });
+  }
+  return { verdict: computeVerdict(findings), findings };
+}
+function reviewCurrentTaskMarkdown(rawMarkdown, options) {
+  try {
+    return reviewTaskPackageQuality(parseCurrentTaskMarkdown(rawMarkdown), options);
+  } catch (error) {
+    const reason = error instanceof ZodError ? error.issues.map((issue) => `${issue.path.join(".")}: ${issue.message}`).join("; ") : error instanceof Error ? error.message : String(error);
+    return {
+      verdict: "NEED_FIX",
+      findings: [{
+        code: "TASK_SCHEMA_INVALID",
+        severity: "NEED_FIX",
+        reason,
+        suggestion: "Regenerate CURRENT_TASK.md with all required headings and non-empty fields."
+      }]
+    };
   }
 }
-var init_validate = __esm({
-  "src/cli/validate.ts"() {
+function renderTaskQualityReview(review) {
+  const findingLines = review.findings.length === 0 ? ["No blocking task quality findings."] : review.findings.flatMap((finding, index) => [
+    `${index + 1}. ${finding.code} (${finding.severity})`,
+    `   Reason: ${finding.reason}`,
+    `   Fix: ${finding.suggestion}`
+  ]);
+  return [
+    "# Task Quality Gate",
+    "",
+    `Verdict: ${review.verdict}`,
+    "",
+    "## Findings",
+    "",
+    ...findingLines,
+    ""
+  ].join("\n");
+}
+var COMMAND_PATTERNS, HIGH_RISK_PATHS;
+var init_task_quality_gate = __esm({
+  "src/core/quality/task-quality-gate.ts"() {
     "use strict";
-    init_validation_engine();
-    init_command_runner();
+    init_zod();
+    init_task_package();
+    COMMAND_PATTERNS = [
+      /\bnpm\s+run\b/,
+      /\bnpm\s+test\b/,
+      /\bpnpm\s+/,
+      /\byarn\s+/,
+      /\bnode\s+/,
+      /\bnpx\s+/,
+      /\bpython\s+/,
+      /\bpytest\b/,
+      /\bpowershell\b/i,
+      /\bscripts[\\/][^\s]+/
+    ];
+    HIGH_RISK_PATHS = [
+      "package.json",
+      "package-lock.json",
+      "pnpm-lock.yaml",
+      "yarn.lock",
+      "eslint.config",
+      "tsconfig",
+      ".github",
+      ".gitignore"
+    ];
+  }
+});
+
+// src/core/review/evidence-builder.ts
+import { existsSync as existsSync5, readFileSync as readFileSync5 } from "node:fs";
+import { execFileSync } from "node:child_process";
+import { resolve as resolve2 } from "node:path";
+function getReviewEvidencePaths(root) {
+  const aegis = getAegisRuntimePaths(root);
+  if (existsSync5(aegis.currentTask)) {
+    return {
+      currentTaskPath: aegis.currentTask,
+      workReportPath: aegis.roundSummary,
+      superpowerSummaryPath: aegis.superpowerSummary,
+      disciplineReportPath: aegis.disciplineReport,
+      validationReportPath: aegis.validationReport,
+      rubricPath: aegis.codexRubric,
+      runtimeKind: "aegis"
+    };
+  }
+  return {
+    currentTaskPath: resolve2(root, ".agent/CURRENT_TASK.md"),
+    workReportPath: resolve2(root, ".agent/WORK_REPORT.md"),
+    superpowerSummaryPath: resolve2(root, ".agent/SUPERPOWER_SUMMARY.md"),
+    disciplineReportPath: resolve2(root, ".agent/DISCIPLINE_REPORT.md"),
+    validationReportPath: resolve2(root, ".agent/VALIDATION_REPORT.md"),
+    rubricPath: resolve2(root, ".agent/CODEX_REVIEW_RUBRIC.md"),
+    runtimeKind: "legacy-agent"
+  };
+}
+function readIfExists(path) {
+  return existsSync5(path) ? readFileSync5(path, "utf-8") : "";
+}
+function runGit(root, args) {
+  return execFileSync("git", args, {
+    cwd: root,
+    encoding: "utf-8",
+    maxBuffer: 1024 * 1024 * 10
+  });
+}
+function normalizePath2(path) {
+  return path.replace(/\\/g, "/").replace(/^\.\/+/, "").replace(/\/+$/, "");
+}
+function isInScope(file, scope) {
+  const normalizedFile = normalizePath2(file);
+  return scope.some((rawScope) => {
+    const normalizedScope = normalizePath2(rawScope);
+    return normalizedFile === normalizedScope || normalizedFile.startsWith(`${normalizedScope}/`);
+  });
+}
+function countDiffLines(diff) {
+  return diff ? diff.split(/\r?\n/).length : 0;
+}
+function listChangedFiles(root) {
+  const tracked = runGit(root, ["diff", "--name-only", "HEAD"]);
+  const untracked = runGit(root, ["ls-files", "--others", "--exclude-standard"]);
+  return [...tracked.split(/\r?\n/), ...untracked.split(/\r?\n/)].map(normalizePath2).filter(Boolean);
+}
+function buildReviewEvidence(root, options = {}) {
+  const maxChangedFiles = options.maxChangedFiles ?? 20;
+  const maxDiffLines = options.maxDiffLines ?? 1e3;
+  const paths = options.paths ?? getReviewEvidencePaths(root);
+  const taskMd = readFileSync5(paths.currentTaskPath, "utf-8");
+  const task = parseCurrentTaskMarkdown(taskMd);
+  const fileScope = task.file_scope.map(normalizePath2);
+  const changedFiles = listChangedFiles(root);
+  const outOfScopeFiles = changedFiles.filter((file) => !isInScope(file, fileScope));
+  if (outOfScopeFiles.length > 0) {
+    throw new Error([
+      "review blocked: changed files outside current task file_scope",
+      ...outOfScopeFiles.map((file) => `- ${file}`)
+    ].join("\n"));
+  }
+  if (changedFiles.length > maxChangedFiles) {
+    throw new Error(`review blocked: changed files count ${changedFiles.length} exceeds limit ${maxChangedFiles}`);
+  }
+  const scopedDiff = runGit(root, ["diff", "HEAD", "--", ...fileScope]);
+  const diffLines = countDiffLines(scopedDiff);
+  if (diffLines > maxDiffLines) {
+    throw new Error(`review blocked: scoped diff has ${diffLines} lines, exceeds limit ${maxDiffLines}`);
+  }
+  return {
+    task,
+    workReport: readIfExists(paths.workReportPath),
+    superpowerSummary: readIfExists(paths.superpowerSummaryPath),
+    disciplineReport: readIfExists(paths.disciplineReportPath),
+    validationReport: readIfExists(paths.validationReportPath),
+    rubric: readIfExists(paths.rubricPath),
+    changedFiles,
+    scopedDiff
+  };
+}
+var init_evidence_builder = __esm({
+  "src/core/review/evidence-builder.ts"() {
+    "use strict";
+    init_task_package();
+    init_aegis_runtime();
   }
 });
 
 // src/core/review/prompt-builder.ts
-function buildReviewPrompt(params) {
-  const { taskSpec, dodItems, workReport, gitDiff, rubric } = params;
-  const dodSection = dodItems.length > 0 ? dodItems.map((d, i) => `${i + 1}. ${d}`).join("\n") : "(no DoD items provided)";
-  const diffSection = gitDiff || "(no uncommitted changes)";
+function renderList(items, emptyText) {
+  return items.length > 0 ? items.map((d, i) => `${i + 1}. ${d}`).join("\n") : emptyText;
+}
+function renderBullets(items, emptyText) {
+  return items.length > 0 ? items.map((item) => `- ${item}`).join("\n") : emptyText;
+}
+function buildReviewPrompt(evidence) {
+  const { task, workReport, superpowerSummary, disciplineReport, validationReport, scopedDiff, rubric, changedFiles } = evidence;
+  const diffSection = scopedDiff || "(no uncommitted changes)";
   return [
     "# Codex Review",
     "",
     "## Role",
-    "You are Codex, the external read-only adversarial reviewer for 24Hagent.",
+    "You are Codex, the external read-only adversarial reviewer for Aegis.",
     "Judge the implementation against its written contract (spec + DoD).",
     "Every finding requires cited evidence (file:line). Output in the YAML format specified below.",
     "",
+    "## Task Identity",
+    "",
+    `Task ID: ${task.task_id || "(no task id provided)"}`,
+    `Title: ${task.title || "(no title provided)"}`,
+    "",
     "## Task Specification",
     "",
-    taskSpec || "(no spec provided)",
+    task.specification || "(no spec provided)",
+    "",
+    "## File Scope",
+    "",
+    renderBullets(task.file_scope, "(no file scope provided)"),
     "",
     "## Definition of Done",
     "",
-    dodSection,
+    renderList(task.definition_of_done.map((d) => d.content), "(no DoD items provided)"),
+    "",
+    "## Acceptance Checks",
+    "",
+    task.acceptance_checks || "(no acceptance checks provided)",
+    "",
+    "## Stop Rule",
+    "",
+    task.stop_rule || "(no stop rule provided)",
     "",
     "## Evidence",
     "",
@@ -4941,7 +5690,23 @@ function buildReviewPrompt(params) {
     "",
     workReport || "(no work report provided)",
     "",
-    "### Git Diff",
+    "### Superpower Source Summary",
+    "",
+    superpowerSummary || "(no Superpower source summary provided)",
+    "",
+    "### Superpower Discipline Report",
+    "",
+    disciplineReport || "(no Superpower discipline report provided)",
+    "",
+    "### Validation Report",
+    "",
+    validationReport || "(no validation report provided)",
+    "",
+    "### Changed Files Summary",
+    "",
+    renderBullets(changedFiles, "(no changed files)"),
+    "",
+    "### Scoped Git Diff",
     "",
     "```diff",
     diffSection,
@@ -4956,6 +5721,1607 @@ function buildReviewPrompt(params) {
 var init_prompt_builder = __esm({
   "src/core/review/prompt-builder.ts"() {
     "use strict";
+  }
+});
+
+// src/core/superpower/sources.ts
+import { existsSync as existsSync6, readdirSync, readFileSync as readFileSync6, statSync } from "node:fs";
+import { resolve as resolve3 } from "node:path";
+function firstNonEmptyLine3(markdown) {
+  return markdown.split(/\r?\n/).map((line) => line.trim()).find(Boolean) ?? "";
+}
+function readSummary(path, fallback) {
+  if (!existsSync6(path)) return fallback;
+  const markdown = readFileSync6(path, "utf-8");
+  const description = markdown.match(/^description:\s*"?([^"\r\n]+)"?\s*$/m)?.[1]?.trim();
+  if (description) return description;
+  const first = firstNonEmptyLine3(markdown.replace(/^---[\s\S]*?---\s*/, "")).replace(/^#+\s*/, "");
+  return first || fallback;
+}
+function buildSuperpowerSourceManifest(sourceRoot, generatedAt) {
+  const sources = [];
+  const readme = resolve3(sourceRoot, "README.md");
+  const claude = resolve3(sourceRoot, "CLAUDE.md");
+  const skillsDir = resolve3(sourceRoot, "skills");
+  if (existsSync6(readme)) {
+    sources.push({
+      kind: "repository",
+      name: "Superpowers README",
+      path: readme,
+      summary: readSummary(readme, "Superpowers methodology and skills overview.")
+    });
+  }
+  if (existsSync6(claude)) {
+    sources.push({
+      kind: "guidelines",
+      name: "Superpowers contributor guidelines",
+      path: claude,
+      summary: readSummary(claude, "Contributor and agent-quality guidelines.")
+    });
+  }
+  if (existsSync6(skillsDir)) {
+    for (const skill of IMPORTANT_SKILLS) {
+      const skillPath = resolve3(skillsDir, skill, "SKILL.md");
+      if (existsSync6(skillPath) && statSync(skillPath).isFile()) {
+        sources.push({
+          kind: "skill",
+          name: skill,
+          path: skillPath,
+          summary: readSummary(skillPath, `${skill} skill.`)
+        });
+      }
+    }
+    const extraSkills = readdirSync(skillsDir, { withFileTypes: true }).filter((entry) => entry.isDirectory()).map((entry) => entry.name).filter((name) => !IMPORTANT_SKILLS.includes(name)).sort();
+    for (const skill of extraSkills.slice(0, 12)) {
+      const skillPath = resolve3(skillsDir, skill, "SKILL.md");
+      if (existsSync6(skillPath) && statSync(skillPath).isFile()) {
+        sources.push({
+          kind: "skill",
+          name: skill,
+          path: skillPath,
+          summary: readSummary(skillPath, `${skill} skill.`)
+        });
+      }
+    }
+  }
+  return {
+    schema_version: 1,
+    source_root: sourceRoot,
+    generated_at: generatedAt,
+    sources
+  };
+}
+function renderSuperpowerSummary(manifest) {
+  const rows = manifest.sources.map(
+    (source) => `| ${source.kind} | ${source.name} | ${source.summary} | \`${source.path}\` |`
+  );
+  return [
+    "# Superpower Source Summary",
+    "",
+    `Generated: ${manifest.generated_at}`,
+    "",
+    `Source root: \`${manifest.source_root}\``,
+    "",
+    "| Kind | Name | Summary | Path |",
+    "|------|------|---------|------|",
+    ...rows,
+    "",
+    "## Aegis Boundary",
+    "",
+    "Aegis records Superpower file references and discipline expectations. It does not take over, rewrite, or directly invoke Superpowers.",
+    ""
+  ].join("\n");
+}
+function taskLooksLikeBugFix(currentTaskMarkdown) {
+  return /\b(fix|repair|resolve)\s+(?:a|an|the)?\s*(?:bug|regression|defect|failure|failing|broken)\b/i.test(currentTaskMarkdown) || /\b(regression|defect|broken path|failing scenario)\b/i.test(currentTaskMarkdown);
+}
+function taskLooksLikeFeature(currentTaskMarkdown) {
+  return /\b(feature|implement|add|introduce|create|build|wire|route|refactor|migrate|update)\b/i.test(currentTaskMarkdown);
+}
+function requiredEvidenceCategories(currentTaskMarkdown) {
+  const required = /* @__PURE__ */ new Set(["planning", "verification", "review"]);
+  if (taskLooksLikeBugFix(currentTaskMarkdown)) required.add("debugging");
+  if (!taskLooksLikeBugFix(currentTaskMarkdown) || taskLooksLikeFeature(currentTaskMarkdown)) required.add("tdd");
+  return required;
+}
+function stripMarkdownNoise(markdown) {
+  return markdown.replace(/^#.*$/gm, "").replace(/```[\s\S]*?```/g, "").replace(/\[[^\]]+\]\([^)]+\)/g, "").trim();
+}
+function firstEvidenceSummary(markdown) {
+  const body = stripMarkdownNoise(markdown);
+  const firstLine = body.split(/\r?\n/).map((line) => line.trim()).find(Boolean) ?? "";
+  return firstLine.length > 140 ? `${firstLine.slice(0, 137)}...` : firstLine;
+}
+function expectedSignals(category) {
+  switch (category) {
+    case "planning":
+      return ["planned scope/steps", "acceptance/risk/boundary decision"];
+    case "tdd":
+      return ["test-first or failing-test work", "tests made to pass"];
+    case "debugging":
+      return ["reproduction/root-cause work", "observed failure or regression path"];
+    case "verification":
+      return ["commands/checks run", "passing validation result"];
+    case "review":
+      return ["diff/scope review", "acceptance or verdict review"];
+  }
+}
+function evidenceIssues(markdown, category) {
+  const body = markdown.split(/\r?\n/).filter((line) => !/^#/.test(line.trim())).join("\n").trim();
+  const plainBody = stripMarkdownNoise(markdown);
+  const issues = [];
+  if (plainBody.length < 40) {
+    issues.push("Evidence is too short to prove the discipline was followed.");
+  }
+  if (/\b(todo|tbd|fill this|coming soon|not yet)\b/i.test(plainBody) || /\bplaceholder\b.*\b(later|todo|tbd|fill)\b/i.test(plainBody)) {
+    issues.push("Evidence contains placeholder language.");
+  }
+  if (!EVIDENCE_SIGNALS[category].some((signal) => signal.test(body))) {
+    issues.push(`Evidence does not mention expected ${category} signals: ${expectedSignals(category).join("; ")}.`);
+  }
+  return issues;
+}
+function buildEvidenceRequirement(category, required) {
+  return {
+    category,
+    label: EVIDENCE_LABELS[category],
+    required,
+    reason: required ? `${EVIDENCE_LABELS[category]} is required for this round.` : `${EVIDENCE_LABELS[category]} is optional for this round.`,
+    expectedSignals: expectedSignals(category)
+  };
+}
+function collectRoundDisciplineEvidence(currentDir, currentTaskMarkdown) {
+  const required = requiredEvidenceCategories(currentTaskMarkdown);
+  return Object.keys(EVIDENCE_FILE_NAMES).map((category) => {
+    const path = resolve3(currentDir, EVIDENCE_FILE_NAMES[category]);
+    const fileExists = existsSync6(path);
+    const markdown = fileExists ? readFileSync6(path, "utf-8") : "";
+    const issues = fileExists ? evidenceIssues(markdown, category) : ["Evidence file is missing."];
+    const requirement = buildEvidenceRequirement(category, required.has(category));
+    const present = fileExists && issues.length === 0;
+    const status = present ? "PASS" : requirement.required ? fileExists ? "INSUFFICIENT" : "MISSING" : "OPTIONAL";
+    return {
+      category,
+      label: requirement.label,
+      path,
+      required: requirement.required,
+      present,
+      status,
+      reason: requirement.reason,
+      summary: fileExists ? firstEvidenceSummary(markdown) : "",
+      issues: requirement.required || fileExists ? issues : []
+    };
+  });
+}
+function checkSuperpowerDiscipline(manifest, evidence) {
+  const present = new Set(manifest.sources.filter((source) => source.kind === "skill").map((source) => source.name));
+  const missingSkills = IMPORTANT_SKILLS.filter((skill) => !present.has(skill));
+  const missingEvidence = evidence.filter((item) => item.required && !item.present);
+  return {
+    verdict: missingSkills.length === 0 && missingEvidence.length === 0 ? "PASS" : "NEED_FIX",
+    missingSkills,
+    sourceCount: manifest.sources.length,
+    evidence
+  };
+}
+function renderDisciplineReport(result, manifest) {
+  const requiredEvidence = result.evidence.filter((item) => item.required);
+  const optionalEvidence = result.evidence.filter((item) => !item.required);
+  return [
+    "# Superpower Discipline Report",
+    "",
+    `Verdict: ${result.verdict}`,
+    "",
+    `Source count: ${result.sourceCount}`,
+    "",
+    "## Required Skills",
+    "",
+    result.missingSkills.length === 0 ? "All required Superpower discipline source skills are present." : result.missingSkills.map((skill) => `- Missing: ${skill}`).join("\n"),
+    "",
+    "## Source Evidence",
+    "",
+    ...manifest.sources.filter((source) => source.kind === "skill").map((source) => `- ${source.name}: \`${source.path}\``),
+    "",
+    "## Current Round Discipline Evidence",
+    "",
+    ...requiredEvidence.map(
+      (item) => [
+        `- ${item.status}: ${item.label} (${item.category}) - \`${item.path}\``,
+        `  - Reason: ${item.reason}`,
+        item.summary ? `  - Summary: ${item.summary}` : "  - Summary: none",
+        item.issues.length > 0 ? `  - Issues: ${item.issues.join(" ")}` : "  - Issues: none"
+      ].join("\n")
+    ),
+    "",
+    "## Optional Round Evidence",
+    "",
+    ...optionalEvidence.map(
+      (item) => [
+        `- ${item.present ? "PRESENT" : "not required"}: ${item.label} (${item.category}) - \`${item.path}\``,
+        item.summary ? `  - Summary: ${item.summary}` : "  - Summary: none",
+        item.issues.length > 0 ? `  - Issues: ${item.issues.join(" ")}` : "  - Issues: none"
+      ].join("\n")
+    ),
+    "",
+    "## Boundary",
+    "",
+    "Superpower source availability proves the discipline materials exist. Current-round evidence proves Claude Code actually followed the required discipline before Codex review.",
+    ""
+  ].join("\n");
+}
+var IMPORTANT_SKILLS, EVIDENCE_FILE_NAMES, EVIDENCE_LABELS, EVIDENCE_SIGNALS;
+var init_sources = __esm({
+  "src/core/superpower/sources.ts"() {
+    "use strict";
+    IMPORTANT_SKILLS = [
+      "brainstorming",
+      "writing-plans",
+      "test-driven-development",
+      "systematic-debugging",
+      "requesting-code-review",
+      "verification-before-completion",
+      "using-git-worktrees",
+      "finishing-a-development-branch"
+    ];
+    EVIDENCE_FILE_NAMES = {
+      planning: "planning-evidence.md",
+      tdd: "tdd-evidence.md",
+      debugging: "debugging-evidence.md",
+      verification: "verification-evidence.md",
+      review: "review-evidence.md"
+    };
+    EVIDENCE_LABELS = {
+      planning: "Planning evidence",
+      tdd: "TDD or test-first evidence",
+      debugging: "Systematic debugging evidence",
+      verification: "Verification-before-completion evidence",
+      review: "Review/finishing evidence"
+    };
+    EVIDENCE_SIGNALS = {
+      planning: [
+        /\b(plan|planned|scope|scoped|steps?|sequence|approach|decision|task shape)\b/i,
+        /\b(acceptance|risk|boundary|file scope|implementation order)\b/i
+      ],
+      tdd: [
+        /\b(test|tests|failing|red|green|assert|coverage|regression test)\b/i,
+        /\b(before implementation|before coding|test-first|made .* pass)\b/i
+      ],
+      debugging: [
+        /\b(reproduce|reproduced|root cause|hypothesis|trace|diagnos|debug|failure|failing scenario)\b/i,
+        /\b(observed|isolated|regression|fix verified|broken path)\b/i
+      ],
+      verification: [
+        /\b(ran|passed|verified|verification|typecheck|build|lint|test|tests|smoke)\b/i,
+        /\b(full validation|focused tests|npm test|diff --check)\b/i
+      ],
+      review: [
+        /\b(review|reviewed|diff|scope|acceptance|codex|verdict|pass|need_fix|need_human)\b/i,
+        /\b(changed files|out-of-scope|final check|finishing|commit boundary)\b/i
+      ]
+    };
+  }
+});
+
+// src/core/aegis-runtime/safety.ts
+import { execFileSync as execFileSync2 } from "node:child_process";
+import { existsSync as existsSync7, mkdirSync as mkdirSync4, readFileSync as readFileSync7, writeFileSync as writeFileSync5 } from "node:fs";
+function isNegatedSafetyStatement(line) {
+  return /\b(do not|must not|never|cannot|should not|may not|without|forbidden|Aegis still does not|Aegis must not)\b/i.test(line);
+}
+function detectForbiddenActions(markdown, source) {
+  return markdown.split(/\r?\n/).flatMap((line, index) => {
+    const trimmed = line.trim();
+    if (!trimmed || isNegatedSafetyStatement(trimmed)) return [];
+    return FORBIDDEN_PATTERNS.filter((item) => item.pattern.test(trimmed)).map((item) => ({
+      code: item.code,
+      severity: "HARD_BLOCK",
+      source,
+      evidence: `${index + 1}: ${trimmed}`,
+      recommendation: item.recommendation
+    }));
+  });
+}
+function normalizePath3(path) {
+  return path.replace(/\\/g, "/").replace(/^\.\/+/, "").replace(/\/+$/, "");
+}
+function isInScope2(file, scope) {
+  const normalizedFile = normalizePath3(file);
+  return scope.some((rawScope) => {
+    const normalizedScope = normalizePath3(rawScope);
+    return normalizedFile === normalizedScope || normalizedFile.startsWith(`${normalizedScope}/`);
+  });
+}
+function runGit2(root, args) {
+  return execFileSync2("git", args, { cwd: root, encoding: "utf-8", maxBuffer: 1024 * 1024 * 10 });
+}
+function listChangedFiles2(root) {
+  const tracked = runGit2(root, ["diff", "--name-only", "HEAD"]);
+  const untracked = runGit2(root, ["ls-files", "--others", "--exclude-standard"]);
+  return [...tracked.split(/\r?\n/), ...untracked.split(/\r?\n/)].map(normalizePath3).filter(Boolean);
+}
+function renderHumanHandoff2(findings) {
+  return [
+    "# Human Handoff",
+    "",
+    "## Reason",
+    "",
+    "Aegis detected a hard safety boundary. It is stopping instead of letting Claude Code continue.",
+    "",
+    "## Findings",
+    "",
+    ...findings.map((finding) => [
+      `- ${finding.code}: ${finding.evidence}`,
+      `  - Source: ${finding.source}`,
+      `  - Required action: ${finding.recommendation}`
+    ].join("\n")),
+    "",
+    "## Boundary",
+    "",
+    "Only the human may approve or perform forbidden Git, publish, release, deploy, or history-rewrite actions.",
+    ""
+  ].join("\n");
+}
+function renderSafetyReport(result, timestamp) {
+  const findingRows = result.findings.length > 0 ? result.findings.map((finding) => [
+    `- ${finding.severity}: ${finding.code}`,
+    `  - Source: ${finding.source}`,
+    `  - Evidence: ${finding.evidence}`,
+    `  - Recommendation: ${finding.recommendation}`
+  ].join("\n")).join("\n") : "- None.";
+  return [
+    "# Safety Report",
+    "",
+    `Generated: ${timestamp}`,
+    "",
+    `Verdict: ${result.verdict}`,
+    "",
+    "## Dirty Worktree",
+    "",
+    result.changedFiles.length > 0 ? result.changedFiles.map((file) => `- ${file}`).join("\n") : "- None.",
+    "",
+    "## File Scope Violations",
+    "",
+    result.outOfScopeFiles.length > 0 ? result.outOfScopeFiles.map((file) => `- ${file}`).join("\n") : "- None.",
+    "",
+    "## Findings",
+    "",
+    findingRows,
+    "",
+    "## Forbidden Action Boundary",
+    "",
+    "Aegis may render instructions and suggestions. It must not execute commit, push, merge, rebase, reset, release, deploy, publish, branch deletion, Docker push, or Git history rewrite actions.",
+    ""
+  ].join("\n");
+}
+function runSafetyCheck(root, timestamp = (/* @__PURE__ */ new Date()).toISOString()) {
+  const paths = getAegisRuntimePaths(root);
+  mkdirSync4(paths.currentDir, { recursive: true });
+  const currentTaskMarkdown = readFileSync7(paths.currentTask, "utf-8");
+  const task = parseCurrentTaskMarkdown(currentTaskMarkdown);
+  const workInstructionMarkdown = existsSync7(paths.workInstruction) ? readFileSync7(paths.workInstruction, "utf-8") : "";
+  const changedFiles = listChangedFiles2(root);
+  const outOfScopeFiles = changedFiles.filter((file) => !isInScope2(file, task.file_scope));
+  const findings = [
+    ...detectForbiddenActions(currentTaskMarkdown, "current-task.md"),
+    ...detectForbiddenActions(workInstructionMarkdown, "work-instruction.md"),
+    ...outOfScopeFiles.map((file) => ({
+      code: "FILE_SCOPE_VIOLATION",
+      severity: "HARD_BLOCK",
+      source: "git diff",
+      evidence: file,
+      recommendation: "Narrow the change or update current-task.md file scope with human confirmation."
+    }))
+  ];
+  const result = {
+    verdict: findings.some((finding) => finding.severity === "HARD_BLOCK") ? "HARD_BLOCK" : "PASS",
+    findings,
+    changedFiles,
+    outOfScopeFiles,
+    reportPath: paths.safetyReport
+  };
+  writeFileSync5(paths.safetyReport, renderSafetyReport(result, timestamp), "utf-8");
+  if (result.verdict === "HARD_BLOCK") {
+    const state = parseAegisRunStateJson(readFileSync7(paths.runState, "utf-8"));
+    const nextState = {
+      ...state,
+      phase: "hard-blocked",
+      last_verdict: "NEED_HUMAN",
+      updated_at: timestamp
+    };
+    writeFileSync5(paths.runState, stringifyAegisRunState(nextState), "utf-8");
+    writeFileSync5(paths.humanHandoff, renderHumanHandoff2(findings), "utf-8");
+  }
+  return result;
+}
+function renderCommitSuggestion(state, summaryMarkdown) {
+  if (state.phase !== "passed" || state.last_verdict !== "PASS") {
+    throw new Error("commit suggestion is available only after Codex PASS");
+  }
+  const summaryLine = summaryMarkdown.split(/\r?\n/).map((line) => line.trim()).find((line) => line && !line.startsWith("#") && !line.startsWith("##")) ?? "Complete current Aegis task.";
+  return [
+    "# Commit Suggestion",
+    "",
+    "Aegis does not execute commits. The human may use this suggestion after reviewing the final diff.",
+    "",
+    "## Suggested Commit Message",
+    "",
+    `feat: ${summaryLine.replace(/\.$/, "")}`,
+    "",
+    "## Boundary",
+    "",
+    "Aegis must not run `git commit`, `git push`, or any other forbidden Git action.",
+    ""
+  ].join("\n");
+}
+function writeCommitSuggestion(root) {
+  const paths = getAegisRuntimePaths(root);
+  const state = parseAegisRunStateJson(readFileSync7(paths.runState, "utf-8"));
+  const summary = existsSync7(paths.roundSummary) ? readFileSync7(paths.roundSummary, "utf-8") : "";
+  const suggestion = renderCommitSuggestion(state, summary);
+  writeFileSync5(paths.commitSuggestion, suggestion, "utf-8");
+  return paths.commitSuggestion;
+}
+var FORBIDDEN_PATTERNS;
+var init_safety = __esm({
+  "src/core/aegis-runtime/safety.ts"() {
+    "use strict";
+    init_task_package();
+    init_paths();
+    init_run_state();
+    FORBIDDEN_PATTERNS = [
+      { code: "FORBIDDEN_GIT_COMMIT", pattern: /\bgit\s+commit\b/i, recommendation: "Ask the human to commit after Aegis renders a commit suggestion." },
+      { code: "FORBIDDEN_GIT_PUSH", pattern: /\bgit\s+push\b/i, recommendation: "Do not push from Aegis. Ask the human to push explicitly." },
+      { code: "FORBIDDEN_GIT_MERGE", pattern: /\bgit\s+merge\b/i, recommendation: "Do not merge from Aegis. Stop for human direction." },
+      { code: "FORBIDDEN_GIT_REBASE", pattern: /\bgit\s+rebase\b/i, recommendation: "Do not rebase from Aegis. Stop for human direction." },
+      { code: "FORBIDDEN_GIT_RESET_HARD", pattern: /\bgit\s+reset\s+--hard\b/i, recommendation: "Never rewrite or discard worktree state from Aegis." },
+      { code: "FORBIDDEN_BRANCH_DELETE", pattern: /\b(git\s+branch\s+-D|delete\s+branch)\b/i, recommendation: "Do not delete branches from Aegis." },
+      { code: "FORBIDDEN_NPM_PUBLISH", pattern: /\bnpm\s+publish\b/i, recommendation: "Do not publish packages from Aegis." },
+      { code: "FORBIDDEN_DOCKER_PUSH", pattern: /\bdocker\s+push\b/i, recommendation: "Do not push images from Aegis." },
+      { code: "FORBIDDEN_DEPLOY", pattern: /\b(deploy\s+(to|now|prod|production)|run\s+deploy)\b/i, recommendation: "Do not deploy from Aegis." },
+      { code: "FORBIDDEN_RELEASE", pattern: /\b(create\s+release|publish\s+release|run\s+release)\b/i, recommendation: "Do not release from Aegis." },
+      { code: "FORBIDDEN_HISTORY_REWRITE", pattern: /\b(rewrite\s+git\s+history|history\s+rewrite)\b/i, recommendation: "Do not rewrite Git history from Aegis." }
+    ];
+  }
+});
+
+// src/core/aegis-runtime/round-gate.ts
+import { existsSync as existsSync8, mkdirSync as mkdirSync5, readFileSync as readFileSync8, writeFileSync as writeFileSync6 } from "node:fs";
+function readJsonSafe(path) {
+  let raw = readFileSync8(path, "utf-8");
+  if (raw.charCodeAt(0) === 65279) raw = raw.slice(1);
+  return JSON.parse(raw);
+}
+function renderRoundGateReport(result, timestamp) {
+  const stepRows = result.steps.map(
+    (step) => `| ${step.name} | ${step.verdict} | ${step.detail.replace(/\r?\n/g, " ")} |`
+  );
+  return [
+    "# Quality Readiness Report",
+    "",
+    `Generated: ${timestamp}`,
+    "",
+    `Verdict: ${result.verdict}`,
+    "",
+    "## Gate Order",
+    "",
+    "| Step | Verdict | Detail |",
+    "|------|---------|--------|",
+    ...stepRows,
+    "",
+    "## Codex Boundary",
+    "",
+    result.promptPath ? `Codex prompt is ready at \`${result.promptPath}\`. Aegis must not execute Codex itself; Claude Code or the human runs the external read-only Codex review command.` : "Codex prompt was not generated because prerequisite gates did not all pass.",
+    "",
+    "Aegis packages evidence and routes parsed Codex verdicts. Codex remains the final semantic reviewer.",
+    ""
+  ].join("\n");
+}
+function appendStep(steps, step) {
+  steps.push(step);
+  if (step.verdict === "FAIL") {
+    return {
+      verdict: "NEED_FIX",
+      steps,
+      promptPath: null,
+      reportPath: ""
+    };
+  }
+  return null;
+}
+async function runRoundGate(root, runner, timestamp = (/* @__PURE__ */ new Date()).toISOString()) {
+  const paths = getAegisRuntimePaths(root);
+  const steps = [];
+  mkdirSync5(paths.currentDir, { recursive: true });
+  const taskMarkdown = readFileSync8(paths.currentTask, "utf-8");
+  const safety = runSafetyCheck(root, timestamp);
+  let stopped = appendStep(steps, {
+    name: "safety",
+    verdict: safety.verdict === "PASS" ? "PASS" : "FAIL",
+    detail: safety.verdict === "PASS" ? "No hard safety boundaries detected." : "Safety check hard-blocked the round."
+  });
+  const taskReview = reviewCurrentTaskMarkdown(taskMarkdown);
+  writeFileSync6(paths.taskQualityReport, renderTaskQualityReview(taskReview), "utf-8");
+  if (!stopped) {
+    stopped = appendStep(steps, {
+      name: "task-quality",
+      verdict: taskReview.verdict === "PASS" ? "PASS" : "FAIL",
+      detail: taskReview.verdict === "PASS" ? "Current task is reviewable." : `Task quality returned ${taskReview.verdict}.`
+    });
+  }
+  if (!stopped) {
+    if (!existsSync8(paths.superpowerSources)) {
+      stopped = appendStep(steps, {
+        name: "superpower-discipline",
+        verdict: "FAIL",
+        detail: "`superpower:scan` must run before round gate."
+      });
+    } else {
+      const manifest = readJsonSafe(paths.superpowerSources);
+      const discipline = checkSuperpowerDiscipline(manifest, collectRoundDisciplineEvidence(paths.currentDir, taskMarkdown));
+      writeFileSync6(paths.disciplineReport, renderDisciplineReport(discipline, manifest), "utf-8");
+      stopped = appendStep(steps, {
+        name: "superpower-discipline",
+        verdict: discipline.verdict === "PASS" ? "PASS" : "FAIL",
+        detail: discipline.verdict === "PASS" ? "Current-round Superpower discipline evidence passed." : "Required Superpower discipline evidence is missing or insufficient."
+      });
+    }
+  }
+  if (!stopped) {
+    const gatesRaw = readJsonSafe(paths.qualityGates);
+    const configs = loadGateConfig(gatesRaw);
+    const plans = planGateExecutions(configs);
+    const gateResults = await runConfiguredGates(plans, runner);
+    const validation = evaluateGateResults(gateResults, configs);
+    writeFileSync6(paths.validationReport, renderValidationReport({
+      verdict: validation,
+      taskId: "N/A",
+      timestamp,
+      readinessVerdict: "READY"
+    }), "utf-8");
+    stopped = appendStep(steps, {
+      name: "local-validation",
+      verdict: validation.overall === "PASS" ? "PASS" : "FAIL",
+      detail: validation.overall === "PASS" ? "All configured local quality gates passed." : `Blocking failures: ${validation.blockingFailures.join("; ")}`
+    });
+  }
+  if (!stopped) {
+    try {
+      const prompt = buildReviewPrompt(buildReviewEvidence(root));
+      writeFileSync6(paths.codexReviewPrompt, prompt, "utf-8");
+      appendStep(steps, {
+        name: "codex-prompt-readiness",
+        verdict: "PASS",
+        detail: "Read-only Codex review prompt generated."
+      });
+    } catch (error) {
+      stopped = appendStep(steps, {
+        name: "codex-prompt-readiness",
+        verdict: "FAIL",
+        detail: error instanceof Error ? error.message : String(error)
+      });
+    }
+  }
+  const result = stopped ? { ...stopped, reportPath: paths.qualityReadinessReport } : {
+    verdict: "PASS",
+    steps,
+    promptPath: paths.codexReviewPrompt,
+    reportPath: paths.qualityReadinessReport
+  };
+  writeFileSync6(paths.qualityReadinessReport, renderRoundGateReport(result, timestamp), "utf-8");
+  return result;
+}
+var init_round_gate = __esm({
+  "src/core/aegis-runtime/round-gate.ts"() {
+    "use strict";
+    init_validation_engine();
+    init_task_quality_gate();
+    init_evidence_builder();
+    init_prompt_builder();
+    init_sources();
+    init_paths();
+    init_safety();
+  }
+});
+
+// src/core/aegis-runtime/progression.ts
+import { copyFileSync, existsSync as existsSync9, mkdirSync as mkdirSync6, readFileSync as readFileSync9, writeFileSync as writeFileSync7 } from "node:fs";
+import { basename, resolve as resolve4 } from "node:path";
+function readLimits(root) {
+  const paths = getAegisRuntimePaths(root);
+  if (!existsSync9(paths.aegisConfig)) {
+    return { maxAutoRounds: 5, maxRepairAttempts: 2 };
+  }
+  const config = AegisConfigSchema.parse(JSON.parse(readFileSync9(paths.aegisConfig, "utf-8")));
+  return {
+    maxAutoRounds: config.limits.max_auto_rounds,
+    maxRepairAttempts: config.limits.max_repair_attempts
+  };
+}
+function decisionRequest(decision, context) {
+  return {
+    decision,
+    options: [
+      "Approve the next Aegis transition and rerun Aegis.",
+      "Revise the current task, evidence, or run-state before continuing."
+    ],
+    context
+  };
+}
+function renderRetryHandoff(state, maxRepairAttempts) {
+  return [
+    "# Human Handoff",
+    "",
+    "## Reason",
+    "",
+    `Aegis stopped because repair attempts reached the configured limit (${maxRepairAttempts}).`,
+    "",
+    "## Current State",
+    "",
+    `- Task: ${state.task_id ?? "No current task."}`,
+    `- Mode: ${state.mode}`,
+    `- Last verdict: ${state.last_verdict ?? "Not set."}`,
+    `- Retry count: ${state.retry_count}`,
+    "",
+    "## Boundary",
+    "",
+    "Claude Code must ask the human whether to revise scope, accept risk, or stop the task.",
+    ""
+  ].join("\n");
+}
+function sanitizeArchiveName(taskId) {
+  return taskId.replace(/[^a-zA-Z0-9._-]+/g, "-").replace(/^-+|-+$/g, "") || "no-task";
+}
+function archiveCompletedRound(root, taskId, timestamp) {
+  const paths = getAegisRuntimePaths(root);
+  const archivePath = resolve4(paths.archiveDir, sanitizeArchiveName(taskId));
+  mkdirSync6(archivePath, { recursive: true });
+  const candidates = [
+    paths.currentTask,
+    paths.roundSummary,
+    paths.workInstruction,
+    paths.planningEvidence,
+    paths.tddEvidence,
+    paths.debuggingEvidence,
+    paths.verificationEvidence,
+    paths.reviewEvidence,
+    paths.safetyReport,
+    paths.taskQualityReport,
+    paths.disciplineReport,
+    paths.qualityReadinessReport,
+    paths.validationReport,
+    paths.codexReviewPrompt,
+    paths.codexReviewRaw,
+    paths.codexReview,
+    paths.superpowerSources,
+    paths.superpowerSummary
+  ];
+  const copiedFiles = [];
+  for (const file of candidates) {
+    if (!existsSync9(file)) continue;
+    const target = resolve4(archivePath, basename(file));
+    copyFileSync(file, target);
+    copiedFiles.push(basename(file));
+  }
+  const manifest = {
+    schema_version: 1,
+    task_id: taskId,
+    archived_at: timestamp,
+    copied_files: copiedFiles
+  };
+  writeFileSync7(resolve4(archivePath, "manifest.json"), `${JSON.stringify(manifest, null, 2)}
+`, "utf-8");
+  copiedFiles.push("manifest.json");
+  return { archivePath, copiedFiles };
+}
+function applyProgressionPolicy(root, state, timestamp) {
+  const limits = readLimits(root);
+  if (state.phase === "need-fix" && state.retry_count >= limits.maxRepairAttempts) {
+    const nextState = {
+      ...state,
+      phase: "human-handoff",
+      last_verdict: "NEED_HUMAN",
+      updated_at: timestamp
+    };
+    return {
+      state: nextState,
+      preserveWorkInstruction: true,
+      humanHandoff: renderRetryHandoff(state, limits.maxRepairAttempts),
+      modeDecision: `Stopped after ${state.retry_count} repair attempt(s); max is ${limits.maxRepairAttempts}.`
+    };
+  }
+  if (state.phase === "need-fix") {
+    if (state.mode === "ask") {
+      return {
+        state: {
+          ...state,
+          phase: "decision-request",
+          updated_at: timestamp
+        },
+        preserveWorkInstruction: true,
+        decisionRequest: decisionRequest(
+          "Codex returned NEED_FIX. Should Claude Code perform the bounded repair instruction?",
+          `Retry count: ${state.retry_count}. Aegis ask mode stops before construction.`
+        ),
+        modeDecision: "Ask mode stopped before repair construction."
+      };
+    }
+    return {
+      state: {
+        ...state,
+        phase: "waiting-for-construction",
+        updated_at: timestamp
+      },
+      preserveWorkInstruction: true,
+      modeDecision: `${state.mode} mode allows bounded NEED_FIX repair construction.`
+    };
+  }
+  if (state.phase === "passed") {
+    const nextRoundCount = state.round_count + 1;
+    if (state.mode === "ask") {
+      return {
+        state: {
+          ...state,
+          phase: "decision-request",
+          round_count: nextRoundCount,
+          updated_at: timestamp
+        },
+        preserveWorkInstruction: false,
+        archiveTaskId: state.task_id ?? "no-task",
+        archiveTimestamp: timestamp,
+        decisionRequest: decisionRequest(
+          "Codex returned PASS. Should Aegis prepare the next task?",
+          `Completed rounds: ${nextRoundCount}. Aegis ask mode stops after meaningful phase boundaries.`
+        ),
+        modeDecision: "Ask mode stopped after PASS."
+      };
+    }
+    if (nextRoundCount >= limits.maxAutoRounds) {
+      return {
+        state: {
+          ...state,
+          phase: "decision-request",
+          round_count: nextRoundCount,
+          updated_at: timestamp
+        },
+        preserveWorkInstruction: false,
+        archiveTaskId: state.task_id ?? "no-task",
+        archiveTimestamp: timestamp,
+        decisionRequest: decisionRequest(
+          "Aegis reached the configured round limit. Should it continue selecting tasks?",
+          `Completed rounds: ${nextRoundCount}. Limit: ${limits.maxAutoRounds}.`
+        ),
+        modeDecision: `Stopped at round limit ${limits.maxAutoRounds}.`
+      };
+    }
+    return {
+      state: {
+        ...state,
+        task_id: null,
+        phase: "ready-for-task",
+        round_count: nextRoundCount,
+        updated_at: timestamp
+      },
+      preserveWorkInstruction: false,
+      archiveTaskId: state.task_id ?? "no-task",
+      archiveTimestamp: timestamp,
+      modeDecision: `${state.mode} mode advanced after PASS to next-task selection.`
+    };
+  }
+  return {
+    state,
+    preserveWorkInstruction: false,
+    modeDecision: "No mode transition applied."
+  };
+}
+function writeProgressionSideEffects(root, decision) {
+  const paths = getAegisRuntimePaths(root);
+  if (decision.archiveTaskId && decision.archiveTimestamp) {
+    archiveCompletedRound(root, decision.archiveTaskId, decision.archiveTimestamp);
+  }
+  if (decision.humanHandoff) {
+    writeFileSync7(paths.humanHandoff, decision.humanHandoff, "utf-8");
+  }
+  writeFileSync7(paths.runState, stringifyAegisRunState(decision.state), "utf-8");
+}
+var AegisConfigSchema;
+var init_progression = __esm({
+  "src/core/aegis-runtime/progression.ts"() {
+    "use strict";
+    init_zod();
+    init_paths();
+    init_run_state();
+    AegisConfigSchema = external_exports.object({
+      limits: external_exports.object({
+        max_auto_rounds: external_exports.number().int().min(1).max(100).default(5),
+        max_repair_attempts: external_exports.number().int().min(1).max(10).default(2)
+      }).default({
+        max_auto_rounds: 5,
+        max_repair_attempts: 2
+      })
+    }).passthrough();
+  }
+});
+
+// src/core/aegis-runtime/index.ts
+var init_aegis_runtime = __esm({
+  "src/core/aegis-runtime/index.ts"() {
+    "use strict";
+    init_paths();
+    init_run_state();
+    init_navigation();
+    init_navigation_refresh();
+    init_controller();
+    init_review_routing();
+    init_blueprint_flow();
+    init_current_task_flow();
+    init_round_gate();
+    init_safety();
+    init_progression();
+  }
+});
+
+// src/cli/aegis.ts
+var aegis_exports = {};
+__export(aegis_exports, {
+  runAegis: () => runAegis
+});
+import { existsSync as existsSync10, readFileSync as readFileSync10 } from "node:fs";
+function reportHasPassVerdict(path) {
+  if (!existsSync10(path)) return false;
+  return /^Verdict:\s*PASS\s*$/m.test(readFileSync10(path, "utf-8"));
+}
+function runAegis(root) {
+  const paths = getAegisRuntimePaths(root);
+  const initialState = parseAegisRunStateJson(readFileSync10(paths.runState, "utf-8"));
+  const continuation = applyProgressionPolicy(root, initialState, (/* @__PURE__ */ new Date()).toISOString());
+  const state = continuation.state;
+  if (state !== initialState) {
+    writeProgressionSideEffects(root, continuation);
+  }
+  const { currentTaskTitle, projectGoal } = readNavigationContext(paths);
+  const decision = decideAegisNextAction(state, {
+    hasCurrentTask: existsSync10(paths.currentTask),
+    hasTaskQualityReport: existsSync10(paths.taskQualityReport),
+    hasQualityReadinessReport: existsSync10(paths.qualityReadinessReport),
+    hasValidationReport: existsSync10(paths.validationReport),
+    hasSuperpowerSources: existsSync10(paths.superpowerSources),
+    hasDisciplineReport: existsSync10(paths.disciplineReport),
+    hasPassingDisciplineReport: reportHasPassVerdict(paths.disciplineReport),
+    hasCodexReviewPrompt: existsSync10(paths.codexReviewPrompt),
+    hasCodexReviewRaw: existsSync10(paths.codexReviewRaw),
+    hasCodexReview: existsSync10(paths.codexReview)
+  });
+  const input = {
+    state,
+    projectGoal,
+    currentTaskTitle,
+    nextAction: decision.nextAction,
+    modeDecision: continuation.modeDecision,
+    risks: decision.risks
+  };
+  refreshNavigation(paths, input, {
+    preserveWorkInstruction: continuation.preserveWorkInstruction,
+    decisionRequest: continuation.decisionRequest
+  });
+  console.log(renderStatus(input));
+}
+var init_aegis = __esm({
+  "src/cli/aegis.ts"() {
+    "use strict";
+    init_aegis_runtime();
+  }
+});
+
+// src/core/schemas/run-state.ts
+function parseRunStateJson(raw) {
+  return RunStateSchema.parse(JSON.parse(raw));
+}
+var FixHistoryEntry, RunStateSchema;
+var init_run_state2 = __esm({
+  "src/core/schemas/run-state.ts"() {
+    "use strict";
+    init_zod();
+    FixHistoryEntry = external_exports.object({
+      attempt: external_exports.number().int().min(1),
+      timestamp: external_exports.string().min(1),
+      verdict: external_exports.enum(["PASS", "NEED_FIX", "NEED_HUMAN"]).optional(),
+      required_fixes: external_exports.array(external_exports.string()).optional(),
+      blocking_issue_ids: external_exports.array(external_exports.string()).optional(),
+      reason: external_exports.string().optional()
+    });
+    RunStateSchema = external_exports.object({
+      active_task_id: external_exports.string().nullable(),
+      phase: external_exports.string().min(1),
+      retry_count: external_exports.number().int().min(0).max(3),
+      last_verdict: external_exports.enum(["PASS", "NEED_FIX", "NEED_HUMAN"]).nullable(),
+      consecutive_failures: external_exports.number().int().min(0),
+      fix_history: external_exports.array(FixHistoryEntry).default([]),
+      updated_at: external_exports.string().nullable()
+    });
+  }
+});
+
+// src/cli/status.ts
+var status_exports = {};
+__export(status_exports, {
+  formatAegisStatus: () => formatAegisStatus,
+  formatStatus: () => formatStatus,
+  runAegisStatus: () => runAegisStatus,
+  runLegacyStatus: () => runLegacyStatus,
+  runStatus: () => runStatus
+});
+import { existsSync as existsSync11, mkdirSync as mkdirSync7, readFileSync as readFileSync11, writeFileSync as writeFileSync8 } from "node:fs";
+import { resolve as resolve5 } from "node:path";
+function formatStatus(rs, tp) {
+  return [
+    `\u5F53\u524D\u9636\u6BB5: ${rs.phase}`,
+    `\u5F53\u524D\u4EFB\u52A1: ${tp.task_id} - ${tp.title}`,
+    `\u4E0A\u6B21\u5BA1\u67E5: ${rs.last_verdict ?? "\u65E0"}`
+  ].join("\n");
+}
+function section5(md, heading) {
+  const re = new RegExp(`## ${heading.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*\\n+([\\s\\S]*?)(?=\\n## |$)`);
+  return (md.match(re)?.[1] ?? "").trim();
+}
+function firstNonEmptyLine4(text) {
+  return text.split("\n").map((line) => line.trim()).find(Boolean);
+}
+function formatAegisStatus(state, currentTaskMd = "", projectBlueprintMd = "") {
+  const currentTaskTitle = firstNonEmptyLine4(section5(currentTaskMd, "Title"));
+  const projectGoal = firstNonEmptyLine4(section5(projectBlueprintMd, "Product Goal"));
+  return renderStatus({
+    state,
+    projectGoal,
+    currentTaskTitle,
+    nextAction: state.phase === "waiting-for-construction" ? "Claude Code should read `.aegis/current/work-instruction.md` and perform the scoped work." : "Run `aegis` to continue or refresh the current state."
+  });
+}
+function runAegisStatus(root) {
+  const paths = getAegisRuntimePaths(root);
+  const state = parseAegisRunStateJson(readFileSync11(paths.runState, "utf-8"));
+  const currentTaskMd = existsSync11(paths.currentTask) ? readFileSync11(paths.currentTask, "utf-8") : "";
+  const projectBlueprintMd = existsSync11(paths.projectBlueprint) ? readFileSync11(paths.projectBlueprint, "utf-8") : "";
+  const currentTaskTitle = firstNonEmptyLine4(section5(currentTaskMd, "Title"));
+  const projectGoal = firstNonEmptyLine4(section5(projectBlueprintMd, "Product Goal"));
+  const nextAction = state.phase === "waiting-for-construction" ? "Claude Code should read `.aegis/current/work-instruction.md` and perform the scoped work." : "Run `aegis` to continue or refresh the current state.";
+  const input = { state, projectGoal, currentTaskTitle, nextAction };
+  mkdirSync7(paths.currentDir, { recursive: true });
+  mkdirSync7(paths.blueprintDir, { recursive: true });
+  writeFileSync8(paths.status, renderStatus(input), "utf-8");
+  writeFileSync8(paths.workInstruction, renderWorkInstruction(input), "utf-8");
+  writeFileSync8(paths.projectProgress, renderProjectProgress(input), "utf-8");
+  console.log(renderStatus(input));
+}
+function runLegacyStatus(root) {
+  const rs = parseRunStateJson(readFileSync11(resolve5(root, ".agent/RUN_STATE.json"), "utf-8"));
+  const tp = parseCurrentTaskMarkdown(readFileSync11(resolve5(root, ".agent/CURRENT_TASK.md"), "utf-8"));
+  console.log(formatStatus(rs, tp));
+}
+function runStatus(root) {
+  if (existsSync11(resolve5(root, ".aegis/state/run-state.json"))) {
+    runAegisStatus(root);
+    return;
+  }
+  runLegacyStatus(root);
+}
+var init_status = __esm({
+  "src/cli/status.ts"() {
+    "use strict";
+    init_aegis_runtime();
+    init_run_state2();
+    init_task_package();
+  }
+});
+
+// src/core/quality/readiness-engine.ts
+function identifyPlaceholder(script) {
+  if (!script) return true;
+  if (script.includes("no test specified")) return true;
+  if (/\bexit 1\b/.test(script) && !KNOWN_CMDS.test(script)) return true;
+  if (/^\s*echo\s+/.test(script) && !RUNNERS.test(script)) return true;
+  return false;
+}
+function detectToolchain(pkg) {
+  const deps = { ...pkg.devDependencies, ...pkg.dependencies };
+  const scripts = pkg.scripts ?? {};
+  const warnings = [];
+  const hasDep = (name) => Object.keys(deps).some((k) => k.toLowerCase() === name);
+  const testCmd = scripts.test;
+  const testPlaceholder = identifyPlaceholder(testCmd);
+  const testRunner = hasDep("vitest") ? "vitest" : hasDep("jest") ? "jest" : hasDep("mocha") ? "mocha" : null;
+  const testEvidence = testRunner ? `${testRunner} in dependencies` : testPlaceholder ? "placeholder script" : "unknown";
+  const hasEslint = hasDep("eslint");
+  const linter = hasEslint ? "eslint" : null;
+  const lintEvidence = hasEslint ? "eslint in dependencies" : "unknown";
+  const hasTsc = hasDep("typescript");
+  const typechecker = hasTsc ? "tsc" : null;
+  const typecheckEvidence = hasTsc ? "tsconfig.json exists" : "unknown";
+  const coverageTool = testRunner ? `${testRunner} built-in` : null;
+  const coverageEvidence = testRunner ? "vitest --coverage" : "unknown";
+  if (!testRunner && !testPlaceholder) warnings.push("No recognized test runner detected");
+  return {
+    testRunner,
+    testCommand: testRunner ? "npm run test" : null,
+    testEvidence,
+    linter,
+    lintCommand: hasEslint ? "npm run lint" : null,
+    lintEvidence,
+    typechecker,
+    typecheckCommand: hasTsc ? "npm run typecheck" : null,
+    typecheckEvidence,
+    coverageTool,
+    coverageCommand: testRunner ? "npm run coverage" : null,
+    coverageEvidence,
+    coverageProfile: "vitest",
+    packageManager: "npm",
+    projectTypes: ["node"],
+    confidence: "high",
+    warnings
+  };
+}
+function parsePyprojectDeps(toml) {
+  const deps = /* @__PURE__ */ new Set();
+  const toolSections = /* @__PURE__ */ new Set();
+  const arrayRe = /(?:dependencies|dev)\s*=\s*\[([\s\S]*?)\]/g;
+  for (const m of toml.matchAll(arrayRe)) {
+    for (const item of m[1].match(/"([^"]+)"/g) ?? []) {
+      const name = item.replace(/"/g, "").split(/[><=!~[\s;]/)[0].trim().toLowerCase();
+      if (name && name !== "." && name !== "..") deps.add(name);
+    }
+  }
+  const projectSection = toml.match(/\[project\]([\s\S]*?)(?=\[|$)/)?.[1] ?? "";
+  for (const line of projectSection.match(/^\s*"([^"]+)"/gm) ?? []) {
+    const name = line.replace(/"/g, "").trim().split(/[><=!~[\s;]/)[0].trim().toLowerCase();
+    if (name && name !== "." && name !== "..") deps.add(name);
+  }
+  for (const section6 of toml.matchAll(/\[tool\.poetry\.(?:group\.\w+\.)?dependencies\]([\s\S]*?)(?=\[|$)/g)) {
+    for (const line of section6[1].match(/^\s*(\w[\w-]*)\s*=/gm) ?? []) {
+      deps.add(line.replace(/^\s+/, "").split(/\s*=/)[0].trim().toLowerCase());
+    }
+  }
+  for (const m of toml.matchAll(/^\[tool\.(\w+)(?:\.\w+)*\]/gm)) {
+    toolSections.add(m[1].toLowerCase());
+  }
+  return { deps, toolSections };
+}
+function detectPythonToolchain(tomlText, packageManager) {
+  const warnings = [];
+  const { deps, toolSections } = parsePyprojectDeps(tomlText);
+  const hasDep = (name) => deps.has(name);
+  const hasTool = (name) => toolSections.has(name);
+  const hasPytest = hasDep("pytest") || hasDep("pytest-cov") || hasTool("pytest");
+  const testRunner = hasPytest ? "pytest" : null;
+  const testCommand = hasPytest ? "pytest" : null;
+  const testEvidence = hasPytest ? hasDep("pytest") ? "pytest in dependencies" : "pytest config found" : "unknown";
+  let linter = null;
+  let lintCommand = null;
+  let lintEvidence = "unknown";
+  for (const [dep, name, cmd2] of PY_LINTERS) {
+    if (hasDep(dep) || hasTool(dep)) {
+      linter = name;
+      lintCommand = cmd2;
+      lintEvidence = hasDep(dep) ? `${dep} in dependencies` : `${dep} config found`;
+      break;
+    }
+  }
+  let typechecker = null;
+  let typecheckCommand = null;
+  let typecheckEvidence = "unknown";
+  for (const [dep, name, cmd2] of PY_TYPECHECKERS) {
+    if (hasDep(dep) || hasTool(dep)) {
+      typechecker = name;
+      typecheckCommand = cmd2;
+      typecheckEvidence = hasDep(dep) ? `${dep} in dependencies` : `${dep} config found`;
+      break;
+    }
+  }
+  const hasPytestCov = hasDep("pytest-cov");
+  const hasCoveragePy = hasDep("coverage");
+  const coverageTool = hasPytestCov ? "pytest-cov" : hasCoveragePy ? "coverage" : null;
+  const coverageCommand = hasPytestCov ? "pytest --cov --cov-report=json" : hasCoveragePy ? "coverage run -m pytest && coverage json -o -" : null;
+  const coverageEvidence = coverageTool ? `${coverageTool} in dependencies` : "unknown";
+  if (!testRunner) warnings.push("No recognized Python test runner detected (pytest)");
+  if (!linter) warnings.push("No recognized Python linter detected (ruff/pylint/flake8)");
+  return {
+    testRunner,
+    testCommand,
+    testEvidence,
+    linter,
+    lintCommand,
+    lintEvidence,
+    typechecker,
+    typecheckCommand,
+    typecheckEvidence,
+    coverageTool,
+    coverageCommand,
+    coverageEvidence,
+    coverageProfile: "coverage_py",
+    packageManager,
+    projectTypes: ["python"],
+    confidence: hasPytest ? "high" : "medium",
+    warnings
+  };
+}
+function compareGates(tc, gateConfig) {
+  const order = ["test", "lint", "typecheck", "coverage"];
+  const label = { test: "test", lint: "lint", typecheck: "typecheck", coverage: "coverage" };
+  const suggest = {
+    test: tc.testCommand,
+    lint: tc.lintCommand,
+    typecheck: tc.typecheckCommand,
+    coverage: tc.coverageCommand
+  };
+  return order.filter((g) => gateConfig[g]?.enabled).map((g) => {
+    const cur = gateConfig[g].command;
+    const sug = suggest[g];
+    const coverageMatches = g === "coverage" && tc.coverageProfile === "vitest" && /\bvitest\s+run\b/.test(cur) && /--coverage\b/.test(cur);
+    const match = !sug ? "MISSING_TOOL" : cur === sug ? "MATCH" : g === "test" && (cur === "npm test" && sug === "npm run test" || cur === "npm run test" && sug === "npm test") ? "MATCH" : coverageMatches ? "MATCH" : "MISMATCH";
+    return { gate: label[g], currentCommand: cur, suggestedCommand: sug ?? "(needs config)", match };
+  });
+}
+function classifyReadiness(audit, tc) {
+  const issues = [];
+  const testAudit = audit.find((a) => a.gate === "test");
+  const isPython = tc.projectTypes.includes("python");
+  if (!tc.testRunner) {
+    if (isPython) {
+      if (!tc.testCommand) issues.push("No Python test runner detected (pytest). Install: pip install pytest pytest-cov");
+    } else {
+      if (identifyPlaceholder(tc.testCommand ?? void 0)) {
+        issues.push("No real test runner detected (placeholder or missing). Test gate cannot execute.");
+      }
+    }
+  }
+  if (!tc.linter) {
+    issues.push(isPython ? "No Python linter detected (ruff/pylint/flake8). Install: pip install ruff" : "No linter detected. Lint gate cannot execute.");
+  }
+  if (!tc.coverageTool) {
+    issues.push(isPython ? "No Python coverage tool detected (pytest-cov/coverage). Install: pip install pytest-cov" : "No coverage tool detected. Coverage gate (100% threshold) cannot execute.");
+  }
+  if (!isPython && testAudit?.match === "MISSING_TOOL")
+    issues.push("package.json test script is an npm default placeholder (contains 'no test specified' / 'exit 1'). Replace with a real test command.");
+  const hasMismatch = audit.some((a) => a.match === "MISMATCH");
+  const verdict = issues.length > 0 ? "BLOCKED" : hasMismatch ? "NEEDS_CONFIG" : "READY";
+  return { verdict, toolchain: tc, audit, blockingIssues: issues };
+}
+function renderReadinessReport(r) {
+  const tc = r.toolchain;
+  const lines = [
+    "# Quality Readiness Report",
+    "",
+    `Generated: ${(/* @__PURE__ */ new Date()).toISOString().replace(/\.\d{3}Z$/, "+08:00")}`,
+    "",
+    "## Project Detection",
+    "",
+    "| Property | Value |",
+    "|----------|-------|",
+    `| Project Types | ${tc.projectTypes.join(", ")} |`,
+    `| Package Manager | ${tc.packageManager} |`,
+    `| Test Runner | ${tc.testRunner ?? (identifyPlaceholder(tc.testCommand ?? void 0) ? "placeholder script" : "unknown")} |`,
+    `| Linter | ${tc.linter ?? "unknown"} |`,
+    `| Typechecker | ${tc.typechecker ?? "unknown"} |`,
+    `| Coverage Tool | ${tc.coverageTool ?? "unknown"} |`,
+    `| Detection Confidence | ${tc.confidence} |`,
+    "",
+    ...tc.warnings.length > 0 ? ["## Detection Warnings", "", ...tc.warnings.map((w) => `- ${w}`), ""] : [],
+    "## QUALITY_GATES.json Command Audit",
+    "",
+    "| Gate | Current Command | Suggested Command | Match |",
+    "|------|-----------------|-------------------|-------|",
+    ...r.audit.map((a) => `| ${a.gate} | \`${a.currentCommand}\` | \`${a.suggestedCommand}\` | ${a.match} |`),
+    "",
+    "## Coverage Threshold",
+    "",
+    "Threshold is 100% for lines/branches/functions/statements. This is an MVP hard requirement.",
+    "Missing coverage tool does NOT lower the threshold -- it means the project is BLOCKED until tooling is set up.",
+    "",
+    "## Readiness Verdict",
+    "",
+    `**${r.verdict}**`
+  ];
+  if (r.blockingIssues.length) {
+    lines.push("", "## Blocking Issues", "", ...r.blockingIssues.map((i) => `- ${i}`));
+  }
+  const isPython = tc.projectTypes.includes("python");
+  lines.push("", "## Next Steps");
+  if (r.verdict === "BLOCKED") {
+    if (isPython) {
+      lines.push(
+        "",
+        "1. Install test runner: pip install pytest pytest-cov",
+        "2. Install linter: pip install ruff (or pylint/flake8)",
+        "3. Install typechecker: pip install mypy",
+        "4. Ensure pyproject.toml declares dev dependencies (pytest, ruff, mypy)",
+        "5. Run this script again to verify toolchain",
+        "6. Python coverage.py does not track function coverage \u2014 set coverage.threshold.functions=null in QUALITY_GATES.json"
+      );
+    } else {
+      lines.push(
+        "",
+        "1. Install test runner: npm install --save-dev vitest (or jest)",
+        "2. Install linter: npm install --save-dev eslint",
+        "3. Add test/lint scripts to package.json",
+        "4. Run this script again to verify toolchain",
+        "5. If JS-only (no TypeScript), set typecheck gate enabled=false in QUALITY_GATES.json"
+      );
+    }
+  }
+  lines.push("", `> Note: QUALITY_GATES.json has NOT been modified.`);
+  return lines.join("\n") + "\n";
+}
+function computeReadinessExitCode(verdict) {
+  return verdict === "BLOCKED" ? 1 : 0;
+}
+var RUNNERS, KNOWN_CMDS, PY_LINTERS, PY_TYPECHECKERS;
+var init_readiness_engine = __esm({
+  "src/core/quality/readiness-engine.ts"() {
+    "use strict";
+    RUNNERS = /\b(vitest|jest|mocha|ava|tap|tape)\b/;
+    KNOWN_CMDS = /\b(vitest|jest|mocha|ava|tap|tape|node|python|pytest|go test|cargo test|dotnet test|rspec|unittest)\b/;
+    PY_LINTERS = [
+      ["ruff", "ruff", "ruff check ."],
+      ["pylint", "pylint", "pylint src/"],
+      ["flake8", "flake8", "flake8 src/"]
+    ];
+    PY_TYPECHECKERS = [
+      ["mypy", "mypy", "mypy src/"],
+      ["pyright", "pyright", "pyright src/"]
+    ];
+  }
+});
+
+// src/cli/readiness.ts
+var readiness_exports = {};
+__export(readiness_exports, {
+  getReadinessRuntimePaths: () => getReadinessRuntimePaths,
+  runReadiness: () => runReadiness
+});
+import { readFileSync as readFileSync12, writeFileSync as writeFileSync9, existsSync as existsSync12, mkdirSync as mkdirSync8 } from "node:fs";
+import { resolve as resolve6 } from "node:path";
+function readJsonSafe2(path) {
+  let raw = readFileSync12(path, "utf-8");
+  if (raw.charCodeAt(0) === 65279) raw = raw.slice(1);
+  return JSON.parse(raw);
+}
+function detectPackageManager(root) {
+  const locks = ["uv.lock", "poetry.lock", "pdm.lock", "Pipfile"];
+  const pms = ["uv", "poetry", "pdm", "pipenv"];
+  for (let i = 0; i < locks.length; i++) {
+    if (existsSync12(resolve6(root, locks[i]))) return pms[i];
+  }
+  return "pip";
+}
+function getReadinessRuntimePaths(root) {
+  const aegis = getAegisRuntimePaths(root);
+  if (existsSync12(aegis.qualityGates)) {
+    return {
+      qualityGatesPath: aegis.qualityGates,
+      reportPath: aegis.qualityReadinessReport,
+      runtimeKind: "aegis"
+    };
+  }
+  return {
+    qualityGatesPath: resolve6(root, ".agent/QUALITY_GATES.json"),
+    reportPath: resolve6(root, ".agent/QUALITY_READINESS_REPORT.md"),
+    runtimeKind: "legacy-agent"
+  };
+}
+function runReadiness(root) {
+  const pkgPath = resolve6(root, "package.json");
+  const pyprojectPath = resolve6(root, "pyproject.toml");
+  const paths = getReadinessRuntimePaths(root);
+  let tc;
+  if (existsSync12(pkgPath)) {
+    const pkg = readJsonSafe2(pkgPath);
+    tc = detectToolchain(pkg);
+  } else if (existsSync12(pyprojectPath)) {
+    const tomlText = readFileSync12(pyprojectPath, "utf-8");
+    tc = detectPythonToolchain(tomlText, detectPackageManager(root));
+  } else {
+    console.error("readiness: no project file found (package.json or pyproject.toml required)");
+    process.exit(1);
+  }
+  const gatesRaw = existsSync12(paths.qualityGatesPath) ? readJsonSafe2(paths.qualityGatesPath) : null;
+  const audit = gatesRaw ? compareGates(tc, gatesRaw.gates) : [];
+  const result = classifyReadiness(audit, tc);
+  const report = renderReadinessReport(result);
+  mkdirSync8(resolve6(paths.reportPath, ".."), { recursive: true });
+  writeFileSync9(paths.reportPath, report, "utf-8");
+  console.log(`Verdict: **${result.verdict}**`);
+  process.exitCode = computeReadinessExitCode(result.verdict);
+}
+var init_readiness = __esm({
+  "src/cli/readiness.ts"() {
+    "use strict";
+    init_readiness_engine();
+    init_aegis_runtime();
+  }
+});
+
+// src/adapters/shell/command-runner.ts
+import { exec } from "node:child_process";
+function classifyExecError(error, command) {
+  if (error.killed) throw new Error(`Command timed out: ${command}`);
+  if (typeof error.code === "number") return error.code;
+  throw new Error(`${error.code ?? "SPAWN_ERROR"}: ${error.message}`);
+}
+var RealCommandRunner;
+var init_command_runner = __esm({
+  "src/adapters/shell/command-runner.ts"() {
+    "use strict";
+    RealCommandRunner = class {
+      async run(command, opts) {
+        return new Promise((resolve11, reject) => {
+          exec(command, {
+            cwd: opts?.cwd,
+            timeout: opts?.timeoutMs,
+            maxBuffer: 10 * 1024 * 1024
+          }, (error, stdout, stderr) => {
+            if (!error) {
+              resolve11({ exitCode: 0, stdout, stderr });
+              return;
+            }
+            try {
+              resolve11({ exitCode: classifyExecError(error, command), stdout, stderr });
+            } catch (e) {
+              reject(e);
+            }
+          });
+        });
+      }
+    };
+  }
+});
+
+// src/cli/validate.ts
+var validate_exports = {};
+__export(validate_exports, {
+  getValidationRuntimePaths: () => getValidationRuntimePaths,
+  runValidate: () => runValidate,
+  runValidatePlan: () => runValidatePlan
+});
+import { existsSync as existsSync13, mkdirSync as mkdirSync9, readFileSync as readFileSync13, writeFileSync as writeFileSync10 } from "node:fs";
+import { resolve as resolve7 } from "node:path";
+function readJsonSafe3(path) {
+  let raw = readFileSync13(path, "utf-8");
+  if (raw.charCodeAt(0) === 65279) raw = raw.slice(1);
+  return JSON.parse(raw);
+}
+function getValidationRuntimePaths(root) {
+  const aegis = getAegisRuntimePaths(root);
+  if (existsSync13(aegis.qualityGates)) {
+    return {
+      qualityGatesPath: aegis.qualityGates,
+      reportPath: aegis.validationReport,
+      runtimeKind: "aegis"
+    };
+  }
+  return {
+    qualityGatesPath: resolve7(root, ".agent/QUALITY_GATES.json"),
+    reportPath: resolve7(root, ".agent/VALIDATION_REPORT.md"),
+    runtimeKind: "legacy-agent"
+  };
+}
+async function runValidate(root) {
+  const paths = getValidationRuntimePaths(root);
+  const gatesRaw = readJsonSafe3(paths.qualityGatesPath);
+  const configs = loadGateConfig(gatesRaw);
+  const plans = planGateExecutions(configs);
+  const results = await runConfiguredGates(plans, new RealCommandRunner());
+  const verdict = evaluateGateResults(results, configs);
+  const report = renderValidationReport({
+    verdict,
+    taskId: "N/A",
+    timestamp: (/* @__PURE__ */ new Date()).toISOString(),
+    readinessVerdict: "READY"
+  });
+  mkdirSync9(resolve7(paths.reportPath, ".."), { recursive: true });
+  writeFileSync10(paths.reportPath, report, "utf-8");
+  console.log(`Overall: ${verdict.overall}`);
+  console.log(`Validation report: ${paths.reportPath}`);
+  process.exitCode = verdict.overall === "PASS" ? 0 : 1;
+}
+function runValidatePlan(root) {
+  const paths = getValidationRuntimePaths(root);
+  const gatesRaw = readJsonSafe3(paths.qualityGatesPath);
+  const configs = loadGateConfig(gatesRaw);
+  const plans = planGateExecutions(configs);
+  console.log(`Quality gates: ${paths.qualityGatesPath}`);
+  for (const p of plans) {
+    const status = p.disabled ? "SKIPPED" : "PENDING";
+    console.log(`${p.name} (${p.blocking ? "blocking" : "non-blocking"}): ${status} -- ${p.command}`);
+  }
+}
+var init_validate = __esm({
+  "src/cli/validate.ts"() {
+    "use strict";
+    init_validation_engine();
+    init_command_runner();
+    init_aegis_runtime();
+  }
+});
+
+// src/cli/task-review.ts
+var task_review_exports = {};
+__export(task_review_exports, {
+  getTaskReviewRuntimePaths: () => getTaskReviewRuntimePaths,
+  runTaskReview: () => runTaskReview
+});
+import { existsSync as existsSync14, mkdirSync as mkdirSync10, readFileSync as readFileSync14, writeFileSync as writeFileSync11 } from "node:fs";
+import { resolve as resolve8 } from "node:path";
+function getTaskReviewRuntimePaths(root) {
+  const aegis = getAegisRuntimePaths(root);
+  if (existsSync14(aegis.currentTask)) {
+    return {
+      currentTaskPath: aegis.currentTask,
+      reportPath: aegis.taskQualityReport,
+      runtimeKind: "aegis"
+    };
+  }
+  return {
+    currentTaskPath: resolve8(root, ".agent/CURRENT_TASK.md"),
+    reportPath: resolve8(root, ".agent/TASK_QUALITY_REPORT.md"),
+    runtimeKind: "legacy-agent"
+  };
+}
+function runTaskReview(root) {
+  const paths = getTaskReviewRuntimePaths(root);
+  const rawTask = readFileSync14(paths.currentTaskPath, "utf-8");
+  const review = reviewCurrentTaskMarkdown(rawTask);
+  const report = renderTaskQualityReview(review);
+  mkdirSync10(resolve8(paths.reportPath, ".."), { recursive: true });
+  writeFileSync11(paths.reportPath, report, "utf-8");
+  console.log(report);
+  process.exitCode = review.verdict === "PASS" ? 0 : 1;
+}
+var init_task_review = __esm({
+  "src/cli/task-review.ts"() {
+    "use strict";
+    init_task_quality_gate();
+    init_aegis_runtime();
+  }
+});
+
+// src/cli/task-next.ts
+var task_next_exports = {};
+__export(task_next_exports, {
+  runTaskNext: () => runTaskNext
+});
+function runTaskNext(root) {
+  console.log(generateNextCurrentTask(getAegisRuntimePaths(root)));
+}
+var init_task_next = __esm({
+  "src/cli/task-next.ts"() {
+    "use strict";
+    init_aegis_runtime();
+  }
+});
+
+// src/cli/contract.ts
+var contract_exports = {};
+__export(contract_exports, {
+  runContract: () => runContract
+});
+import { readFileSync as readFileSync15 } from "node:fs";
+function runContract(root) {
+  const paths = getAegisRuntimePaths(root);
+  console.log(readFileSync15(paths.claudeCodeContract, "utf-8"));
+}
+var init_contract = __esm({
+  "src/cli/contract.ts"() {
+    "use strict";
+    init_aegis_runtime();
+  }
+});
+
+// src/cli/blueprint.ts
+var blueprint_exports = {};
+__export(blueprint_exports, {
+  runBlueprintConfirm: () => runBlueprintConfirm,
+  runBlueprintStart: () => runBlueprintStart,
+  runBlueprintSummary: () => runBlueprintSummary
+});
+function runBlueprintStart(root) {
+  console.log(startBlueprintFlow(getAegisRuntimePaths(root)));
+}
+function runBlueprintSummary(root) {
+  console.log(summarizeBlueprintFlow(getAegisRuntimePaths(root)));
+}
+function runBlueprintConfirm(root) {
+  console.log(confirmBlueprintFlow(getAegisRuntimePaths(root)));
+}
+var init_blueprint = __esm({
+  "src/cli/blueprint.ts"() {
+    "use strict";
+    init_aegis_runtime();
+    init_aegis_runtime();
+  }
+});
+
+// src/cli/superpower.ts
+var superpower_exports = {};
+__export(superpower_exports, {
+  runDisciplineCheck: () => runDisciplineCheck,
+  runSuperpowerScan: () => runSuperpowerScan
+});
+import { mkdirSync as mkdirSync11, readFileSync as readFileSync16, writeFileSync as writeFileSync12 } from "node:fs";
+import { resolve as resolve9 } from "node:path";
+function readAegisConfig(root) {
+  const paths = getAegisRuntimePaths(root);
+  return JSON.parse(readFileSync16(paths.aegisConfig, "utf-8"));
+}
+function runSuperpowerScan(root) {
+  const paths = getAegisRuntimePaths(root);
+  const configuredPath = readAegisConfig(root).superpower?.local_path_hint;
+  const sourceRoot = configuredPath || resolve9(root, ".superpowers");
+  const manifest = buildSuperpowerSourceManifest(sourceRoot, (/* @__PURE__ */ new Date()).toISOString());
+  mkdirSync11(paths.currentDir, { recursive: true });
+  writeFileSync12(paths.superpowerSources, `${JSON.stringify(manifest, null, 2)}
+`, "utf-8");
+  writeFileSync12(paths.superpowerSummary, renderSuperpowerSummary(manifest), "utf-8");
+  console.log(`Superpower sources: ${manifest.sources.length}`);
+  console.log(`Manifest: ${paths.superpowerSources}`);
+}
+function runDisciplineCheck(root) {
+  const paths = getAegisRuntimePaths(root);
+  const manifest = JSON.parse(readFileSync16(paths.superpowerSources, "utf-8"));
+  const currentTaskMarkdown = readFileSync16(paths.currentTask, "utf-8");
+  const evidence = collectRoundDisciplineEvidence(paths.currentDir, currentTaskMarkdown);
+  const result = checkSuperpowerDiscipline(manifest, evidence);
+  const report = renderDisciplineReport(result, manifest);
+  mkdirSync11(paths.currentDir, { recursive: true });
+  writeFileSync12(paths.disciplineReport, report, "utf-8");
+  console.log(report);
+  process.exitCode = result.verdict === "PASS" ? 0 : 1;
+}
+var init_superpower = __esm({
+  "src/cli/superpower.ts"() {
+    "use strict";
+    init_aegis_runtime();
+    init_sources();
+  }
+});
+
+// src/cli/round.ts
+var round_exports = {};
+__export(round_exports, {
+  runRoundCheck: () => runRoundCheck
+});
+async function runRoundCheck(root) {
+  const result = await runRoundGate(root, new RealCommandRunner());
+  console.log(`Round gate: ${result.verdict}`);
+  console.log(`Report: ${result.reportPath}`);
+  if (result.promptPath) console.log(`Codex prompt: ${result.promptPath}`);
+  process.exitCode = result.verdict === "PASS" ? 0 : 1;
+}
+var init_round = __esm({
+  "src/cli/round.ts"() {
+    "use strict";
+    init_command_runner();
+    init_aegis_runtime();
+  }
+});
+
+// src/cli/safety.ts
+var safety_exports = {};
+__export(safety_exports, {
+  runCommitSuggestion: () => runCommitSuggestion,
+  runSafetyCheckCli: () => runSafetyCheckCli
+});
+function runSafetyCheckCli(root) {
+  const result = runSafetyCheck(root);
+  console.log(`Safety: ${result.verdict}`);
+  console.log(`Report: ${result.reportPath}`);
+  process.exitCode = result.verdict === "PASS" ? 0 : 1;
+}
+function runCommitSuggestion(root) {
+  const path = writeCommitSuggestion(root);
+  console.log(`Commit suggestion: ${path}`);
+}
+var init_safety2 = __esm({
+  "src/cli/safety.ts"() {
+    "use strict";
+    init_aegis_runtime();
   }
 });
 
@@ -4979,7 +7345,7 @@ ${q.options.map((o) => `    - ${o}`).join("\n")}`
   ).join("\n") : null;
   return [
     `# Codex Review`,
-    `<!-- Generated by 24h review at ${timestamp} -->`,
+    `<!-- Generated by aegis review at ${timestamp} -->`,
     "",
     `## Task ID`,
     "",
@@ -12412,53 +14778,72 @@ var init_review_result = __esm({
 // src/cli/review.ts
 var review_exports = {};
 __export(review_exports, {
+  getReviewRuntimePaths: () => getReviewRuntimePaths,
   runReviewPrompt: () => runReviewPrompt,
   runReviewRender: () => runReviewRender
 });
-import { readFileSync as readFileSync4, writeFileSync as writeFileSync3, existsSync as existsSync2 } from "node:fs";
-import { resolve as resolve4 } from "node:path";
-import { execSync } from "node:child_process";
+import { existsSync as existsSync15, mkdirSync as mkdirSync12, readFileSync as readFileSync17, writeFileSync as writeFileSync13 } from "node:fs";
+import { resolve as resolve10 } from "node:path";
+function getReviewRuntimePaths(root) {
+  const aegis = getAegisRuntimePaths(root);
+  if (existsSync15(aegis.currentTask)) {
+    return {
+      promptPath: aegis.codexReviewPrompt,
+      rawReviewPath: aegis.codexReviewRaw,
+      renderedReviewPath: aegis.codexReview,
+      runtimeKind: "aegis"
+    };
+  }
+  return {
+    promptPath: resolve10(root, ".agent/codex-review-prompt.md"),
+    rawReviewPath: resolve10(root, ".agent/codex-review-raw.jsonl"),
+    renderedReviewPath: resolve10(root, ".agent/CODEX_REVIEW.md"),
+    runtimeKind: "legacy-agent"
+  };
+}
 function runReviewPrompt(root) {
-  const taskMd = readFileSync4(resolve4(root, ".agent/CURRENT_TASK.md"), "utf-8");
-  const workMd = existsSync2(resolve4(root, ".agent/WORK_REPORT.md")) ? readFileSync4(resolve4(root, ".agent/WORK_REPORT.md"), "utf-8") : "";
-  const rubric = existsSync2(resolve4(root, ".agent/CODEX_REVIEW_RUBRIC.md")) ? readFileSync4(resolve4(root, ".agent/CODEX_REVIEW_RUBRIC.md"), "utf-8") : "";
-  const diff = execSync("git diff HEAD", { cwd: root, encoding: "utf-8", maxBuffer: 1024 * 1024 });
-  const tp = parseCurrentTaskMarkdown(taskMd);
-  const prompt = buildReviewPrompt({
-    taskSpec: tp.specification,
-    dodItems: tp.definition_of_done.map((d) => d.content),
-    workReport: workMd,
-    gitDiff: diff,
-    rubric
-  });
-  writeFileSync3(resolve4(root, ".agent/codex-review-prompt.md"), prompt, "utf-8");
-  console.log("Review prompt written to .agent/codex-review-prompt.md");
+  const paths = getReviewRuntimePaths(root);
+  const prompt = buildReviewPrompt(buildReviewEvidence(root));
+  mkdirSync12(resolve10(paths.promptPath, ".."), { recursive: true });
+  writeFileSync13(paths.promptPath, prompt, "utf-8");
+  console.log(`Review prompt written to ${paths.promptPath}`);
 }
 function runReviewRender(root, jsonlPath) {
-  const jsonl = readFileSync4(resolve4(root, jsonlPath), "utf-8");
+  const paths = getReviewRuntimePaths(root);
+  const rawOutputPath = jsonlPath ? resolve10(root, jsonlPath) : paths.rawReviewPath;
+  const jsonl = readFileSync17(rawOutputPath, "utf-8");
   const result = parseCodexJsonlToReviewResult(jsonl);
+  const timestamp = (/* @__PURE__ */ new Date()).toISOString();
   const md = renderReviewMarkdown({
     reviewResult: result,
     taskId: "N/A",
-    timestamp: (/* @__PURE__ */ new Date()).toISOString(),
-    rawOutputPath: jsonlPath
+    timestamp,
+    rawOutputPath
   });
-  writeFileSync3(resolve4(root, ".agent/CODEX_REVIEW.md"), md, "utf-8");
+  mkdirSync12(resolve10(paths.renderedReviewPath, ".."), { recursive: true });
+  writeFileSync13(paths.renderedReviewPath, md, "utf-8");
+  if (paths.runtimeKind === "aegis") {
+    routeCodexReviewResult(root, result, timestamp);
+  }
   console.log(md);
 }
 var init_review = __esm({
   "src/cli/review.ts"() {
     "use strict";
     init_prompt_builder();
+    init_evidence_builder();
     init_result_renderer();
-    init_task_package();
     init_review_result();
+    init_aegis_runtime();
   }
 });
 
 // src/cli/main.ts
 var cmd = process.argv[2];
-if (cmd === "status") {
+if (!cmd) {
+  const { runAegis: runAegis2 } = await Promise.resolve().then(() => (init_aegis(), aegis_exports));
+  runAegis2(".");
+} else if (cmd === "status") {
   const { runStatus: runStatus2 } = await Promise.resolve().then(() => (init_status(), status_exports));
   runStatus2(process.argv[3] || ".");
 } else if (cmd === "readiness") {
@@ -12470,15 +14855,49 @@ if (cmd === "status") {
 } else if (cmd === "validate:plan") {
   const { runValidatePlan: runValidatePlan2 } = await Promise.resolve().then(() => (init_validate(), validate_exports));
   runValidatePlan2(".");
+} else if (cmd === "task:review") {
+  const { runTaskReview: runTaskReview2 } = await Promise.resolve().then(() => (init_task_review(), task_review_exports));
+  runTaskReview2(".");
+} else if (cmd === "task:next") {
+  const { runTaskNext: runTaskNext2 } = await Promise.resolve().then(() => (init_task_next(), task_next_exports));
+  runTaskNext2(".");
+} else if (cmd === "contract") {
+  const { runContract: runContract2 } = await Promise.resolve().then(() => (init_contract(), contract_exports));
+  runContract2(".");
+} else if (cmd === "blueprint:start") {
+  const { runBlueprintStart: runBlueprintStart2 } = await Promise.resolve().then(() => (init_blueprint(), blueprint_exports));
+  runBlueprintStart2(".");
+} else if (cmd === "blueprint:summary") {
+  const { runBlueprintSummary: runBlueprintSummary2 } = await Promise.resolve().then(() => (init_blueprint(), blueprint_exports));
+  runBlueprintSummary2(".");
+} else if (cmd === "blueprint:confirm") {
+  const { runBlueprintConfirm: runBlueprintConfirm2 } = await Promise.resolve().then(() => (init_blueprint(), blueprint_exports));
+  runBlueprintConfirm2(".");
+} else if (cmd === "superpower:scan") {
+  const { runSuperpowerScan: runSuperpowerScan2 } = await Promise.resolve().then(() => (init_superpower(), superpower_exports));
+  runSuperpowerScan2(".");
+} else if (cmd === "discipline:check") {
+  const { runDisciplineCheck: runDisciplineCheck2 } = await Promise.resolve().then(() => (init_superpower(), superpower_exports));
+  runDisciplineCheck2(".");
+} else if (cmd === "round:check") {
+  const { runRoundCheck: runRoundCheck2 } = await Promise.resolve().then(() => (init_round(), round_exports));
+  await runRoundCheck2(".");
+} else if (cmd === "safety:check") {
+  const { runSafetyCheckCli: runSafetyCheckCli2 } = await Promise.resolve().then(() => (init_safety2(), safety_exports));
+  runSafetyCheckCli2(".");
+} else if (cmd === "commit:suggest") {
+  const { runCommitSuggestion: runCommitSuggestion2 } = await Promise.resolve().then(() => (init_safety2(), safety_exports));
+  runCommitSuggestion2(".");
 } else if (cmd === "review:prompt") {
   const { runReviewPrompt: runReviewPrompt2 } = await Promise.resolve().then(() => (init_review(), review_exports));
   runReviewPrompt2(".");
 } else if (cmd === "review:render") {
   const { runReviewRender: runReviewRender2 } = await Promise.resolve().then(() => (init_review(), review_exports));
   const inputIdx = process.argv.indexOf("--input");
-  const jsonlPath = inputIdx >= 0 ? process.argv[inputIdx + 1] : ".agent/codex-review-raw.jsonl";
+  const jsonlPath = inputIdx >= 0 ? process.argv[inputIdx + 1] : void 0;
   runReviewRender2(".", jsonlPath);
 } else {
-  console.error(`Usage: 24h <readiness|validate|validate:plan|review:prompt|review:render|status>`);
+  console.error(`Usage: aegis <readiness|validate|validate:plan|task:review|task:next|contract|blueprint:start|blueprint:summary|blueprint:confirm|superpower:scan|discipline:check|round:check|safety:check|commit:suggest|review:prompt|review:render|status>`);
+  console.error(`Compatibility alias: 24h <command>`);
   process.exit(1);
 }

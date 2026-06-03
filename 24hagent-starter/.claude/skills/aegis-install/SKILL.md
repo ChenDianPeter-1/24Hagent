@@ -1,12 +1,12 @@
 ---
-name: 24hagent-install
-description: Use when 24Hagent starter has completed local setup and Claude Code must onboard a project into 24Hagent using the bundled Superpower Pack before creating minimal .agent runtime state.
+name: aegis-install
+description: Use when Aegis Starter has completed local setup and Claude Code must onboard a project into Aegis using the bundled Superpower Pack before creating minimal .aegis runtime state.
 ---
 
-# 24Hagent Install Onboarding
+# Aegis Install Onboarding
 
 You are in a project where `24hagent-starter` has already completed local setup.
-Your job is to onboard the project into 24Hagent without starting broad
+Your job is to onboard the project into Aegis without starting broad
 implementation work.
 
 ## Product Boundary
@@ -16,34 +16,37 @@ implementation work.
   Think clearly, ask clearly, split clearly, control scope, and prevent
   over-engineering before implementation starts.
 
-.claude/skills/24hagent-install/
-  Convert the Superpower onboarding result into minimal 24Hagent runtime state.
+.claude/skills/aegis-install/
+  Convert the Superpower onboarding result into minimal Aegis runtime state.
 
-.agent/
-  Store 24Hagent project state, quality gates, task packets, review reports,
-  and handoff prompts.
+.aegis/
+  Store Aegis project state, quality gates, task packets, evidence, review
+  reports, and handoff prompts.
 
-24Hagent CLI
-  Run readiness, validation, review prompt generation, and review rendering.
+Aegis CLI
+  Run readiness, validation, discipline checks, review prompt generation,
+  review rendering, verdict routing, and safety checks.
 
 Codex
   Perform read-only cross-model review.
 ```
 
-Superpower makes Claude Code smarter before work starts. 24Hagent keeps Claude
-Code controlled after work starts.
+Superpower makes Claude Code think and work with discipline. Aegis keeps Claude
+Code controlled after work starts and communicates with Codex for read-only
+review.
 
 ## Hard Rules
 
 - All user-facing output must be in English during starter onboarding.
 - Phase 1 is read-only. Do not modify business code during intake.
 - Use the bundled Superpower Pack at `.claude/skills/superpower/`.
-- Do not put Claude Code skills under `.agent/skills/`.
-- Generate only minimal `.agent` onboarding files.
+- Do not put Claude Code skills under `.aegis/skills/`.
+- Generate only minimal `.aegis` onboarding files.
 - Do not create a large task queue during install onboarding.
-- Stop before entering the Orchestrator loop unless the user confirms.
+- Stop before entering construction unless the user confirms.
 - Do not install, remove, or upgrade dependencies unless the user explicitly approves.
 - Do not edit secrets, credentials, tokens, cookies, or private config.
+- Do not commit, push, merge, rebase, reset, deploy, release, publish, Docker push, or rewrite Git history.
 
 ## Phase 1: Read-Only Project Intake
 
@@ -56,9 +59,9 @@ pyproject.toml
 requirements.txt
 src/
 tests/
-.agent/
+.aegis/
 .claude/skills/superpower/
-.claude/skills/24hagent-install/
+.claude/skills/aegis-install/
 ```
 
 Then summarize:
@@ -85,46 +88,42 @@ Use or follow the bundled Superpower Pack. At minimum, consult:
 Clarify these five questions before writing onboarding state:
 
 1. What is this project in one sentence?
-2. What do you want 24Hagent to help with right now?
+2. What do you want Aegis to help with right now?
 3. What is the stopping condition for this round?
 4. Which files or directories must not be modified?
-5. What type of work is this round: bug fix, tests, new feature, refactor, or quality-gate setup?
+5. What type of work is this round: bug fix, tests, new feature, refactor, documentation, or quality-gate setup?
 
-If `.agent/QUALITY_GATES.json` has `project_type: "unknown"`, also ask the
-user which stack this project should use. Do not assume Node.js or Python.
+If `.aegis/config/quality-gates.json` has `project_type: "unknown"`, also ask
+the user which stack this project should use. Do not assume Node.js or Python.
 Use the answer to update the minimal onboarding files and quality-gate plan.
 
 If the user answers vaguely, ask one focused follow-up. Do not fall into
 endless clarification.
 
-## Phase 3: Generate Minimal 24Hagent State
+## Phase 3: Generate Minimal Aegis State
 
 You may create or update only these onboarding files:
 
 ```text
-.agent/PROJECT_BLUEPRINT.md
-.agent/CURRENT_GOAL.md
-.agent/QUALITY_GATES.json
-.agent/CODEX_REVIEW_RUBRIC.md
-.agent/SUPERPOWER_CONTEXT.md
-.agent/NEXT_CLAUDE_ORCHESTRATOR_PROMPT.md
+.aegis/blueprint/project-blueprint.md
+.aegis/blueprint/project-progress.md
+.aegis/current/current-task.md
+.aegis/current/status.md
+.aegis/current/work-instruction.md
+.aegis/current/decision-request.md
+.aegis/config/quality-gates.json
+.aegis/config/codex-rubric.md
+.aegis/config/claude-code-contract.md
+.aegis/state/run-state.json
 ```
 
 Use the Superpower clarification result to fill the files. Keep them concise
-and operational. Do not create a full task backlog yet.
+and operational. Do not create a full backlog yet.
 
-`NEXT_CLAUDE_ORCHESTRATOR_PROMPT.md` should tell Claude to read:
+`decision-request.md` should ask the user to confirm the blueprint and first
+bounded task before Claude Code starts construction.
 
-```text
-CLAUDE_ORCHESTRATOR_PROTOCOL.md
-.agent/PROJECT_BLUEPRINT.md
-.agent/CURRENT_GOAL.md
-.agent/QUALITY_GATES.json
-```
-
-It should also require user confirmation before entering the Orchestrator loop.
-
-## Phase 4: Stop Before Orchestrator
+## Phase 4: Stop Before Construction
 
 When onboarding files are ready, stop and report:
 
@@ -132,7 +131,7 @@ When onboarding files are ready, stop and report:
 - Project goal clarified by Superpower.
 - Current task.
 - Current boundaries and forbidden paths.
-- Generated `.agent` files.
-- Whether the user wants to enter the Orchestrator loop next.
+- Generated `.aegis` files.
+- Whether the user wants Claude Code to run `aegis` and enter the delivery loop next.
 
 Do not begin implementation until the user confirms.

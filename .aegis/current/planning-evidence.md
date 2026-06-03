@@ -1,10 +1,11 @@
 # Planning Evidence
 
-Issue #14, the product decisions, and the previous completion audit were reviewed before implementation. This phase targets the public docs that still taught old 24Hagent / `24h` / `.agent` workflows.
+Issue #15, issue #14, the product decisions, and the previous completion audit were reviewed before implementation. This phase targets the bundled starter that still taught old 24Hagent / `.agent` onboarding.
 
 The implementation plan is:
 
-- Replace the top-level README with an Aegis-first overview and command table.
-- Replace docs/HANDOFF.md with the current Aegis branch, commits, runtime, and remaining risks.
-- Replace docs/HOW_TO_NEW_PROJECT.md with the Aegis/Claude Code/Superpower/Codex workflow.
-- Keep legacy starter migration explicitly deferred instead of hiding it.
+- Replace starter onboarding identity with Aegis-first wording.
+- Replace `24hagent-install` with `aegis-install`.
+- Change setup scripts to create `.aegis/` runtime files and generated install prompt.
+- Replace old starter Orchestrator protocol with the Aegis Claude Code hosting protocol.
+- Keep CLI compatibility/fallback references explicit instead of hiding them.

@@ -14,7 +14,7 @@ if (-not (Test-Path $setup)) {
     exit 1
 }
 
-Write-Host "Starting 24Hagent setup..." -ForegroundColor Cyan
+Write-Host "Starting Aegis setup..." -ForegroundColor Cyan
 Write-Host "Project root: $projectRoot"
 
 $setupArgs = @("-NoProfile", "-ExecutionPolicy", "Bypass", "-File", $setup, "-ProjectRoot", $projectRoot)

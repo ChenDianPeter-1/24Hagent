@@ -10,9 +10,9 @@ await esbuild.build({
   platform: 'node',
   format: 'esm',
   target: 'node20',
-  outfile: `${OUT_DIR}/24hagent.mjs`,
+  outfile: `${OUT_DIR}/aegis.mjs`,
   banner: { js: "import { createRequire } from 'node:module';const require = createRequire(import.meta.url);" },
   external: [],
 })
 
-console.log(`Starter CLI built: ${OUT_DIR}/24hagent.mjs`)
+console.log(`Starter CLI built: ${OUT_DIR}/aegis.mjs`)

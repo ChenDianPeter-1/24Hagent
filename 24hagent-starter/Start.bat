@@ -16,13 +16,13 @@ set "EXIT_CODE=%ERRORLEVEL%"
 
 if not "%EXIT_CODE%"=="0" (
   echo.
-  echo 24Hagent setup exited with code %EXIT_CODE%.
+  echo Aegis setup exited with code %EXIT_CODE%.
   pause
 )
 
 if "%EXIT_CODE%"=="0" (
   echo.
-  echo 24Hagent setup finished. Press any key to close this window.
+  echo Aegis setup finished. Press any key to close this window.
   pause >nul
 )
 

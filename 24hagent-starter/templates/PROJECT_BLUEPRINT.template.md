@@ -1,4 +1,4 @@
-# Project Blueprint
+# Aegis Project Blueprint
 
 ## Project Goal
 <!-- One-sentence project goal clarified by Superpower. -->
@@ -18,7 +18,7 @@
 - Tests pass.
 - Lint passes.
 - Typecheck passes.
-- Coverage meets `.agent/QUALITY_GATES.json`.
+- Coverage meets `.aegis/config/quality-gates.json`.
 
 ## Prohibited Actions
 - Do not auto-push to remote.
