@@ -1,10 +1,9 @@
 # TDD Evidence
 
-Validation checks planned for this starter smoke phase:
+Validation checks planned for this Python docs migration phase:
 
-- Add a failing-before-implementation smoke test that expects `.aegis/` output from setup.
-- Run the new focused smoke test.
+- Search Python docs for stale old-runtime onboarding instructions.
 - Run the normal typecheck, build, lint, and full test suite.
 - Run Aegis safety and task quality checks before commit.
 
-This phase adds test coverage only, unless the smoke test exposes a real starter setup bug.
+This phase updates docs and evidence only.

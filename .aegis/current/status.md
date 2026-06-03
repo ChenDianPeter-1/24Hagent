@@ -10,19 +10,19 @@
 
 ## Current Task
 
-`20260603-starter-setup-smoke`
+`20260603-python-docs-aegis`
 
 ## Current Task Title
 
-Add starter setup smoke test.
+Migrate Python onboarding docs to Aegis.
 
 ## Last Result
 
-starter-setup-smoke-complete
+python-docs-aegis-complete
 
 ## Next Action
 
-Commit the completed starter setup smoke test phase, then record the result in GitHub issue #17.
+Commit the completed Python docs migration phase, then record the result in GitHub issue #18.
 
 ## Risks
 

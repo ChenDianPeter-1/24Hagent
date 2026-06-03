@@ -2,50 +2,49 @@
 
 ## Task ID
 
-`20260603-starter-setup-smoke`
+`20260603-python-docs-aegis`
 
 ## Title
 
-Add starter setup smoke test.
+Migrate Python onboarding docs to Aegis.
 
 ## Specification
 
-Add a real smoke test proving the bundled Aegis starter setup initializes `.aegis/` onboarding state in a temporary target project.
+Rewrite stale Python onboarding docs so they teach Aegis / `.aegis` instead of the old 24Hagent / `.agent` loop.
 
 This phase must:
 
-- run `24hagent-starter/setup.ps1` against a temporary target project
-- pass `-NoClaude` and `-SkipReadiness` so no Claude launch or target validation occurs
-- verify generated `.aegis/` config/current/state files
-- verify `aegis-install` and Superpower skills are installed
-- verify old `.agent` onboarding state is not created
-- update Aegis current evidence for issue #17
+- rewrite Python quickstart around Aegis starter, `.aegis`, and `aegis`
+- rewrite Python validation plan around Aegis runtime paths
+- mark the old Python adaptation analysis as historical context
+- remove current onboarding instructions that tell users to initialize old runtime state
+- update Aegis current evidence for issue #18
 
-Starter behavior changes are out of scope unless the smoke test exposes a real setup bug.
+Runtime code changes are out of scope unless docs migration reveals a real verified bug.
 
 ## File Scope
 
 - .aegis/current
 - .aegis/state/run-state.json
-- tests/starter-setup-smoke.test.ts
+- docs/PYTHON_QUICKSTART.md
+- docs/PYTHON_TEST_PLAN.md
+- docs/PYTHON_ADAPTATION_ANALYSIS.md
 
 ## Definition of DoD
 
-- [x] Smoke test runs starter setup in a temporary target project.
-- [x] Smoke test verifies `.aegis/config/quality-gates.json`.
-- [x] Smoke test verifies `.aegis/state/run-state.json`.
-- [x] Smoke test verifies `.aegis/current/next-claude-install-prompt.md`.
-- [x] Smoke test verifies `aegis-install` and Superpower skills.
-- [x] Smoke test verifies old `.agent` onboarding state is absent.
+- [x] Python quickstart teaches Aegis starter and `.aegis`.
+- [x] Python test plan uses `.aegis/current` report paths.
+- [x] Python adaptation analysis is marked historical.
+- [x] Current Python docs do not instruct users to initialize old runtime state.
 
 ## Acceptance Checks
 
 ```bash
-npx vitest run tests/starter-setup-smoke.test.ts
 npm run typecheck
 npm run build
 npm run lint
 npm test
+rg -n "初始化 \\.agent|mkdir -p \\.agent|\\.agent/PROJECT_BLUEPRINT|\\.agent/QUALITY_GATES|启动 Orchestrator|24hagent 启动 Python|24h readiness|node dist/cli/main.js readiness" docs/PYTHON_QUICKSTART.md docs/PYTHON_TEST_PLAN.md docs/PYTHON_ADAPTATION_ANALYSIS.md
 node dist\cli\main.js safety:check
 node dist\cli\main.js task:review
 git diff --check
@@ -54,4 +53,4 @@ git status --short --ignored
 
 ## Stop Rule
 
-Stop and ask for human confirmation before changing runtime code, starter behavior beyond a verified smoke-test bug fix, dependency files, GitHub configuration, release/publish/deploy behavior, forbidden Git actions, or files outside the File Scope above.
+Stop and ask for human confirmation before changing runtime code, starter behavior, dependency files, GitHub configuration, release/publish/deploy behavior, forbidden Git actions, or files outside the File Scope above.

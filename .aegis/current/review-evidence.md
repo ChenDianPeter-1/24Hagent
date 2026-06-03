@@ -2,13 +2,14 @@
 
 Review focus for this round:
 
-- Smoke test must not launch Claude Code or Codex.
-- Smoke test must not mutate Git or install dependencies.
-- Test should prove setup output, not only packaged file presence.
-- Assertions should cover both positive `.aegis` files and absent old `.agent` onboarding state.
+- Python docs must not tell users to initialize old runtime state.
+- Python docs must teach Aegis starter and `.aegis` paths.
+- Historical analysis must be clearly non-operational.
+- Useful Python coverage.py and toolchain guidance should be preserved.
 
 Review result:
 
-- Smoke test uses `-NoClaude` and `-SkipReadiness`.
-- Smoke test verifies setup output, generated `.aegis/` files, installed skills, and absent `.agent` onboarding state.
-- No runtime, dependency, Git mutation, deployment, publishing, release, or Codex execution behavior was added.
+- Python quickstart is Aegis-first and tells users not to initialize old runtime state.
+- Python validation plan now expects `.aegis/current` report paths and Aegis commands.
+- Python adaptation analysis is explicitly historical context, not current onboarding guidance.
+- Useful Python coverage.py guidance was preserved with `functions: null` / optional branch coverage.

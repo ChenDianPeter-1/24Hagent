@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
   "project_id": "aegis-rewrite",
-  "task_id": "20260603-starter-setup-smoke",
+  "task_id": "20260603-python-docs-aegis",
   "phase": "passed",
   "mode": "auto",
-  "last_verdict": "starter-setup-smoke-complete",
+  "last_verdict": "python-docs-aegis-complete",
   "round_count": 0,
   "retry_count": 0,
-  "updated_at": "2026-06-03T23:22:00+08:00"
+  "updated_at": "2026-06-03T23:58:00+08:00"
 }
