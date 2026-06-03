@@ -10,19 +10,19 @@
 
 ## Current Task
 
-`20260603-progression-modes`
+`20260603-round-archive`
 
 ## Current Task Title
 
-Implement Aegis progression modes.
+Archive completed Aegis rounds.
 
 ## Last Result
 
-progression-modes-in-progress
+round-archive-in-progress
 
 ## Next Action
 
-Implement mode-aware post-verdict progression, verify auto/allow/ask behavior, then commit Phase 9.
+Implement PASS round archival, verify archive manifests, then commit this phase.
 
 ## Risks
 

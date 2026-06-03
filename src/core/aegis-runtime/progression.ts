@@ -1,4 +1,5 @@
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { basename, resolve } from 'node:path'
 import { z } from 'zod'
 import { getAegisRuntimePaths } from './paths.js'
 import { stringifyAegisRunState, type AegisRunState } from './run-state.js'
@@ -19,6 +20,8 @@ export type AegisProgressionDecision = {
   preserveWorkInstruction: boolean
   decisionRequest?: DecisionRequestInput
   humanHandoff?: string
+  archiveTaskId?: string
+  archiveTimestamp?: string
   modeDecision: string
 }
 
@@ -65,6 +68,59 @@ function renderRetryHandoff(state: AegisRunState, maxRepairAttempts: number): st
     'Claude Code must ask the human whether to revise scope, accept risk, or stop the task.',
     ''
   ].join('\n')
+}
+
+function sanitizeArchiveName(taskId: string): string {
+  return taskId.replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/^-+|-+$/g, '') || 'no-task'
+}
+
+export function archiveCompletedRound(root: string, taskId: string, timestamp: string): {
+  archivePath: string
+  copiedFiles: string[]
+} {
+  const paths = getAegisRuntimePaths(root)
+  const archivePath = resolve(paths.archiveDir, sanitizeArchiveName(taskId))
+  mkdirSync(archivePath, { recursive: true })
+
+  const candidates = [
+    paths.currentTask,
+    paths.roundSummary,
+    paths.workInstruction,
+    paths.planningEvidence,
+    paths.tddEvidence,
+    paths.debuggingEvidence,
+    paths.verificationEvidence,
+    paths.reviewEvidence,
+    paths.safetyReport,
+    paths.taskQualityReport,
+    paths.disciplineReport,
+    paths.qualityReadinessReport,
+    paths.validationReport,
+    paths.codexReviewPrompt,
+    paths.codexReviewRaw,
+    paths.codexReview,
+    paths.superpowerSources,
+    paths.superpowerSummary
+  ]
+  const copiedFiles: string[] = []
+
+  for (const file of candidates) {
+    if (!existsSync(file)) continue
+    const target = resolve(archivePath, basename(file))
+    copyFileSync(file, target)
+    copiedFiles.push(basename(file))
+  }
+
+  const manifest = {
+    schema_version: 1,
+    task_id: taskId,
+    archived_at: timestamp,
+    copied_files: copiedFiles
+  }
+  writeFileSync(resolve(archivePath, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`, 'utf-8')
+  copiedFiles.push('manifest.json')
+
+  return { archivePath, copiedFiles }
 }
 
 export function applyProgressionPolicy(
@@ -128,6 +184,8 @@ export function applyProgressionPolicy(
           updated_at: timestamp
         },
         preserveWorkInstruction: false,
+        archiveTaskId: state.task_id ?? 'no-task',
+        archiveTimestamp: timestamp,
         decisionRequest: decisionRequest(
           'Codex returned PASS. Should Aegis prepare the next task?',
           `Completed rounds: ${nextRoundCount}. Aegis ask mode stops after meaningful phase boundaries.`
@@ -145,6 +203,8 @@ export function applyProgressionPolicy(
           updated_at: timestamp
         },
         preserveWorkInstruction: false,
+        archiveTaskId: state.task_id ?? 'no-task',
+        archiveTimestamp: timestamp,
         decisionRequest: decisionRequest(
           'Aegis reached the configured round limit. Should it continue selecting tasks?',
           `Completed rounds: ${nextRoundCount}. Limit: ${limits.maxAutoRounds}.`
@@ -162,6 +222,8 @@ export function applyProgressionPolicy(
         updated_at: timestamp
       },
       preserveWorkInstruction: false,
+      archiveTaskId: state.task_id ?? 'no-task',
+      archiveTimestamp: timestamp,
       modeDecision: `${state.mode} mode advanced after PASS to next-task selection.`
     }
   }
@@ -175,6 +237,9 @@ export function applyProgressionPolicy(
 
 export function writeProgressionSideEffects(root: string, decision: AegisProgressionDecision): void {
   const paths = getAegisRuntimePaths(root)
+  if (decision.archiveTaskId && decision.archiveTimestamp) {
+    archiveCompletedRound(root, decision.archiveTaskId, decision.archiveTimestamp)
+  }
   if (decision.humanHandoff) {
     writeFileSync(paths.humanHandoff, decision.humanHandoff, 'utf-8')
   }

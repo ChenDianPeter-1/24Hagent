@@ -99,12 +99,14 @@ describe('CLI smoke', () => {
 
       const out = execSync(cli(''), { encoding: 'utf-8', cwd: dir })
       const state = JSON.parse(readFileSync(resolve(dir, '.aegis/state/run-state.json'), 'utf-8'))
+      const archiveManifest = readFileSync(resolve(dir, '.aegis/archive/T-PASS/manifest.json'), 'utf-8')
 
       expect(out).toContain('`ready-for-task`')
       expect(out).toContain('Write a concrete `.aegis/current/current-task.md`')
       expect(out).toContain('auto mode advanced after PASS')
       expect(state.phase).toBe('ready-for-task')
       expect(state.task_id).toBeNull()
+      expect(archiveManifest).toContain('"task_id": "T-PASS"')
     } finally {
       rmSync(dir, { recursive: true, force: true })
     }
@@ -134,11 +136,13 @@ describe('CLI smoke', () => {
       const out = execSync(cli(''), { encoding: 'utf-8', cwd: dir })
       const state = JSON.parse(readFileSync(resolve(dir, '.aegis/state/run-state.json'), 'utf-8'))
       const decision = readFileSync(resolve(dir, '.aegis/current/decision-request.md'), 'utf-8')
+      const archiveManifest = readFileSync(resolve(dir, '.aegis/archive/T-ASK/manifest.json'), 'utf-8')
 
       expect(out).toContain('`decision-request`')
       expect(out).toContain('Ask mode stopped after PASS')
       expect(state.phase).toBe('decision-request')
       expect(decision).toContain('Codex returned PASS')
+      expect(archiveManifest).toContain('"task_id": "T-ASK"')
     } finally {
       rmSync(dir, { recursive: true, force: true })
     }

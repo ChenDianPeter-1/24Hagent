@@ -245,6 +245,7 @@ Implemented slice:
 - `allow` remains lower interruption but stops at configured round limits.
 - Repeated `NEED_FIX` at the configured repair limit writes human handoff and routes to `NEED_HUMAN`.
 - Status and project-progress navigation now include a mode-decision note.
+- `PASS` progression now archives completed round artifacts under `.aegis/archive/<task-id>/` before next-task selection or ask-mode decision request.
 
 ## Phase 10: Safety Boundaries
 

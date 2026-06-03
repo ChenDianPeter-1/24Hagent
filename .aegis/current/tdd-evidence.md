@@ -2,9 +2,8 @@
 
 Tests were added or adjusted before validating the implementation behavior:
 
-- `tests/aegis-runtime.test.ts` now covers `auto` PASS continuation, `ask` PASS decision requests, `allow` round-limit stops, and repair-limit human handoff.
-- `tests/cli-smoke.test.ts` now covers real default `aegis` ask-mode decision request generation after `PASS`.
-- Existing CLI smoke coverage still verifies auto-mode `NEED_FIX` and `PASS` transitions.
-- Controller/status tests were adjusted for the new `round_count` state field and mode-aware navigation.
+- `tests/aegis-runtime.test.ts` now covers archive creation, copied round artifacts, and manifest contents.
+- `tests/cli-smoke.test.ts` now verifies real default `aegis` PASS progression writes archive manifests in both `auto` and `ask` modes.
+- Existing progression tests continue to verify `auto`, `allow`, `ask`, and repair-limit behavior while archival is attached.
 
 These tests define the behavior that the implementation must satisfy.

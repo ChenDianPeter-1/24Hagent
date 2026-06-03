@@ -2,23 +2,23 @@
 
 ## Task ID
 
-`20260603-progression-modes`
+`20260603-round-archive`
 
 ## Title
 
-Implement Aegis progression modes.
+Archive completed Aegis rounds.
 
 ## Specification
 
-Implement executable Aegis progression behavior for `auto`, `allow`, and `ask` modes.
+Implement executable round archival behavior after Codex `PASS`.
 
-This phase must turn mode policy into runtime behavior:
+This phase must turn the documented `PASS -> archive round` contract into runtime behavior:
 
-- `auto` continues through safe deterministic post-verdict transitions
-- `allow` is lower interruption but still stops at configured hard brakes
-- `ask` stops after meaningful phase boundaries and writes `decision-request.md`
-- repeated `NEED_FIX` beyond repair limits writes human handoff
-- navigation files show the mode decision that caused Aegis to continue or stop
+- copy completed round artifacts into `.aegis/archive/<task-id>/`
+- write a small archive manifest
+- archive before next-task selection or ask-mode decision request
+- tolerate missing optional reports/artifacts
+- avoid duplicate confusing archive names on repeated writes
 
 Aegis must remain non-interactive and must not launch Claude Code or execute Codex.
 
@@ -33,11 +33,11 @@ Aegis must remain non-interactive and must not launch Claude Code or execute Cod
 
 ## Definition of DoD
 
-- [ ] `auto` advances after Codex `PASS` to next-task selection until the round limit.
-- [ ] `ask` writes decision requests instead of silently continuing after meaningful phase boundaries.
-- [ ] `allow` still stops at configured hard brakes.
-- [ ] Repeated `NEED_FIX` at the repair limit writes human handoff.
-- [ ] Status and progress navigation render mode-decision context.
+- [ ] Completed rounds archive current task, summary, evidence, reports, and Codex artifacts when present.
+- [ ] Archive manifest records task id, timestamp, and copied files.
+- [ ] `auto` PASS progression archives before next-task selection.
+- [ ] `ask` PASS progression archives before writing decision request.
+- [ ] Archive behavior does not execute Git or publish/release actions.
 
 ## Acceptance Checks
 
@@ -47,7 +47,7 @@ npm run build
 npm run lint
 npm test
 npx vitest run tests/aegis-runtime.test.ts
-npx vitest run tests/cli-smoke.test.ts tests/aegis-controller.test.ts tests/status.test.ts
+npx vitest run tests/cli-smoke.test.ts tests/aegis-runtime.test.ts
 node dist\cli\main.js safety:check
 node dist\cli\main.js task:review
 git diff --check

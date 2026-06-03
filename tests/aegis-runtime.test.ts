@@ -12,6 +12,7 @@ import {
   refreshNavigation,
   renderProjectProgress,
   routeCodexReviewResult,
+  archiveCompletedRound,
   applyProgressionPolicy,
   detectForbiddenActions,
   renderCommitSuggestion,
@@ -448,6 +449,26 @@ describe('Aegis progression policy', () => {
       expect(decision.state.phase).toBe('human-handoff')
       expect(decision.state.last_verdict).toBe('NEED_HUMAN')
       expect(decision.humanHandoff).toContain('repair attempts reached')
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  it('archives completed round artifacts under the task id', () => {
+    const { dir } = progressionFixture()
+    try {
+      const paths = getAegisRuntimePaths(dir)
+      mkdirSync(paths.currentDir, { recursive: true })
+      write(paths.currentTask, '# Current Task\n\n## Title\nArchive me\n')
+      write(paths.roundSummary, '# Round Summary\n\nCodex returned PASS.\n')
+      write(paths.verificationEvidence, '# Verification Evidence\n\nTests passed.\n')
+
+      const result = archiveCompletedRound(dir, 'T-PASS', '2026-06-03T10:00:00Z')
+
+      expect(result.archivePath).toContain('T-PASS')
+      expect(readFileSync(resolve(result.archivePath, 'current-task.md'), 'utf-8')).toContain('Archive me')
+      expect(readFileSync(resolve(result.archivePath, 'round-summary.md'), 'utf-8')).toContain('PASS')
+      expect(readFileSync(resolve(result.archivePath, 'manifest.json'), 'utf-8')).toContain('"task_id": "T-PASS"')
     } finally {
       rmSync(dir, { recursive: true, force: true })
     }

@@ -2,8 +2,8 @@
 
 Review focus for this round:
 
-- `auto`, `allow`, and `ask` must differ in continuation behavior while preserving non-interactive Aegis boundaries.
-- `ask` must write decision requests that Claude Code can present to the human.
-- `allow` must not become an infinite loop; configured round and repair limits remain hard brakes.
-- Repeated `NEED_FIX` at the repair limit must produce human handoff instead of more construction.
-- Navigation files must explain mode decisions so Claude Code knows why Aegis continued or stopped.
+- Archive behavior must happen before the current task id is cleared by PASS progression.
+- Missing optional reports must not block archival.
+- Archive paths must be deterministic and task-id based.
+- Archive manifests must be compact and must not contain raw diffs or chat transcripts.
+- Aegis must still avoid forbidden Git, release, deploy, publish, or history-rewrite actions.

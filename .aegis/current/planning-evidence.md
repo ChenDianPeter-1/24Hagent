@@ -1,11 +1,11 @@
 # Planning Evidence
 
-Issue #14, the product decisions, and the MVP roadmap were reviewed before implementation. This phase targets Phase 9: Auto / Allow / Ask progression.
+Issue #14, the product decisions, and the runtime spec were reviewed before implementation. This phase targets the missing `PASS -> archive round` behavior.
 
 The implementation plan is:
 
-- Add a progression policy module for mode-aware post-verdict transitions.
-- Keep the default `auto` path deterministic and non-interactive.
-- Make `ask` stop by writing `decision-request.md`.
-- Make `allow` lower interruption while still respecting round and repair limits.
-- Add navigation output that explains the mode decision.
+- Add a deterministic archive helper under the Aegis runtime.
+- Copy current task, round summary, evidence, reports, Codex artifacts, and Superpower summaries when present.
+- Write a compact archive manifest for recovery.
+- Attach archival to PASS progression before next-task selection or ask-mode stop.
+- Keep `.aegis/archive/` ignored according to the existing Git policy.
