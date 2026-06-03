@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
   "project_id": "aegis-rewrite",
-  "task_id": "20260603-docs-sync-after-starter",
+  "task_id": "20260603-starter-setup-smoke",
   "phase": "passed",
   "mode": "auto",
-  "last_verdict": "docs-sync-after-starter-complete",
+  "last_verdict": "starter-setup-smoke-complete",
   "round_count": 0,
   "retry_count": 0,
-  "updated_at": "2026-06-03T22:55:00+08:00"
+  "updated_at": "2026-06-03T23:22:00+08:00"
 }

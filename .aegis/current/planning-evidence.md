@@ -1,10 +1,10 @@
 # Planning Evidence
 
-Issue #16, issue #15, issue #14, and the previous completion audit were reviewed before implementation. This phase targets root docs that still described starter migration as pending after the starter had already been migrated.
+Issue #17, issue #15, issue #14, and the previous completion audit were reviewed before implementation. This phase targets the missing proof that starter setup actually initializes an Aegis runtime in a real target directory.
 
 The implementation plan is:
 
-- Update README current implementation and remaining work.
-- Update HANDOFF recent commits and remaining high-value work.
-- Update HOW_TO_NEW_PROJECT starter status and starter launch section.
-- Keep compatibility wording honest rather than hiding the `24hagent-starter/` folder name.
+- Add a Windows PowerShell smoke test for `24hagent-starter/setup.ps1`.
+- Run setup in a temporary target project with `-NoClaude` and `-SkipReadiness`.
+- Verify the generated `.aegis/` layout and installed Claude Code skills.
+- Verify old `.agent` onboarding state is absent.

@@ -10,19 +10,19 @@
 
 ## Current Task
 
-`20260603-docs-sync-after-starter`
+`20260603-starter-setup-smoke`
 
 ## Current Task Title
 
-Sync public docs after starter migration.
+Add starter setup smoke test.
 
 ## Last Result
 
-docs-sync-after-starter-complete
+starter-setup-smoke-complete
 
 ## Next Action
 
-Commit the completed docs sync phase, then record the result in GitHub issue #16.
+Commit the completed starter setup smoke test phase, then record the result in GitHub issue #17.
 
 ## Risks
 

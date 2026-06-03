@@ -1,9 +1,10 @@
 # TDD Evidence
 
-Validation checks planned for this docs-sync phase:
+Validation checks planned for this starter smoke phase:
 
-- Search touched root docs for stale starter migration wording.
-- Search touched root docs for old product terms and verify remaining hits are compatibility or repository-name references.
+- Add a failing-before-implementation smoke test that expects `.aegis/` output from setup.
+- Run the new focused smoke test.
+- Run the normal typecheck, build, lint, and full test suite.
 - Run Aegis safety and task quality checks before commit.
 
-This phase updates docs and evidence only, not the core runtime state machine or starter behavior.
+This phase adds test coverage only, unless the smoke test exposes a real starter setup bug.

@@ -2,12 +2,13 @@
 
 Review focus for this round:
 
-- Root docs must not say starter migration is still pending.
-- Starter status must match commit `4213e6a`.
-- Remaining work must be accurate and actionable.
-- `24hagent-starter/` may remain as a compatibility folder name, not product identity.
+- Smoke test must not launch Claude Code or Codex.
+- Smoke test must not mutate Git or install dependencies.
+- Test should prove setup output, not only packaged file presence.
+- Assertions should cover both positive `.aegis` files and absent old `.agent` onboarding state.
 
 Review result:
 
-- Pending starter migration wording was replaced with implemented starter status.
-- Remaining work now names starter smoke testing, legacy fallback audit, Python docs migration, and blueprint revision hardening.
+- Smoke test uses `-NoClaude` and `-SkipReadiness`.
+- Smoke test verifies setup output, generated `.aegis/` files, installed skills, and absent `.agent` onboarding state.
+- No runtime, dependency, Git mutation, deployment, publishing, release, or Codex execution behavior was added.

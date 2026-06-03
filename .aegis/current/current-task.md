@@ -2,45 +2,50 @@
 
 ## Task ID
 
-`20260603-docs-sync-after-starter`
+`20260603-starter-setup-smoke`
 
 ## Title
 
-Sync public docs after starter migration.
+Add starter setup smoke test.
 
 ## Specification
 
-Synchronize root public docs and Aegis current evidence after the bundled starter migration.
+Add a real smoke test proving the bundled Aegis starter setup initializes `.aegis/` onboarding state in a temporary target project.
 
 This phase must:
 
-- remove stale notes that say bundled starter migration is still pending
-- describe `24hagent-starter/` as an Aegis-first starter with a compatibility folder name
-- reframe remaining starter work as smoke testing and legacy fallback audit
-- update Aegis current evidence for issue #16
+- run `24hagent-starter/setup.ps1` against a temporary target project
+- pass `-NoClaude` and `-SkipReadiness` so no Claude launch or target validation occurs
+- verify generated `.aegis/` config/current/state files
+- verify `aegis-install` and Superpower skills are installed
+- verify old `.agent` onboarding state is not created
+- update Aegis current evidence for issue #17
 
-No runtime or starter behavior changes are in scope.
+Starter behavior changes are out of scope unless the smoke test exposes a real setup bug.
 
 ## File Scope
 
 - .aegis/current
 - .aegis/state/run-state.json
-- README.md
-- docs/HANDOFF.md
-- docs/HOW_TO_NEW_PROJECT.md
+- tests/starter-setup-smoke.test.ts
 
 ## Definition of DoD
 
-- [x] README says bundled starter onboarding has migrated to Aegis.
-- [x] Handoff lists the starter migration commit and removes starter migration from pending high-value work.
-- [x] New-project guide describes how the migrated starter initializes `.aegis/`.
-- [x] Remaining work is framed as starter smoke testing, compatibility fallback audit, or Python docs migration.
+- [x] Smoke test runs starter setup in a temporary target project.
+- [x] Smoke test verifies `.aegis/config/quality-gates.json`.
+- [x] Smoke test verifies `.aegis/state/run-state.json`.
+- [x] Smoke test verifies `.aegis/current/next-claude-install-prompt.md`.
+- [x] Smoke test verifies `aegis-install` and Superpower skills.
+- [x] Smoke test verifies old `.agent` onboarding state is absent.
 
 ## Acceptance Checks
 
 ```bash
-rg -n "starter.*legacy|legacy starter|still being migrated|should be rewritten as an Aegis starter|Migrate bundled starter" README.md docs/HANDOFF.md docs/HOW_TO_NEW_PROJECT.md
-rg -n "24Hagent|24hagent|\\.agent|24h" README.md docs/HANDOFF.md docs/HOW_TO_NEW_PROJECT.md
+npx vitest run tests/starter-setup-smoke.test.ts
+npm run typecheck
+npm run build
+npm run lint
+npm test
 node dist\cli\main.js safety:check
 node dist\cli\main.js task:review
 git diff --check
@@ -49,4 +54,4 @@ git status --short --ignored
 
 ## Stop Rule
 
-Stop and ask for human confirmation before changing runtime code, starter behavior, dependency files, GitHub configuration, release/publish/deploy behavior, forbidden Git actions, or files outside the File Scope above.
+Stop and ask for human confirmation before changing runtime code, starter behavior beyond a verified smoke-test bug fix, dependency files, GitHub configuration, release/publish/deploy behavior, forbidden Git actions, or files outside the File Scope above.
