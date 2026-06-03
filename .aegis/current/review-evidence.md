@@ -2,8 +2,8 @@
 
 Review focus for this round:
 
-- Product docs must state that Aegis does not launch Claude Code.
-- Product docs must state that Codex owns the final semantic three-state review verdict.
-- The discipline report must distinguish Superpower source evidence from current-round discipline evidence.
-- `discipline:check` must fail before Codex review when required round evidence is missing.
-- The Aegis controller must not route to Codex review merely because `discipline-report.md` exists.
+- `review:render` must not invent a verdict; it must consume Codex JSONL parsed by the existing review schema.
+- `PASS` routing must not ask Claude Code for extra work.
+- `NEED_FIX` routing must give Claude Code bounded fixes and increment retry count.
+- `NEED_HUMAN` routing must stop and write a handoff packet instead of guessing.
+- Legacy `.agent` rendering should stay compatible because migration is still incremental.

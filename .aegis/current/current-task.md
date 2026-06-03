@@ -2,41 +2,39 @@
 
 ## Task ID
 
-`20260603-discipline-evidence-boundary`
+`20260603-codex-verdict-routing`
 
 ## Title
 
-Make discipline check require current-round evidence.
+Route Codex review verdicts through Aegis runtime.
 
 ## Specification
 
-Incorporate the latest issue #14 guidance into Aegis.
+Implement the first real Aegis runtime routing step after Codex review rendering.
 
-The implementation must make three boundaries explicit:
+`aegis review:render` already parses Codex JSONL and writes `codex-review.md`. Extend the Aegis runtime path so the rendered Codex verdict is consumed as the authoritative three-state result:
 
-- Aegis is not a Claude Code launcher. It is a non-interactive state controller and delivery gate used from inside an active Claude Code session.
-- Codex is the independent read-only reviewer that returns the final semantic `PASS`, `NEED_FIX`, or `NEED_HUMAN` verdict for a completed construction round. Aegis packages evidence and routes the Codex verdict.
-- `discipline:check` must verify current-round discipline evidence, not merely Superpower source availability.
+- `PASS` updates `run-state.json` to `passed`, clears retry count, and writes a concise `round-summary.md`.
+- `NEED_FIX` updates `run-state.json` to `need-fix`, increments retry count, and writes a bounded `work-instruction.md` for Claude Code.
+- `NEED_HUMAN` updates `run-state.json` to `human-handoff` and writes `human-handoff.md`.
 
-Implement a first file-based discipline evidence gate that reads `.aegis/current/*-evidence.md`, fails when required evidence is missing, and blocks continuation before Codex review.
+Legacy `.agent` review rendering must remain compatible and should not require Aegis run-state files.
 
 ## File Scope
 
 - .aegis/current
 - .aegis/blueprint/project-progress.md
 - .aegis/state/run-state.json
-- docs
 - src/cli
 - src/core/aegis-runtime
-- src/core/superpower
 - tests
 
 ## Definition of DoD
 
-- [ ] `discipline:check` fails when Superpower sources exist but current-round evidence is missing.
-- [ ] `discipline:check` passes when required planning, TDD, verification, and review evidence exists for this feature-style round.
-- [ ] The default Aegis controller does not continue to Codex review unless `discipline-report.md` contains `Verdict: PASS`.
-- [ ] Product docs state that Aegis is not a Claude Code launcher and Codex owns the final three-state review verdict.
+- [ ] `review:render` routes `PASS` to Aegis `passed` state and writes a round summary.
+- [ ] `review:render` routes `NEED_FIX` to Aegis `need-fix` state and writes bounded repair instructions.
+- [ ] `review:render` routes `NEED_HUMAN` to Aegis `human-handoff` state and writes a human handoff packet.
+- [ ] Existing review parsing and legacy runtime behavior remain covered by tests.
 
 ## Acceptance Checks
 
@@ -45,9 +43,8 @@ npm run typecheck
 npm run build
 npm run lint
 npm test
+npx vitest run tests/review-cli.test.ts tests/review-result.test.ts tests/result-renderer.test.ts
 node dist\cli\main.js task:review
-node dist\cli\main.js superpower:scan
-node dist\cli\main.js discipline:check
 git status --short --ignored
 ```
 

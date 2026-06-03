@@ -2,11 +2,11 @@
 
 ## Task
 
-Make discipline check require current-round evidence.
+Route Codex review verdicts through Aegis runtime.
 
 ## Instruction
 
-Task quality report exists. Run `aegis readiness` next.
+Add Aegis runtime routing for Codex `PASS`, `NEED_FIX`, and `NEED_HUMAN` after `review:render`, while preserving legacy `.agent` render compatibility.
 
 ## Boundaries
 

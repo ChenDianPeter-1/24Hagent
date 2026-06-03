@@ -2,15 +2,17 @@
 
 ## Summary
 
-Phase 9 normalizes the tracked `.aegis/current/current-task.md` scaffold so Aegis can review its own active task through the new Aegis-first `task:review` path.
+This round implements the first Aegis runtime bridge from rendered Codex review results back into workflow state.
 
 ## What Changed
 
-- Replaced the completed Phase 2 scaffold task with a schema-valid Phase 9 task package.
-- Synchronized run state, status, work instruction, and project progress with the active task.
-- Kept generated task quality reports as ignored runtime artifacts.
+- `PASS` will route to `passed` and write a concise round summary.
+- `NEED_FIX` will route to `need-fix` and write bounded repair instructions for Claude Code.
+- `NEED_HUMAN` will route to `human-handoff` and write a human handoff packet.
+- CLI smoke for `review:render` now uses an isolated temporary Aegis runtime so tests do not mutate the repository runtime state.
 
 ## What Did Not Change
 
-- No product code, dependency, GitHub, release, deploy, or publish behavior changed in this phase.
-- Legacy `.agent` fallback remains in place.
+- Codex remains the source of the semantic review verdict.
+- Legacy `.agent` review rendering remains compatible.
+- No Git, release, deploy, publish, or history rewrite behavior was added.

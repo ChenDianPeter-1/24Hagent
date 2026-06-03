@@ -10,11 +10,11 @@ Rewrite 24Hagent into Aegis: a delivery gate that lives inside Claude Code, uses
 
 ## Current Task
 
-Make discipline check require current-round evidence.
+Route Codex review verdicts through Aegis runtime.
 
 ## Next Action
 
-Task quality report exists. Run `aegis readiness` next.
+Run review-focused tests, full validation, and confirm post-render verdict routing for PASS, NEED_FIX, and NEED_HUMAN.
 
 ## Risks
 

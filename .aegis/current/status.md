@@ -10,19 +10,19 @@
 
 ## Current Task
 
-`20260603-discipline-evidence-boundary`
+`20260603-codex-verdict-routing`
 
 ## Current Task Title
 
-Make discipline check require current-round evidence.
+Route Codex review verdicts through Aegis runtime.
 
 ## Last Result
 
-superpower-communication-pass
+discipline-evidence-pass
 
 ## Next Action
 
-Task quality report exists. Run `aegis readiness` next.
+Implement Codex verdict routing, then run review-focused tests and full validation.
 
 ## Risks
 

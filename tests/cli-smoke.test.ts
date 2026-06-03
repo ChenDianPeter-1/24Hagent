@@ -55,8 +55,28 @@ describe('CLI smoke', () => {
   })
 
   it('review:render outputs PASS from fixture', () => {
+    const dir = mkdtempSync(resolve(tmpdir(), 'aegis-review-render-'))
     const fixture = resolve(root, 'tests/fixtures/codex-review-pass.jsonl')
-    const out = execSync(cli(`review:render --input ${fixture}`), { encoding: 'utf-8', cwd: root })
-    expect(out).toContain('PASS')
+    try {
+      mkdirSync(resolve(dir, '.aegis/state'), { recursive: true })
+      mkdirSync(resolve(dir, '.aegis/current'), { recursive: true })
+      writeFileSync(resolve(dir, '.aegis/current/current-task.md'), '# Current Task\n')
+      writeFileSync(resolve(dir, '.aegis/state/run-state.json'), JSON.stringify({
+        schema_version: 1,
+        project_id: 'aegis-rewrite',
+        task_id: 'T-RENDER',
+        phase: 'codex-review',
+        mode: 'auto',
+        last_verdict: null,
+        retry_count: 0,
+        updated_at: '2026-06-03T01:30:00+08:00'
+      }))
+
+      const out = execSync(cli(`review:render --input ${fixture}`), { encoding: 'utf-8', cwd: dir })
+
+      expect(out).toContain('PASS')
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
   })
 })
