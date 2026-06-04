@@ -71,8 +71,12 @@ Rules:
 - Superpower brainstorming generates and revises the project blueprint.
 - Superpower writing-plans produces implementation planning material.
 - Superpower TDD, systematic debugging, code review, and finishing branch skills define expected construction discipline.
-- Aegis does not copy or own the whole Superpower directory.
+- Aegis runtime does not own the Superpower directory as runtime state.
 - Aegis stores references, summaries, and extracted current-round material.
+
+The bundled `aegis-starter/` may distribute a Superpower Pack into
+`.claude/skills/superpower/` for Claude Code onboarding. That copy belongs to
+the Claude Code skills surface, not to `.aegis/` runtime state.
 
 ## Blueprint Rules
 

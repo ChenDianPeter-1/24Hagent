@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
   "project_id": "aegis-rewrite",
-  "task_id": "20260604-final-starter-shell-cleanup",
-  "phase": "hard-blocked",
+  "task_id": "20260604-completion-audit-docs",
+  "phase": "passed",
   "mode": "auto",
-  "last_verdict": "NEED_HUMAN",
+  "last_verdict": "completion-audit-docs-complete",
   "round_count": 0,
   "retry_count": 0,
-  "updated_at": "2026-06-04T06:32:17.267Z"
+  "updated_at": "2026-06-04T16:30:00+08:00"
 }

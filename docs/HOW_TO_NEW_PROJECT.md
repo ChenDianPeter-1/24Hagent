@@ -1,6 +1,6 @@
 # Use Aegis In A New Project
 
-This guide describes the current Aegis-first workflow. The bundled starter has been migrated to Aegis onboarding, but a deeper setup smoke test is still planned.
+This guide describes the current Aegis-first workflow. The bundled starter has been migrated to Aegis onboarding and is covered by the starter layout and setup smoke tests.
 
 ## Prerequisites
 

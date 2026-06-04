@@ -17,7 +17,7 @@ Deliverables:
 Do not:
 
 - Rewrite core TypeScript runtime yet.
-- Remove `24h` compatibility yet.
+- Remove `24h` compatibility yet. This was deferred during Phase 1 and removed during the later pure Aegis cleanup.
 - Automate Superpower yet.
 
 ## Phase 2: Aegis Runtime Scaffold
@@ -50,7 +50,7 @@ Goal: introduce `aegis` as the formal command identity.
 Deliverables:
 
 - Package `bin` exposes `aegis`.
-- `24h` remains as a compatibility alias if needed.
+- The old `24h` compatibility alias was temporary and has been removed from the active product.
 - README and docs stop teaching `24h` as the primary command.
 - Existing command handlers are mapped to Aegis concepts.
 

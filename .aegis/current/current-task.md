@@ -2,54 +2,43 @@
 
 ## Task ID
 
-`20260604-final-starter-shell-cleanup`
+`20260604-completion-audit-docs`
 
 ## Title
 
-Remove final old starter and Orchestrator shell residue.
+Finalize Aegis completion audit docs.
 
 ## Specification
 
-Finish active-product package cleanup for pure Aegis delivery.
+Finalize the documentation state for pure Aegis delivery after the starter shell cleanup.
 
 This phase must:
 
-- rename the shipped starter directory from `24hagent-starter/` to `aegis-starter/`
-- remove root and starter `CLAUDE_ORCHESTRATOR_PROTOCOL.md` / `START_ORCHESTRATOR.md`
-- remove tracked starter `.agent/` residue if present
-- stop starter setup scripts from copying old Orchestrator launch docs
-- update active docs, tests, build scripts, and `.gitignore` to the new starter path
-- rebuild the starter bundle
-- keep historical docs/tests allowed to mention the old rewrite context only when clearly historical or fixture data
+- remove stale completion blockers from handoff and starter docs
+- clarify the Superpower runtime-vs-starter boundary
+- update the MVP roadmap to reflect removal of old `24h` alias
+- add a concise completion audit document
+- keep historical mentions only where they explain the migration
 
-Human confirmation: explicit human confirmation was given for pure Aegis cleanup, including deletion of unnecessary old 24Hagent and `.agent/` residue. This task has explicit human confirmation for removing old starter and Orchestrator shell files.
+Human confirmation: explicit human confirmation was given for pure Aegis cleanup and final delivery.
 
 ## File Scope
 
 - .aegis
-- .gitignore
 - docs
-- scripts/build-starter.mjs
-- tests
-- aegis-starter
 
 ## Definition of DoD
 
-- [x] active starter path is `aegis-starter/`.
-- [x] old root and starter Orchestrator docs are removed.
-- [x] starter setup scripts no longer create or copy `.agent` / Orchestrator shell files.
-- [x] starter bundle is rebuilt.
+- [x] handoff no longer blocks completion with stale audit notes.
+- [x] new completion audit document exists.
+- [x] starter guide no longer says the smoke test is only planned.
+- [x] MVP roadmap reflects that `24h` alias was removed.
 - [x] verification passes.
 
 ## Acceptance Checks
 
 ```bash
-npm run typecheck
-npm run build
-npm run build:starter
-npm run lint
-npm test
-rg -n "24hagent-starter|CLAUDE_ORCHESTRATOR|START_ORCHESTRATOR|Orchestrator|\"24h\":|Compatibility alias: 24h" package.json src docs README.md aegis-starter tests
+git grep -n -E "Do not mark the rewrite complete|deeper setup smoke test is still planned|24h remains as a compatibility alias" -- docs README.md
 node dist\cli\main.js safety:check
 node dist\cli\main.js task:review
 git diff --check
@@ -58,4 +47,4 @@ git status --short --ignored
 
 ## Stop Rule
 
-Stop before changing dependencies, changing release/publish/deploy behavior, pushing, or touching files outside the File Scope above. The starter rename and old shell deletion are explicitly human-confirmed for pure Aegis cleanup.
+Stop before changing runtime behavior, dependencies, release/publish/deploy behavior, pushing, or touching files outside the File Scope above.

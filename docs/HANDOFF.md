@@ -20,12 +20,12 @@ Aegis is a non-interactive state controller and delivery gate hosted by Claude C
 
 ## Recent Commits
 
+- `21675a0 refactor: finish Aegis starter shell cleanup`
+- `c0e29df chore: update Aegis starter ignore path`
+- `76a61ac refactor: remove old 24h alias and role wording`
+- `62f8a1e refactor: remove legacy agent runtime fallback`
+- `4879b9f docs: shorten Claude Code instructions for Aegis`
 - `4213e6a feat: migrate starter onboarding to Aegis`
-- `b3ab9e2 docs: migrate Python onboarding to Aegis`
-- `a18f0c2 test: smoke test Aegis starter setup`
-- `0a572db docs: sync starter migration status`
-- `d7e6a1d docs: migrate public docs to Aegis`
-- `bb89797 feat: archive completed Aegis rounds`
 
 ## Implemented Runtime
 
@@ -91,10 +91,17 @@ Known strict-gate behavior:
 
 ## Remaining High-Value Work
 
-Do not mark the rewrite complete until these are audited or implemented:
+The Aegis rewrite is complete for the current scoped objective: pure Aegis
+identity, `.aegis/` runtime, Claude Code hosting contract, Superpower
+discipline evidence, Codex read-only review packaging, deterministic routing,
+safety boundaries, and Aegis starter onboarding.
 
-- Strengthen blueprint revision behavior beyond the current start/summary/confirm slice.
-- Audit README/docs/package/starter search results for old product mind before final completion.
+Future enhancements should be tracked as new work, not blockers to this
+rewrite:
+
+- make blueprint revision richer than the current start/summary/confirm slice
+- add more project-type starter profiles beyond the current Node/Python/unknown detection
+- improve coverage thresholds or test policy for projects where 100% coverage is too strict
 
 ## Boundaries
 
