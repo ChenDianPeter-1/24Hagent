@@ -2,54 +2,44 @@
 
 ## Task ID
 
-`20260604-legacy-agent-compat-audit`
+`20260604-shorten-claude-md`
 
 ## Title
 
-Audit and centralize legacy `.agent` compatibility.
+Shorten root CLAUDE.md for Aegis hosting.
 
 ## Specification
 
-Audit the remaining legacy `.agent` runtime surface after the Aegis migration and make the compatibility boundary explicit.
+Rewrite the root `CLAUDE.md` so Claude Code sees the Aegis hosting contract first instead of a long historical project/debugging manual.
 
 This phase must:
 
-- inventory remaining `.agent` and old-product references in source, tests, docs, and starter artifacts
-- centralize retained `.agent` fallback paths behind a compatibility-only module
-- document why `.agent` support remains and what must not teach it as a new onboarding path
-- update public status docs so completed starter/Python work is not listed as remaining
-- keep legacy behavior covered by existing tests
-
-Removing `.agent` support, renaming `24hagent-starter/`, and removing the `24h` alias are out of scope for this phase.
+- keep the Aegis / Claude Code / Codex / Superpower role split clear
+- preserve bounded task packet, evidence, local checks, hard stops, failure, and report rules
+- remove obsolete long-form debugging/process detail from the root instruction surface
+- keep the document short enough to scan quickly
+- update Aegis current state for GitHub issue #4
 
 ## File Scope
 
 - .aegis/current
 - .aegis/state/run-state.json
-- README.md
-- 24hagent-starter/bin/aegis.mjs
-- docs
-- src/cli
-- src/core/aegis-runtime
-- src/core/review/evidence-builder.ts
+- CLAUDE.md
 
 ## Definition of DoD
 
-- [x] `.agent` fallback paths are inventoried.
-- [x] retained fallback paths are centralized behind a compatibility-only module.
-- [x] docs explain `.agent` is not the new onboarding path.
-- [x] starter bundle is rebuilt from the updated source.
-- [x] full verification passes.
+- [x] `CLAUDE.md` leads with the Aegis entrypoint and navigation files.
+- [x] role boundaries and hard stops remain explicit.
+- [x] root instruction surface is materially shorter than the previous 140-line file.
+- [x] verification passes.
 
 ## Acceptance Checks
 
 ```bash
 npm run typecheck
 npm run build
-npm run build:starter
 npm run lint
 npm test
-rg -n --hidden --glob '!node_modules/**' --glob '!dist/**' --glob '!coverage/**' --glob '!.git/**' '\.agent'
 node dist\cli\main.js safety:check
 node dist\cli\main.js task:review
 git diff --check
@@ -58,4 +48,4 @@ git status --short --ignored
 
 ## Stop Rule
 
-Stop and ask for human confirmation before deleting `.agent` compatibility, renaming distribution folders, removing compatibility aliases, changing dependency files, GitHub configuration, release/publish/deploy behavior, forbidden Git actions, or files outside the File Scope above.
+Stop before editing runtime code, dependencies, GitHub configuration, release/publish/deploy behavior, forbidden Git actions, or files outside the File Scope above.

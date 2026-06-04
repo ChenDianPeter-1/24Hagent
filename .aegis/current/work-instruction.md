@@ -2,16 +2,14 @@
 
 ## Task
 
-Audit and centralize legacy `.agent` compatibility.
+Shorten root CLAUDE.md for Aegis hosting.
 
 ## Instruction
 
-Centralize retained `.agent` fallback paths behind an explicit compatibility module, document the compatibility decision, and verify new starter onboarding remains `.aegis/` first.
+Keep the root Claude Code instruction surface short and Aegis-first while preserving role boundaries, hard stops, evidence, validation, failure, and reporting rules.
 
 ## Boundaries
 
 - Do not exceed `current-task.md` file scope.
 - Do not perform forbidden Git or release actions.
-- Leave evidence for the required Superpower discipline.
-- Do not remove `.agent` fallback behavior in this phase.
-- Do not rename `24hagent-starter/` or remove the `24h` alias in this phase.
+- Do not remove the Aegis / Claude Code / Codex role split.

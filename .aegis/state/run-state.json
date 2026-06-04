@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
   "project_id": "aegis-rewrite",
-  "task_id": "20260604-legacy-agent-compat-audit",
+  "task_id": "20260604-shorten-claude-md",
   "phase": "passed",
   "mode": "auto",
-  "last_verdict": "legacy-compat-audit-complete",
+  "last_verdict": "shorten-claude-md-complete",
   "round_count": 0,
   "retry_count": 0,
-  "updated_at": "2026-06-04T13:35:00+08:00"
+  "updated_at": "2026-06-04T13:51:00+08:00"
 }

@@ -10,20 +10,20 @@
 
 ## Current Task
 
-`20260604-legacy-agent-compat-audit`
+`20260604-shorten-claude-md`
 
 ## Current Task Title
 
-Audit and centralize legacy `.agent` compatibility.
+Shorten root CLAUDE.md for Aegis hosting.
 
 ## Last Result
 
-legacy-compat-audit-complete
+shorten-claude-md-complete
 
 ## Next Action
 
-Commit the completed legacy compatibility audit phase, then record the result in GitHub issue #19.
+Commit the shortened root CLAUDE.md phase, then record the result in GitHub issue #4.
 
 ## Risks
 
-- Dropping legacy fallback behavior requires a separate compatibility-release decision.
+- None recorded.
