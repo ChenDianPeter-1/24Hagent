@@ -2,7 +2,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { loadGateConfig, planGateExecutions, runConfiguredGates, evaluateGateResults, renderValidationReport } from '../core/quality/validation-engine.js'
 import { RealCommandRunner } from '../adapters/shell/command-runner.js'
-import { getAegisRuntimePaths } from '../core/aegis-runtime/index.js'
+import { getAegisRuntimePaths, getLegacyAgentRuntimePaths, type AegisRuntimeKind } from '../core/aegis-runtime/index.js'
 
 function readJsonSafe(path: string) {
   let raw = readFileSync(path, 'utf-8')
@@ -13,7 +13,7 @@ function readJsonSafe(path: string) {
 export type ValidationRuntimePaths = {
   qualityGatesPath: string
   reportPath: string
-  runtimeKind: 'aegis' | 'legacy-agent'
+  runtimeKind: AegisRuntimeKind
 }
 
 export function getValidationRuntimePaths(root: string): ValidationRuntimePaths {
@@ -26,9 +26,10 @@ export function getValidationRuntimePaths(root: string): ValidationRuntimePaths 
     }
   }
 
+  const legacy = getLegacyAgentRuntimePaths(root)
   return {
-    qualityGatesPath: resolve(root, '.agent/QUALITY_GATES.json'),
-    reportPath: resolve(root, '.agent/VALIDATION_REPORT.md'),
+    qualityGatesPath: legacy.qualityGates,
+    reportPath: legacy.validationReport,
     runtimeKind: 'legacy-agent'
   }
 }

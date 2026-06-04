@@ -10,20 +10,20 @@
 
 ## Current Task
 
-`20260603-python-docs-aegis`
+`20260604-legacy-agent-compat-audit`
 
 ## Current Task Title
 
-Migrate Python onboarding docs to Aegis.
+Audit and centralize legacy `.agent` compatibility.
 
 ## Last Result
 
-python-docs-aegis-complete
+legacy-compat-audit-complete
 
 ## Next Action
 
-Commit the completed Python docs migration phase, then record the result in GitHub issue #18.
+Commit the completed legacy compatibility audit phase, then record the result in GitHub issue #19.
 
 ## Risks
 
-- None recorded.
+- Dropping legacy fallback behavior requires a separate compatibility-release decision.

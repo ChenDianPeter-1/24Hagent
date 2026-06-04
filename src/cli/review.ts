@@ -4,13 +4,13 @@ import { buildReviewPrompt } from '../core/review/prompt-builder.js'
 import { buildReviewEvidence } from '../core/review/evidence-builder.js'
 import { renderReviewMarkdown } from '../core/review/result-renderer.js'
 import { parseCodexJsonlToReviewResult } from '../core/schemas/review-result.js'
-import { getAegisRuntimePaths, routeCodexReviewResult } from '../core/aegis-runtime/index.js'
+import { getAegisRuntimePaths, getLegacyAgentRuntimePaths, routeCodexReviewResult, type AegisRuntimeKind } from '../core/aegis-runtime/index.js'
 
 export type ReviewRuntimePaths = {
   promptPath: string
   rawReviewPath: string
   renderedReviewPath: string
-  runtimeKind: 'aegis' | 'legacy-agent'
+  runtimeKind: AegisRuntimeKind
 }
 
 export function getReviewRuntimePaths(root: string): ReviewRuntimePaths {
@@ -24,10 +24,11 @@ export function getReviewRuntimePaths(root: string): ReviewRuntimePaths {
     }
   }
 
+  const legacy = getLegacyAgentRuntimePaths(root)
   return {
-    promptPath: resolve(root, '.agent/codex-review-prompt.md'),
-    rawReviewPath: resolve(root, '.agent/codex-review-raw.jsonl'),
-    renderedReviewPath: resolve(root, '.agent/CODEX_REVIEW.md'),
+    promptPath: legacy.codexReviewPrompt,
+    rawReviewPath: legacy.codexReviewRaw,
+    renderedReviewPath: legacy.codexReview,
     runtimeKind: 'legacy-agent'
   }
 }

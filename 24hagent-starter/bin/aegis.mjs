@@ -97,6 +97,34 @@ var init_paths = __esm({
   }
 });
 
+// src/core/aegis-runtime/legacy-compat.ts
+import { resolve as resolve2 } from "node:path";
+function getLegacyAgentRuntimePaths(root) {
+  const legacyDir = resolve2(root, LEGACY_AGENT_DIR);
+  return {
+    currentTask: resolve2(legacyDir, "CURRENT_TASK.md"),
+    workReport: resolve2(legacyDir, "WORK_REPORT.md"),
+    superpowerSummary: resolve2(legacyDir, "SUPERPOWER_SUMMARY.md"),
+    disciplineReport: resolve2(legacyDir, "DISCIPLINE_REPORT.md"),
+    validationReport: resolve2(legacyDir, "VALIDATION_REPORT.md"),
+    qualityGates: resolve2(legacyDir, "QUALITY_GATES.json"),
+    qualityReadinessReport: resolve2(legacyDir, "QUALITY_READINESS_REPORT.md"),
+    taskQualityReport: resolve2(legacyDir, "TASK_QUALITY_REPORT.md"),
+    codexRubric: resolve2(legacyDir, "CODEX_REVIEW_RUBRIC.md"),
+    codexReviewPrompt: resolve2(legacyDir, "codex-review-prompt.md"),
+    codexReviewRaw: resolve2(legacyDir, "codex-review-raw.jsonl"),
+    codexReview: resolve2(legacyDir, "CODEX_REVIEW.md"),
+    runState: resolve2(legacyDir, "RUN_STATE.json")
+  };
+}
+var LEGACY_AGENT_DIR;
+var init_legacy_compat = __esm({
+  "src/core/aegis-runtime/legacy-compat.ts"() {
+    "use strict";
+    LEGACY_AGENT_DIR = ".agent";
+  }
+});
+
 // node_modules/zod/v3/helpers/util.js
 var util, objectUtil, ZodParsedType, getParsedType;
 var init_util = __esm({
@@ -5547,7 +5575,6 @@ var init_task_quality_gate = __esm({
 // src/core/review/evidence-builder.ts
 import { existsSync as existsSync5, readFileSync as readFileSync5 } from "node:fs";
 import { execFileSync } from "node:child_process";
-import { resolve as resolve2 } from "node:path";
 function getReviewEvidencePaths(root) {
   const aegis = getAegisRuntimePaths(root);
   if (existsSync5(aegis.currentTask)) {
@@ -5561,13 +5588,14 @@ function getReviewEvidencePaths(root) {
       runtimeKind: "aegis"
     };
   }
+  const legacy = getLegacyAgentRuntimePaths(root);
   return {
-    currentTaskPath: resolve2(root, ".agent/CURRENT_TASK.md"),
-    workReportPath: resolve2(root, ".agent/WORK_REPORT.md"),
-    superpowerSummaryPath: resolve2(root, ".agent/SUPERPOWER_SUMMARY.md"),
-    disciplineReportPath: resolve2(root, ".agent/DISCIPLINE_REPORT.md"),
-    validationReportPath: resolve2(root, ".agent/VALIDATION_REPORT.md"),
-    rubricPath: resolve2(root, ".agent/CODEX_REVIEW_RUBRIC.md"),
+    currentTaskPath: legacy.currentTask,
+    workReportPath: legacy.workReport,
+    superpowerSummaryPath: legacy.superpowerSummary,
+    disciplineReportPath: legacy.disciplineReport,
+    validationReportPath: legacy.validationReport,
+    rubricPath: legacy.codexRubric,
     runtimeKind: "legacy-agent"
   };
 }
@@ -6547,6 +6575,7 @@ var init_aegis_runtime = __esm({
   "src/core/aegis-runtime/index.ts"() {
     "use strict";
     init_paths();
+    init_legacy_compat();
     init_run_state();
     init_navigation();
     init_navigation_refresh();
@@ -6693,8 +6722,9 @@ function runAegisStatus(root) {
   console.log(renderStatus(input));
 }
 function runLegacyStatus(root) {
-  const rs = parseRunStateJson(readFileSync11(resolve5(root, ".agent/RUN_STATE.json"), "utf-8"));
-  const tp = parseCurrentTaskMarkdown(readFileSync11(resolve5(root, ".agent/CURRENT_TASK.md"), "utf-8"));
+  const legacy = getLegacyAgentRuntimePaths(root);
+  const rs = parseRunStateJson(readFileSync11(legacy.runState, "utf-8"));
+  const tp = parseCurrentTaskMarkdown(readFileSync11(legacy.currentTask, "utf-8"));
   console.log(formatStatus(rs, tp));
 }
 function runStatus(root) {
@@ -7000,9 +7030,10 @@ function getReadinessRuntimePaths(root) {
       runtimeKind: "aegis"
     };
   }
+  const legacy = getLegacyAgentRuntimePaths(root);
   return {
-    qualityGatesPath: resolve6(root, ".agent/QUALITY_GATES.json"),
-    reportPath: resolve6(root, ".agent/QUALITY_READINESS_REPORT.md"),
+    qualityGatesPath: legacy.qualityGates,
+    reportPath: legacy.qualityReadinessReport,
     runtimeKind: "legacy-agent"
   };
 }
@@ -7096,9 +7127,10 @@ function getValidationRuntimePaths(root) {
       runtimeKind: "aegis"
     };
   }
+  const legacy = getLegacyAgentRuntimePaths(root);
   return {
-    qualityGatesPath: resolve7(root, ".agent/QUALITY_GATES.json"),
-    reportPath: resolve7(root, ".agent/VALIDATION_REPORT.md"),
+    qualityGatesPath: legacy.qualityGates,
+    reportPath: legacy.validationReport,
     runtimeKind: "legacy-agent"
   };
 }
@@ -7158,9 +7190,10 @@ function getTaskReviewRuntimePaths(root) {
       runtimeKind: "aegis"
     };
   }
+  const legacy = getLegacyAgentRuntimePaths(root);
   return {
-    currentTaskPath: resolve8(root, ".agent/CURRENT_TASK.md"),
-    reportPath: resolve8(root, ".agent/TASK_QUALITY_REPORT.md"),
+    currentTaskPath: legacy.currentTask,
+    reportPath: legacy.taskQualityReport,
     runtimeKind: "legacy-agent"
   };
 }
@@ -14794,10 +14827,11 @@ function getReviewRuntimePaths(root) {
       runtimeKind: "aegis"
     };
   }
+  const legacy = getLegacyAgentRuntimePaths(root);
   return {
-    promptPath: resolve10(root, ".agent/codex-review-prompt.md"),
-    rawReviewPath: resolve10(root, ".agent/codex-review-raw.jsonl"),
-    renderedReviewPath: resolve10(root, ".agent/CODEX_REVIEW.md"),
+    promptPath: legacy.codexReviewPrompt,
+    rawReviewPath: legacy.codexReviewRaw,
+    renderedReviewPath: legacy.codexReview,
     runtimeKind: "legacy-agent"
   };
 }

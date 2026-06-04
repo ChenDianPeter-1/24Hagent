@@ -1,4 +1,5 @@
 export * from './paths.js'
+export * from './legacy-compat.js'
 export * from './run-state.js'
 export * from './navigation.js'
 export * from './navigation-refresh.js'

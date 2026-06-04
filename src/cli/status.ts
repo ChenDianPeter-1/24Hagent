@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import {
   getAegisRuntimePaths,
+  getLegacyAgentRuntimePaths,
   parseAegisRunStateJson,
   renderProjectProgress,
   renderStatus,
@@ -65,8 +66,9 @@ export function runAegisStatus(root: string): void {
 }
 
 export function runLegacyStatus(root: string): void {
-  const rs = parseRunStateJson(readFileSync(resolve(root, '.agent/RUN_STATE.json'), 'utf-8'))
-  const tp = parseCurrentTaskMarkdown(readFileSync(resolve(root, '.agent/CURRENT_TASK.md'), 'utf-8'))
+  const legacy = getLegacyAgentRuntimePaths(root)
+  const rs = parseRunStateJson(readFileSync(legacy.runState, 'utf-8'))
+  const tp = parseCurrentTaskMarkdown(readFileSync(legacy.currentTask, 'utf-8'))
   console.log(formatStatus(rs, tp))
 }
 

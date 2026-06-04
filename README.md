@@ -96,7 +96,7 @@ Implemented slices include:
 - completed-round archival under `.aegis/archive/<task-id>/`
 - bundled starter onboarding migrated to Aegis / `.aegis`
 
-The strongest remaining migration work is now deeper verification and cleanup: add a real starter smoke test, audit `.agent` compatibility fallback paths, and decide whether old Python onboarding docs should be rewritten or archived.
+The strongest remaining migration work is now deeper verification and cleanup: shorten the Claude Code repo rules, refresh the architecture map, and decide when the compatibility release can drop the old `24h` alias and `.agent/` fallback.
 
 ## Verification
 
@@ -120,5 +120,6 @@ git diff --check
 - `docs/AEGIS_RUNTIME_SPEC.md`
 - `docs/AEGIS_MVP_ROADMAP.md`
 - `docs/AEGIS_CLAUDE_CODE_CONTRACT.md`
+- `docs/AEGIS_LEGACY_COMPATIBILITY.md`
 - `docs/HANDOFF.md`
 - `docs/HOW_TO_NEW_PROJECT.md`

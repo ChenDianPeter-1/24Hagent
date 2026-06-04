@@ -1,6 +1,6 @@
 # Aegis Handoff
 
-Updated: 2026-06-03
+Updated: 2026-06-04
 
 ## Current State
 
@@ -21,10 +21,11 @@ Aegis is a non-interactive state controller and delivery gate hosted by Claude C
 ## Recent Commits
 
 - `4213e6a feat: migrate starter onboarding to Aegis`
+- `b3ab9e2 docs: migrate Python onboarding to Aegis`
+- `a18f0c2 test: smoke test Aegis starter setup`
+- `0a572db docs: sync starter migration status`
 - `d7e6a1d docs: migrate public docs to Aegis`
 - `bb89797 feat: archive completed Aegis rounds`
-- `c100cd2 feat: add Aegis progression modes`
-- `880a6fd feat: enforce Aegis safety boundaries`
 
 ## Implemented Runtime
 
@@ -61,6 +62,11 @@ aegis commit:suggest
 
 `24h` exists only as a compatibility alias. New work should use `aegis`.
 
+The old `.agent/` runtime is retained only as a compatibility fallback for
+pre-Aegis projects. Current fallback paths are centralized in
+`src/core/aegis-runtime/legacy-compat.ts` and documented in
+`docs/AEGIS_LEGACY_COMPATIBILITY.md`.
+
 Bundled starter state:
 
 - `24hagent-starter/` is still the folder name for distribution compatibility.
@@ -88,10 +94,10 @@ Known strict-gate behavior:
 
 Do not mark the rewrite complete until these are audited or implemented:
 
-- Add a real starter smoke test that runs setup in a temporary target project and verifies the produced `.aegis/` layout.
-- Audit remaining `.agent` compatibility fallback paths and decide which are required versus removable migration residue.
-- Decide whether legacy Python quickstart/test docs should be rewritten or archived as historical material.
 - Strengthen blueprint revision behavior beyond the current start/summary/confirm slice.
+- Shorten and refocus the root `CLAUDE.md` so Claude Code sees the Aegis hosting contract before legacy project-local rules.
+- Refresh the architecture map around Aegis roles, runtime state, compatibility surfaces, and remaining migration decisions.
+- Decide in a dedicated compatibility-release phase whether to drop the old `24h` alias and `.agent/` fallback.
 - Audit README/docs/package/starter search results for old product mind before final completion.
 
 ## Boundaries

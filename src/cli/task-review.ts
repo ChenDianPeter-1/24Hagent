@@ -1,12 +1,12 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { renderTaskQualityReview, reviewCurrentTaskMarkdown } from '../core/quality/task-quality-gate.js'
-import { getAegisRuntimePaths } from '../core/aegis-runtime/index.js'
+import { getAegisRuntimePaths, getLegacyAgentRuntimePaths, type AegisRuntimeKind } from '../core/aegis-runtime/index.js'
 
 export type TaskReviewRuntimePaths = {
   currentTaskPath: string
   reportPath: string
-  runtimeKind: 'aegis' | 'legacy-agent'
+  runtimeKind: AegisRuntimeKind
 }
 
 export function getTaskReviewRuntimePaths(root: string): TaskReviewRuntimePaths {
@@ -19,9 +19,10 @@ export function getTaskReviewRuntimePaths(root: string): TaskReviewRuntimePaths 
     }
   }
 
+  const legacy = getLegacyAgentRuntimePaths(root)
   return {
-    currentTaskPath: resolve(root, '.agent/CURRENT_TASK.md'),
-    reportPath: resolve(root, '.agent/TASK_QUALITY_REPORT.md'),
+    currentTaskPath: legacy.currentTask,
+    reportPath: legacy.taskQualityReport,
     runtimeKind: 'legacy-agent'
   }
 }

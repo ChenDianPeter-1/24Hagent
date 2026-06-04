@@ -1,8 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
-import { resolve } from 'node:path'
 import { parseCurrentTaskMarkdown, type TaskPackage } from '../schemas/task-package.js'
-import { getAegisRuntimePaths } from '../aegis-runtime/index.js'
+import { getAegisRuntimePaths, getLegacyAgentRuntimePaths, type AegisRuntimeKind } from '../aegis-runtime/index.js'
 
 export interface ReviewEvidence {
   task: TaskPackage
@@ -28,7 +27,7 @@ export interface ReviewEvidencePaths {
   disciplineReportPath: string
   validationReportPath: string
   rubricPath: string
-  runtimeKind: 'aegis' | 'legacy-agent'
+  runtimeKind: AegisRuntimeKind
 }
 
 export function getReviewEvidencePaths(root: string): ReviewEvidencePaths {
@@ -45,13 +44,14 @@ export function getReviewEvidencePaths(root: string): ReviewEvidencePaths {
     }
   }
 
+  const legacy = getLegacyAgentRuntimePaths(root)
   return {
-    currentTaskPath: resolve(root, '.agent/CURRENT_TASK.md'),
-    workReportPath: resolve(root, '.agent/WORK_REPORT.md'),
-    superpowerSummaryPath: resolve(root, '.agent/SUPERPOWER_SUMMARY.md'),
-    disciplineReportPath: resolve(root, '.agent/DISCIPLINE_REPORT.md'),
-    validationReportPath: resolve(root, '.agent/VALIDATION_REPORT.md'),
-    rubricPath: resolve(root, '.agent/CODEX_REVIEW_RUBRIC.md'),
+    currentTaskPath: legacy.currentTask,
+    workReportPath: legacy.workReport,
+    superpowerSummaryPath: legacy.superpowerSummary,
+    disciplineReportPath: legacy.disciplineReport,
+    validationReportPath: legacy.validationReport,
+    rubricPath: legacy.codexRubric,
     runtimeKind: 'legacy-agent'
   }
 }
