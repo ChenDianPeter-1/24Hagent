@@ -1,4 +1,4 @@
-# Aegis runtime
+﻿# Aegis runtime
 .aegis/archive/
 .aegis/current/codex-review-prompt.md
 .aegis/current/codex-review.jsonl
@@ -46,8 +46,8 @@ docs/superpowers/specs/2026-05-30-24hagent-risk-remediation-design.md
 coverage/
 dist/
 
-# Bundled starter CLI — committed for zero-install distribution
-!24hagent-starter/bin/
+# Bundled starter CLI - committed for zero-install distribution
+!aegis-starter/bin/
 
 # Personal reference (not project code)
 docs/GIT_GUIDE.md
