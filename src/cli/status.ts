@@ -1,7 +1,14 @@
-import { readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
-import { parseRunStateJson, type RunState } from '../core/schemas/run-state.js'
-import { parseCurrentTaskMarkdown, type TaskPackage } from '../core/schemas/task-package.js'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import {
+  getAegisRuntimePaths,
+  parseAegisRunStateJson,
+  renderProjectProgress,
+  renderStatus,
+  renderWorkInstruction,
+  type AegisRunState
+} from '../core/aegis-runtime/index.js'
+import type { RunState } from '../core/schemas/run-state.js'
+import type { TaskPackage } from '../core/schemas/task-package.js'
 
 /** Pure: strictly 3 lines. No fs, no process, no console. */
 export function formatStatus(rs: RunState, tp: TaskPackage): string {
@@ -12,9 +19,51 @@ export function formatStatus(rs: RunState, tp: TaskPackage): string {
   ].join('\n')
 }
 
-/** Read .agent/ files and print status. Exits 1 on failure. */
+function section(md: string, heading: string): string {
+  const re = new RegExp(`## ${heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\n+([\\s\\S]*?)(?=\\n## |$)`)
+  return (md.match(re)?.[1] ?? '').trim()
+}
+
+function firstNonEmptyLine(text: string): string | undefined {
+  return text.split('\n').map((line) => line.trim()).find(Boolean)
+}
+
+export function formatAegisStatus(state: AegisRunState, currentTaskMd = '', projectBlueprintMd = ''): string {
+  const currentTaskTitle = firstNonEmptyLine(section(currentTaskMd, 'Title'))
+  const projectGoal = firstNonEmptyLine(section(projectBlueprintMd, 'Product Goal'))
+  return renderStatus({
+    state,
+    projectGoal,
+    currentTaskTitle,
+    nextAction: state.phase === 'waiting-for-construction'
+      ? 'Claude Code should read `.aegis/current/work-instruction.md` and perform the scoped work.'
+      : 'Run `aegis` to continue or refresh the current state.'
+  })
+}
+
+export function runAegisStatus(root: string): void {
+  const paths = getAegisRuntimePaths(root)
+  const state = parseAegisRunStateJson(readFileSync(paths.runState, 'utf-8'))
+  const currentTaskMd = existsSync(paths.currentTask) ? readFileSync(paths.currentTask, 'utf-8') : ''
+  const projectBlueprintMd = existsSync(paths.projectBlueprint) ? readFileSync(paths.projectBlueprint, 'utf-8') : ''
+  const currentTaskTitle = firstNonEmptyLine(section(currentTaskMd, 'Title'))
+  const projectGoal = firstNonEmptyLine(section(projectBlueprintMd, 'Product Goal'))
+  const nextAction = state.phase === 'waiting-for-construction'
+    ? 'Claude Code should read `.aegis/current/work-instruction.md` and perform the scoped work.'
+    : 'Run `aegis` to continue or refresh the current state.'
+
+  const input = { state, projectGoal, currentTaskTitle, nextAction }
+
+  mkdirSync(paths.currentDir, { recursive: true })
+  mkdirSync(paths.blueprintDir, { recursive: true })
+  writeFileSync(paths.status, renderStatus(input), 'utf-8')
+  writeFileSync(paths.workInstruction, renderWorkInstruction(input), 'utf-8')
+  writeFileSync(paths.projectProgress, renderProjectProgress(input), 'utf-8')
+
+  console.log(renderStatus(input))
+}
+
+/** Read and refresh Aegis runtime status. */
 export function runStatus(root: string): void {
-  const rs = parseRunStateJson(readFileSync(resolve(root, '.agent/RUN_STATE.json'), 'utf-8'))
-  const tp = parseCurrentTaskMarkdown(readFileSync(resolve(root, '.agent/CURRENT_TASK.md'), 'utf-8'))
-  console.log(formatStatus(rs, tp))
+  runAegisStatus(root)
 }

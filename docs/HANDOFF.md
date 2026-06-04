@@ -1,80 +1,117 @@
-# 24Hagent Handoff
+# Aegis Handoff
 
-更新时间：2026-06-01
+Updated: 2026-06-04
 
-## 项目状态总览
+## Current State
 
-**Sandbox 验证已完成**：24Hagent 在 sandbox/string-utils 上跑通了 PASS 和 NEED_FIX 两条路径，Codex + codegraph 跨模型审查护城河已真实验证。
+Worktree:
 
-**根项目自举持续迭代**：B3 闭环已打通，TypeScript CLI 全部接管 PS1 脚本。审查质量已升级（证据包补全、任务质量门、模块边界护栏）。
+- Path: `D:\AAAOddsAndEnds\PROGRAM\aegis`
+- Branch: `aegis-repositioning`
+- Tracking issue: GitHub issue `#14` in `ChenDianPeter-1/24Hagent`
 
-## 已完成
+Product position:
 
-### Phase A：自举修复
+```text
+Aegis = Superpower discipline + Claude Code construction + Aegis gates + Codex review
+```
 
-- A1：git init + 基线 commit ✓
-- B2-smoke（风险前置）：Codex 首次真实调用 → 3 个真实 bug 修复 ✓
-- A2：E2E 报告路径 bug 修复 ✓
-- A3：PowerShell 5.1 编码乱码修复（UTF-8 无 BOM）✓
-- A4：PROJECT_BLUEPRINT.md 填充真实内容 ✓
-- A5：3 条铁律写入协议 + codegraph 审查条目 ✓
+Aegis is a non-interactive state controller and delivery gate hosted by Claude Code. Claude Code constructs. Codex reviews read-only. Aegis packages evidence, runs gates, routes verdicts, and stops at safety boundaries.
 
-### Phase B：真实闭环验证
+## Recent Commits
 
-- B1：sandbox/string-utils/ 项目建好 ✓
-- B2：Codex 真实调用冒烟 ✓
-- B3：PASS 路径跑通 + NEED_FIX 路径跑通 + codegraph 结构分析生效 ✓
+- `21675a0 refactor: finish Aegis starter shell cleanup`
+- `c0e29df chore: update Aegis starter ignore path`
+- `76a61ac refactor: remove old 24h alias and role wording`
+- `62f8a1e refactor: remove legacy agent runtime fallback`
+- `4879b9f docs: shorten Claude Code instructions for Aegis`
+- `4213e6a feat: migrate starter onboarding to Aegis`
 
-### Phase B3：TypeScript CLI 完整交付
+## Implemented Runtime
 
-- B3-0~B3-5：ReadinessEngine + ValidationEngine + ReviewEngine + CLI 入口 ✓
-- PS1 核心脚本全部由 TS CLI 接管 ✓
-- 极致清洁（30+ 残留文件删除）✓
-- esbuild 打包 CLI 为单文件 ✓
-- npm 全局安装支持 ✓
+Current Aegis runtime surface:
 
-### Starter 升级
+- `.aegis/config/aegis.json`
+- `.aegis/config/quality-gates.json`
+- `.aegis/config/codex-rubric.md`
+- `.aegis/config/claude-code-contract.md`
+- `.aegis/blueprint/project-blueprint.md`
+- `.aegis/blueprint/project-progress.md`
+- `.aegis/current/current-task.md`
+- `.aegis/current/status.md`
+- `.aegis/current/work-instruction.md`
+- `.aegis/current/*-evidence.md`
+- `.aegis/state/run-state.json`
+- `.aegis/archive/<task-id>/`
 
-- Superpower 能力包分发 ✓
-- Start.bat / Start.ps1 一键入口 ✓
-- 接入向导 prompt 重新设计 ✓
+Core commands:
 
-### 审查质量提升
+```bash
+aegis
+aegis contract
+aegis task:next
+aegis task:review
+aegis superpower:scan
+aegis discipline:check
+aegis round:check
+aegis review:prompt
+aegis review:render
+aegis safety:check
+aegis commit:suggest
+```
 
-- 送审证据包补全（evidence-builder + scoped diff + 越界保护）✓
-- 任务质量门上线（task-quality-gate + `24h task:review`）✓
-- 模块边界护栏接入（eslint-plugin-boundaries + 6 层边界规则）✓
+Aegis exposes the `aegis` command. Old `24h` command aliases have been removed from the active product.
 
-## 三条角色边界铁律（已验证生效）
+The old `.agent/` runtime has been removed from active Aegis behavior. Aegis
+uses `.aegis/` as the only runtime root, documented in
+`docs/AEGIS_LEGACY_REMOVAL.md`.
 
-1. 测试归 Claude Code：Worker 按 TDD 写+跑，Orchestrator 独立复跑，Codex 只消费 VALIDATION_REPORT 作证据
-2. Codex 全程只读：`codex exec --sandbox read-only`
-3. acceptance_checks 提前说死：CURRENT_TASK.md 必填字段
+Bundled starter state:
 
-## 核心模块
+- `aegis-starter/` is the bundled starter folder.
+- The starter now teaches Aegis, installs `.claude/skills/aegis-install/`, initializes `.aegis/`, writes `.aegis/current/next-claude-install-prompt.md`, and ships `bin/aegis.mjs`.
+- Old starter PowerShell helpers are thin wrappers around the Aegis CLI.
 
-| 模块 | 位置 | 职责 |
-|------|------|------|
-| CLI 入口 | `src/cli/` | main / readiness / validate / review / task-review / status |
-| 质量引擎 | `src/core/quality/` | ReadinessEngine + ValidationEngine + TaskQualityGate |
-| 审查引擎 | `src/core/review/` | evidence-builder + prompt-builder + result-renderer |
-| Schema | `src/core/schemas/` | task-package / review-result / run-state / evidence-packet |
-| 适配器 | `src/adapters/shell/` | CommandRunner 接口 + RealCommandRunner |
-| 边界配置 | `eslint.config.mjs` | eslint-plugin-boundaries 6 层规则 |
+## Verification Baseline
 
-## 关键命令
+Recent completed phases passed:
 
-| 命令 | 用途 |
-|------|------|
-| `24h readiness` | 就绪检查 |
-| `24h validate` | 本地质量门 |
-| `24h validate:plan` | 预览质量门执行计划 |
-| `24h review:prompt` | 生成 Codex 审查 prompt |
-| `24h review:render` | 渲染审查报告 |
-| `24h task:review` | 执行前任务包质量门 |
+- `npm run typecheck`
+- `npm run build`
+- `npm run lint`
+- `npm test`
+- `node dist\cli\main.js safety:check`
+- `node dist\cli\main.js task:review`
+- `git diff --check`
 
-## 新窗口启动
+Known strict-gate behavior:
 
-1. 读 CLAUDE.md → CLAUDE_ORCHESTRATOR_PROTOCOL.md → docs/HANDOFF.md
-2. 检查 `24h readiness` 或 `npm test`
-3. 选择 START_ORCHESTRATOR.md 中合适的启动模式
+- `aegis round:check` can return `NEED_FIX` because configured coverage thresholds are still 100% and measured coverage is below that bar.
+- This is a real local quality-gate failure, not a parser/config false positive.
+
+## Remaining High-Value Work
+
+The Aegis rewrite is complete for the current scoped objective: pure Aegis
+identity, `.aegis/` runtime, Claude Code hosting contract, Superpower
+discipline evidence, Codex read-only review packaging, deterministic routing,
+safety boundaries, and Aegis starter onboarding.
+
+Future enhancements should be tracked as new work, not blockers to this
+rewrite:
+
+- make blueprint revision richer than the current start/summary/confirm slice
+- add more project-type starter profiles beyond the current Node/Python/unknown detection
+- improve coverage thresholds or test policy for projects where 100% coverage is too strict
+
+## Boundaries
+
+Aegis must not:
+
+- launch Claude Code
+- execute Codex
+- commit or push
+- merge, rebase, reset, or rewrite Git history
+- publish, release, deploy, or Docker push
+- hide user decisions inside terminal prompts
+
+When a human decision is needed, Aegis writes `decision-request.md` or `human-handoff.md`; Claude Code asks the user.

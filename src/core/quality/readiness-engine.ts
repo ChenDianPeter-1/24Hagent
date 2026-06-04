@@ -194,10 +194,12 @@ export function compareGates(tc: ToolchainInfo, gateConfig: Record<string,{comma
   return order.filter(g => gateConfig[g]?.enabled).map(g => {
     const cur = gateConfig[g].command
     const sug = suggest[g]
+    const coverageMatches = g === 'coverage' && tc.coverageProfile === 'vitest' && /\bvitest\s+run\b/.test(cur) && /--coverage\b/.test(cur)
     const match = !sug ? 'MISSING_TOOL'
       : cur === sug ? 'MATCH'
       // Only normalize npm test ↔ npm run test (not all npm shortcuts)
       : g === 'test' && (cur === 'npm test' && sug === 'npm run test' || cur === 'npm run test' && sug === 'npm test') ? 'MATCH'
+      : coverageMatches ? 'MATCH'
       : 'MISMATCH'
     return { gate: label[g], currentCommand: cur, suggestedCommand: sug ?? '(needs config)', match }
   })

@@ -1,10 +1,10 @@
 {
-  "name": "24hagent",
+  "name": "aegis",
   "version": "1.0.0",
   "private": true,
   "type": "module",
   "bin": {
-    "24h": "dist/cli/main.js"
+    "aegis": "dist/cli/main.js"
   },
   "files": [
     "dist/",

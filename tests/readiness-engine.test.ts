@@ -76,6 +76,23 @@ describe('classifyReadiness', () => {
     expect(r.verdict).toBe('NEEDS_CONFIG')
   })
 
+  it('accepts explicit Vitest coverage commands that emit JSON summary', () => {
+    const pkg = read('fixtures/ps1-golden/readiness/package.json')
+    const gates = {
+      test: { command: 'npm test', enabled: true },
+      lint: { command: 'npm run lint', enabled: true },
+      typecheck: { command: 'npm run typecheck', enabled: true },
+      coverage: {
+        command: 'npx vitest run --coverage --coverage.reporter=json-summary && node -e "process.stdout.write(require(\'fs\').readFileSync(\'coverage/coverage-summary.json\',\'utf8\'))"',
+        enabled: true
+      }
+    }
+    const tc = detectToolchain(pkg)
+    const audit = compareGates(tc, gates)
+    expect(audit.find(item => item.gate === 'coverage')?.match).toBe('MATCH')
+    expect(classifyReadiness(audit, tc).verdict).toBe('READY')
+  })
+
   it('BLOCKED for placeholder project', () => {
     const pkg = read('fixtures/ps1-golden/readiness/blocked-package.json')
     const gates = read('fixtures/ps1-golden/readiness/blocked-gates.json')

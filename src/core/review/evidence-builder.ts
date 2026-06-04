@@ -1,11 +1,13 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { execFileSync } from 'node:child_process'
-import { resolve } from 'node:path'
 import { parseCurrentTaskMarkdown, type TaskPackage } from '../schemas/task-package.js'
+import { getAegisRuntimePaths } from '../aegis-runtime/index.js'
 
 export interface ReviewEvidence {
   task: TaskPackage
   workReport: string
+  superpowerSummary: string
+  disciplineReport: string
   validationReport: string
   rubric: string
   changedFiles: string[]
@@ -15,11 +17,34 @@ export interface ReviewEvidence {
 export interface ReviewEvidenceOptions {
   maxChangedFiles?: number
   maxDiffLines?: number
+  paths?: ReviewEvidencePaths
 }
 
-function readIfExists(root: string, path: string): string {
-  const fullPath = resolve(root, path)
-  return existsSync(fullPath) ? readFileSync(fullPath, 'utf-8') : ''
+export interface ReviewEvidencePaths {
+  currentTaskPath: string
+  workReportPath: string
+  superpowerSummaryPath: string
+  disciplineReportPath: string
+  validationReportPath: string
+  rubricPath: string
+  runtimeKind: 'aegis'
+}
+
+export function getReviewEvidencePaths(root: string): ReviewEvidencePaths {
+  const aegis = getAegisRuntimePaths(root)
+  return {
+    currentTaskPath: aegis.currentTask,
+    workReportPath: aegis.roundSummary,
+    superpowerSummaryPath: aegis.superpowerSummary,
+    disciplineReportPath: aegis.disciplineReport,
+    validationReportPath: aegis.validationReport,
+    rubricPath: aegis.codexRubric,
+    runtimeKind: 'aegis'
+  }
+}
+
+function readIfExists(path: string): string {
+  return existsSync(path) ? readFileSync(path, 'utf-8') : ''
 }
 
 function runGit(root: string, args: string[]): string {
@@ -57,7 +82,8 @@ function listChangedFiles(root: string): string[] {
 export function buildReviewEvidence(root: string, options: ReviewEvidenceOptions = {}): ReviewEvidence {
   const maxChangedFiles = options.maxChangedFiles ?? 20
   const maxDiffLines = options.maxDiffLines ?? 1000
-  const taskMd = readFileSync(resolve(root, '.agent/CURRENT_TASK.md'), 'utf-8')
+  const paths = options.paths ?? getReviewEvidencePaths(root)
+  const taskMd = readFileSync(paths.currentTaskPath, 'utf-8')
   const task = parseCurrentTaskMarkdown(taskMd)
   const fileScope = task.file_scope.map(normalizePath)
   const changedFiles = listChangedFiles(root)
@@ -82,9 +108,11 @@ export function buildReviewEvidence(root: string, options: ReviewEvidenceOptions
 
   return {
     task,
-    workReport: readIfExists(root, '.agent/WORK_REPORT.md'),
-    validationReport: readIfExists(root, '.agent/VALIDATION_REPORT.md'),
-    rubric: readIfExists(root, '.agent/CODEX_REVIEW_RUBRIC.md'),
+    workReport: readIfExists(paths.workReportPath),
+    superpowerSummary: readIfExists(paths.superpowerSummaryPath),
+    disciplineReport: readIfExists(paths.disciplineReportPath),
+    validationReport: readIfExists(paths.validationReportPath),
+    rubric: readIfExists(paths.rubricPath),
     changedFiles,
     scopedDiff
   }

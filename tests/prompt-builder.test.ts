@@ -16,6 +16,8 @@ const base: ReviewEvidence = {
     stop_rule: 'Stop before deploy.'
   },
   workReport: 'Done.',
+  superpowerSummary: 'Superpower sources recorded.',
+  disciplineReport: 'Verdict: PASS',
   validationReport: 'Tests passed.',
   changedFiles: ['src/x.ts'],
   scopedDiff: 'diff --git a/x.ts b/x.ts',
@@ -40,6 +42,10 @@ describe('buildReviewPrompt', () => {
     expect(p).toContain('## Stop Rule')
     expect(p).toContain('Stop before deploy.')
     expect(p).toContain('## Evidence')
+    expect(p).toContain('### Superpower Source Summary')
+    expect(p).toContain('Superpower sources recorded.')
+    expect(p).toContain('### Superpower Discipline Report')
+    expect(p).toContain('Verdict: PASS')
     expect(p).toContain('### Validation Report')
     expect(p).toContain('Tests passed.')
     expect(p).toContain('### Changed Files Summary')
@@ -61,6 +67,8 @@ describe('buildReviewPrompt', () => {
         stop_rule: ''
       },
       workReport: '',
+      superpowerSummary: '',
+      disciplineReport: '',
       validationReport: '',
       changedFiles: [],
       scopedDiff: '',
@@ -72,6 +80,8 @@ describe('buildReviewPrompt', () => {
     expect(p).toContain('(no acceptance checks provided)')
     expect(p).toContain('(no stop rule provided)')
     expect(p).toContain('(no validation report provided)')
+    expect(p).toContain('(no Superpower source summary provided)')
+    expect(p).toContain('(no Superpower discipline report provided)')
     expect(p).toContain('(no changed files)')
     expect(p).toContain('(no uncommitted changes)')
     expect(p).toContain('(no rubric provided)')

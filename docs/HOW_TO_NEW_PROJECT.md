@@ -1,78 +1,191 @@
-# 如何用在新项目 —— 一页纸指南
+# Use Aegis In A New Project
 
-把 24Hagent 用到你自己的项目，只需 3 步。
+This guide describes the current Aegis-first workflow. The bundled starter has been migrated to Aegis onboarding and is covered by the starter layout and setup smoke tests.
 
-## 1. 复制 starter 到你的项目
+## Prerequisites
 
+- A git repository for the target project
+- Node.js 20+
+- Claude Code available in the working environment
+- Optional but recommended: Codex CLI configured for read-only review
+- Optional but recommended: CodeGraph configured for structural review
+- Superpower source files available to Claude Code
+
+For this worktree, Superpower is expected at:
+
+```text
+D:\AAAOddsAndEnds\PROGRAM\superpowers
 ```
-你的项目/
-  24hagent-starter/    ← 从 24Hagent 仓库复制这个目录过来
-    Start.bat          ← 双击启动
-    Start.ps1
-    setup.ps1
-    setup.sh
-    bin/24hagent.mjs   ← 核心工具
-    ...
+
+## Start
+
+With the bundled starter:
+
+```text
+Copy aegis-starter/ into the target project.
+Run aegis-starter/Start.ps1 or double-click Start.bat on Windows.
 ```
 
-## 2. 双击 Start.bat
+The starter installs `aegis-install`, initializes `.aegis/`, and generates:
 
-starter 会自动：
-- 检测项目技术栈（Node / Python / 空项目）
-- 生成 `.agent/` 运行态目录
-- 初始化 `QUALITY_GATES.json`、`PROJECT_BLUEPRINT.md` 模板
-- 打开 Claude Code 进入接入向导（或输出提示词让你手动粘贴）
-
-Claude Code 接入向导会：
-- 只读项目，不改业务代码
-- 问你项目目标、当前任务、技术栈、边界
-- 生成 `.agent/PROJECT_BLUEPRINT.md`、`.agent/CURRENT_GOAL.md`
-- 确认后才进入编排循环
-
-## 3. 填蓝图 + 配质量门
-
-接入向导帮你生成了模板，你需要确认/修改：
-
-- `.agent/PROJECT_BLUEPRINT.md` — 项目目标、范围、禁止项
-- `.agent/QUALITY_GATES.json` — 质量门命令（test/lint/typecheck/coverage）
-- `.agent/CURRENT_GOAL.md` — 当前阶段目标
-
-然后启动编排循环，Claude Code 会按协议自动运行。
-
-## 前置条件
-
-- [ ] Node.js 20+（starter 的 24hagent.mjs 需要 Node 运行）
-- [ ] 项目是 git 仓库
-- [ ] 已安装 Claude Code CLI（`claude` 命令）
-- [ ] 如需异模型审查：已安装 `codex-cli`（`codex --version` → 0.134+）
-- [ ] 如需结构化分析：`~/.codex/config.toml` 已配置 codegraph MCP（可选但推荐）
-
-## 质量门默认配置
-
-| Gate | 命令 | 阈值 |
-|------|------|------|
-| test | `npm test` | exit 0 |
-| lint | `npx eslint src/` | exit 0 |
-| typecheck | `npm run typecheck` | exit 0 |
-| coverage | `npm run coverage` | lines 100%, branches 100%, functions 100%, statements 100% |
-
-如果是 Python 项目，改为 `pytest`、`ruff`、`mypy`、`coverage.py`。
-如果不需要某个门，把 `enabled` 设为 `false`。
-如果要自定义阈值，改 `threshold` 字段。
-
-## 三条铁律
-
-1. 测试归 Claude Code，Codex 永不跑测试
-2. Codex 全程只读（`--sandbox read-only`）
-3. 要跑哪些测试在 `CURRENT_TASK.md` 的 `acceptance_checks` 字段提前说死
-
-## 编排循环
-
+```text
+.aegis/current/next-claude-install-prompt.md
 ```
-选任务 → 写 CURRENT_TASK.md（含 acceptance_checks）
-  → Worker TDD 实现 → 写 WORK_REPORT.md
-  → Orchestrator 独立复跑质量门 → 写 VALIDATION_REPORT.md
-  → Codex 审查（读 diff + codegraph 查结构）→ 写 CODEX_REVIEW.md
-  → PASS 继续 / NEED_FIX 返修（最多 2 次）/ NEED_HUMAN 停机
-  → git commit
+
+Inside Claude Code, ask:
+
+```text
+Use Aegis to start this project. My goal is ...
 ```
+
+Claude Code should then run:
+
+```bash
+aegis
+```
+
+Aegis refreshes:
+
+```text
+.aegis/current/status.md
+.aegis/current/work-instruction.md
+.aegis/blueprint/project-progress.md
+```
+
+Claude Code reads those files and performs only the next instructed step.
+
+## Blueprint Flow
+
+For a new project, Claude Code should use Superpower brainstorming and Aegis blueprint commands:
+
+```bash
+aegis blueprint:start
+```
+
+Claude Code drafts or revises `.aegis/blueprint/project-blueprint.draft.md` using Superpower discipline.
+
+Then:
+
+```bash
+aegis blueprint:summary
+```
+
+Aegis writes `.aegis/current/decision-request.md`. Claude Code asks the user to confirm or revise the blueprint.
+
+After confirmation:
+
+```bash
+aegis blueprint:confirm
+```
+
+Aegis promotes the draft to `.aegis/blueprint/project-blueprint.md`.
+
+## Task Flow
+
+Generate the next bounded task:
+
+```bash
+aegis task:next
+aegis task:review
+```
+
+The official current task is:
+
+```text
+.aegis/current/current-task.md
+```
+
+Claude Code must stay inside the task file scope, leave discipline evidence, and avoid expanding scope without human confirmation.
+
+## Construction And Evidence
+
+Aegis does not edit product code. When construction is needed, Aegis writes:
+
+```text
+.aegis/current/work-instruction.md
+```
+
+Claude Code performs the work and leaves evidence:
+
+```text
+.aegis/current/planning-evidence.md
+.aegis/current/tdd-evidence.md
+.aegis/current/debugging-evidence.md
+.aegis/current/verification-evidence.md
+.aegis/current/review-evidence.md
+```
+
+Required evidence depends on the task type. Feature work requires TDD or test-first evidence. Bug-fix work requires systematic debugging evidence. Planning, verification, and review evidence are required for completed construction rounds.
+
+## Gates And Review
+
+Run the current-round gate:
+
+```bash
+aegis round:check
+```
+
+The gate order is:
+
+```text
+safety -> task-quality -> superpower-discipline -> local-validation -> codex-prompt-readiness
+```
+
+If prerequisites pass, Aegis writes:
+
+```text
+.aegis/current/codex-review-prompt.md
+```
+
+Claude Code asks Codex for read-only review and saves the raw JSONL where Aegis expects it. Then:
+
+```bash
+aegis review:render
+aegis
+```
+
+Aegis routes the result:
+
+- `PASS`: archive the round and prepare continuation
+- `NEED_FIX`: generate bounded repair instructions
+- `NEED_HUMAN`: write human handoff and stop
+
+## Modes
+
+Aegis supports:
+
+- `auto`: continue safe deterministic transitions
+- `allow`: lower interruption, still with hard brakes
+- `ask`: stop after meaningful phase boundaries and write `decision-request.md`
+
+The mode is stored in `.aegis/state/run-state.json`.
+
+## Safety
+
+Aegis never executes:
+
+- `git commit`
+- `git push`
+- `git merge`
+- `git rebase`
+- `git reset --hard`
+- branch deletion
+- `npm publish`
+- `docker push`
+- release
+- deploy
+- Git history rewrite
+
+Aegis may render suggestions, but the human controls final Git and release actions outside Aegis.
+
+## Current Starter Status
+
+The bundled starter is now `aegis-starter/`. Its onboarding path is Aegis-first:
+
+- installs `.claude/skills/aegis-install/`
+- initializes `.aegis/config`, `.aegis/current`, `.aegis/blueprint`, and `.aegis/state`
+- writes `.aegis/current/next-claude-install-prompt.md`
+- ships `aegis-starter/bin/aegis.mjs`
+
+The setup smoke test runs the starter in a temporary target project and verifies
+the generated `.aegis/` layout.

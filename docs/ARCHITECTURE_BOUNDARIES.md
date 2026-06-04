@@ -1,6 +1,6 @@
 # Architecture Boundaries
 
-24Hagent uses `eslint-plugin-boundaries` as a lightweight guardrail for AI and human edits. The goal is to catch accidental cross-layer imports during `npm run lint`, without turning the repo into a heavy framework.
+Aegis uses `eslint-plugin-boundaries` as a lightweight guardrail for AI and human edits. The goal is to catch accidental cross-layer imports during `npm run lint`, without turning the repo into a heavy framework.
 
 ## Layers
 

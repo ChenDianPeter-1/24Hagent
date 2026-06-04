@@ -33,6 +33,13 @@ describe('parseCoverageFromRawOutput', () => {
     expect(c.branches).toBe(90)
   })
 
+  it('parses vitest JSON summary when command output has trailing text', () => {
+    const raw = `vitest output\n${vitestJson({ lines: 88, branches: 77 })}\nextra stderr text`
+    const c = parseCoverageFromRawOutput(raw)
+    expect(c.lines).toBe(88)
+    expect(c.branches).toBe(77)
+  })
+
   it('throws on empty string', () => {
     expect(() => parseCoverageFromRawOutput('')).toThrow('empty')
     expect(() => parseCoverageFromRawOutput('   ')).toThrow('empty')
@@ -356,6 +363,12 @@ describe('renderValidationReport', () => {
     const report = render(v)
     expect(report).not.toContain('## Coverage Detail')
     expect(report).toContain('PARSE_FAILED')
+  })
+
+  it('marks file scope as not evaluated when no file scope check is provided', () => {
+    const report = render(baseVerdict())
+    expect(report).toContain('- All within scope: NOT_EVALUATED')
+    expect(report).toContain('- Scope check status: NOT_RUN')
   })
 
   it('integration: FakeCommandRunner → render', async () => {

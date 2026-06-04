@@ -1,5 +1,24 @@
-# Agent runtime
-.agent/
+﻿# Aegis runtime
+.aegis/archive/
+.aegis/current/codex-review-prompt.md
+.aegis/current/codex-review.jsonl
+.aegis/current/codex-review.md
+.aegis/current/validation-report.md
+.aegis/current/safety-report.md
+.aegis/current/commit-suggestion.md
+.aegis/current/decision-request.md
+.aegis/current/human-handoff.md
+.aegis/current/task-quality-report.md
+.aegis/current/quality-readiness-report.md
+.aegis/current/work-report.md
+.aegis/current/superpower-sources.json
+.aegis/current/superpower-summary.md
+.aegis/current/discipline-report.md
+.aegis/current/debug-log.md
+.aegis/current/tdd-log.md
+.aegis/current/discipline-report.md
+.aegis/current/*.tmp
+.aegis/current/*.log
 
 # Node modules
 node_modules/
@@ -29,8 +48,8 @@ docs/superpowers/specs/2026-05-30-24hagent-risk-remediation-design.md
 coverage/
 dist/
 
-# Bundled starter CLI — committed for zero-install distribution
-!24hagent-starter/bin/
+# Bundled starter CLI - committed for zero-install distribution
+!aegis-starter/bin/
 
 # Personal reference (not project code)
 docs/GIT_GUIDE.md
