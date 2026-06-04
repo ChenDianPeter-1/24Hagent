@@ -60,3 +60,5 @@ docs/GIT_GUIDE.md
 # B0 state normalization: duplicate skill copies (local-only, not tracked)
 .agents/
 archive/.agents/
+
+.env

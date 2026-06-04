@@ -42,7 +42,32 @@ Claude Code skills under `.aegis/skills/`.
 .aegis/current/next-claude-install-prompt.md
 ```
 
-## What Start.bat Does
+## Mac Quick Start
+
+1. Copy `aegis-starter/` into your target project.
+2. Open Terminal and run:
+
+```bash
+./aegis-starter/start.sh
+```
+
+Or double-click `Start.command` in Finder — macOS opens it in Terminal automatically.
+
+For setup without launching Claude:
+
+```bash
+./aegis-starter/start.sh --no-claude
+```
+
+3. Let the starter finish local setup.
+4. If `claude` is on PATH, Claude Code starts from the project root.
+5. If not, paste the copied prompt from:
+
+```text
+.aegis/current/next-claude-install-prompt.md
+```
+
+## What Start.bat / start.sh Does
 
 `Start.bat` runs `Start.ps1`, which:
 

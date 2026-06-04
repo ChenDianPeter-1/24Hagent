@@ -15,6 +15,14 @@ describe('Aegis starter layout', () => {
     expect(readStarter('Start.bat')).toContain('Press any key to close this window')
   })
 
+  it('ships the Mac entrypoint and setup scripts', () => {
+    expect(existsSync(resolve(starter, 'start.sh'))).toBe(true)
+    expect(existsSync(resolve(starter, 'Start.command'))).toBe(true)
+    expect(existsSync(resolve(starter, 'setup.sh'))).toBe(true)
+    expect(readStarter('start.sh')).toContain('setup.sh')
+    expect(readStarter('Start.command')).toContain('start.sh')
+  })
+
   it('installs Claude Code skills under .claude/skills only', () => {
     expect(existsSync(resolve(starter, '.claude/skills/superpower/SKILL.md'))).toBe(true)
     expect(existsSync(resolve(starter, '.claude/skills/superpower/skills/using-superpowers/SKILL.md'))).toBe(true)
