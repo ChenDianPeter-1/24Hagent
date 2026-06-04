@@ -32,7 +32,7 @@ Claude Code skills under `.aegis/skills/`.
 
 ## Windows Quick Start
 
-1. Copy `24hagent-starter/` into your target project.
+1. Copy `aegis-starter/` into your target project.
 2. Open the folder and double-click `Start.bat`.
 3. Let the starter finish local setup.
 4. If Claude CLI is available, Claude Code will start from the project root.
@@ -89,13 +89,13 @@ That skill requires Claude to:
 If double-click launch is not suitable, run:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File 24hagent-starter/Start.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File aegis-starter/Start.ps1
 ```
 
 For setup without launching Claude:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File 24hagent-starter/Start.ps1 -NoClaude
+powershell -NoProfile -ExecutionPolicy Bypass -File aegis-starter/Start.ps1 -NoClaude
 ```
 
 ## Requirements

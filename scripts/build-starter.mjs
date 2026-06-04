@@ -1,7 +1,7 @@
 import * as esbuild from 'esbuild'
 import { mkdirSync } from 'node:fs'
 
-const OUT_DIR = '24hagent-starter/bin'
+const OUT_DIR = 'aegis-starter/bin'
 mkdirSync(OUT_DIR, { recursive: true })
 
 await esbuild.build({

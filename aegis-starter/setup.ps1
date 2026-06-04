@@ -194,9 +194,7 @@ Write-Step "5. Copying Aegis runtime helpers"
 $COPY_LIST = @(
     @{Src="scripts/check_quality_readiness.ps1"; Dst="scripts/check_quality_readiness.ps1"},
     @{Src="scripts/validate_task.ps1";           Dst="scripts/validate_task.ps1"},
-    @{Src="scripts/codex_review.ps1";            Dst="scripts/codex_review.ps1"},
-    @{Src="CLAUDE_ORCHESTRATOR_PROTOCOL.md";     Dst="CLAUDE_ORCHESTRATOR_PROTOCOL.md"},
-    @{Src="START_ORCHESTRATOR.md";               Dst="START_ORCHESTRATOR.md"}
+    @{Src="scripts/codex_review.ps1";            Dst="scripts/codex_review.ps1"}
 )
 foreach ($item in $COPY_LIST) {
     $src = Join-Path $STARTER_DIR $item.Src

@@ -2,43 +2,42 @@
 
 ## Task ID
 
-`20260604-final-aegis-naming-cleanup`
+`20260604-final-starter-shell-cleanup`
 
 ## Title
 
-Remove final old command and role naming residue.
+Remove final old starter and Orchestrator shell residue.
 
 ## Specification
 
-Finish active-product naming cleanup for pure Aegis delivery.
+Finish active-product package cleanup for pure Aegis delivery.
 
 This phase must:
 
-- remove the old `24h` CLI alias from `package.json`
-- remove CLI help text that advertises `24h`
-- update active docs to say Aegis exposes only `aegis`
-- replace active `Orchestrator` wording in generated gate/report text with Aegis/Claude Code wording
+- rename the shipped starter directory from `24hagent-starter/` to `aegis-starter/`
+- remove root and starter `CLAUDE_ORCHESTRATOR_PROTOCOL.md` / `START_ORCHESTRATOR.md`
+- remove tracked starter `.agent/` residue if present
+- stop starter setup scripts from copying old Orchestrator launch docs
+- update active docs, tests, build scripts, and `.gitignore` to the new starter path
 - rebuild the starter bundle
 - keep historical docs/tests allowed to mention the old rewrite context only when clearly historical or fixture data
 
-Human confirmation: explicit human confirmation was given for pure Aegis cleanup, including removal of old 24Hagent residue. This task has explicit human confirmation for the `package.json` bin change.
+Human confirmation: explicit human confirmation was given for pure Aegis cleanup, including deletion of unnecessary old 24Hagent and `.agent/` residue. This task has explicit human confirmation for removing old starter and Orchestrator shell files.
 
 ## File Scope
 
 - .aegis
-- package.json
-- README.md
+- .gitignore
 - docs
-- src/cli/main.ts
-- src/core/quality
-- 24hagent-starter/README.md
-- 24hagent-starter/bin/aegis.mjs
+- scripts/build-starter.mjs
+- tests
+- aegis-starter
 
 ## Definition of DoD
 
-- [x] active package bin exposes `aegis` only.
-- [x] CLI help no longer advertises `24h`.
-- [x] active generated gate/report text no longer says `Orchestrator`.
+- [x] active starter path is `aegis-starter/`.
+- [x] old root and starter Orchestrator docs are removed.
+- [x] starter setup scripts no longer create or copy `.agent` / Orchestrator shell files.
 - [x] starter bundle is rebuilt.
 - [x] verification passes.
 
@@ -50,7 +49,7 @@ npm run build
 npm run build:starter
 npm run lint
 npm test
-rg -n "Compatibility alias: 24h|\"24h\":|Orchestrator" package.json src docs README.md 24hagent-starter\README.md 24hagent-starter\bin\aegis.mjs
+rg -n "24hagent-starter|CLAUDE_ORCHESTRATOR|START_ORCHESTRATOR|Orchestrator|\"24h\":|Compatibility alias: 24h" package.json src docs README.md aegis-starter tests
 node dist\cli\main.js safety:check
 node dist\cli\main.js task:review
 git diff --check
@@ -59,4 +58,4 @@ git status --short --ignored
 
 ## Stop Rule
 
-Stop before renaming `24hagent-starter/`, changing dependencies, changing release/publish/deploy behavior, pushing, or touching files outside the File Scope above. The `package.json` bin change is explicitly human-confirmed and limited to removing the old `24h` alias.
+Stop before changing dependencies, changing release/publish/deploy behavior, pushing, or touching files outside the File Scope above. The starter rename and old shell deletion are explicitly human-confirmed for pure Aegis cleanup.

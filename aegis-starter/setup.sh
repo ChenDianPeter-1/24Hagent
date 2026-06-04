@@ -150,7 +150,7 @@ fi
 
 echo ""
 echo "5. Copying Aegis runtime helpers"
-for item in "scripts/check_quality_readiness.ps1" "scripts/validate_task.ps1" "scripts/codex_review.ps1" "CLAUDE_ORCHESTRATOR_PROTOCOL.md" "START_ORCHESTRATOR.md"; do
+for item in "scripts/check_quality_readiness.ps1" "scripts/validate_task.ps1" "scripts/codex_review.ps1"; do
   if [ ! -f "$item" ] && [ -f "$STARTER_DIR/$item" ]; then
     mkdir -p "$(dirname "$item")"
     cp "$STARTER_DIR/$item" "$item"

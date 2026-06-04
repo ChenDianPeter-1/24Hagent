@@ -68,7 +68,7 @@ uses `.aegis/` as the only runtime root, documented in
 
 Bundled starter state:
 
-- `24hagent-starter/` is still the folder name for distribution compatibility.
+- `aegis-starter/` is the bundled starter folder.
 - The starter now teaches Aegis, installs `.claude/skills/aegis-install/`, initializes `.aegis/`, writes `.aegis/current/next-claude-install-prompt.md`, and ships `bin/aegis.mjs`.
 - Old starter PowerShell helpers are thin wrappers around the Aegis CLI.
 
@@ -94,8 +94,6 @@ Known strict-gate behavior:
 Do not mark the rewrite complete until these are audited or implemented:
 
 - Strengthen blueprint revision behavior beyond the current start/summary/confirm slice.
-- Shorten and refocus the root `CLAUDE.md` so Claude Code sees the Aegis hosting contract before legacy project-local rules.
-- Refresh the architecture map around Aegis roles, runtime state, compatibility surfaces, and remaining migration decisions.
 - Audit README/docs/package/starter search results for old product mind before final completion.
 
 ## Boundaries

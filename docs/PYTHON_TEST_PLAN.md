@@ -58,7 +58,7 @@ pip install pytest pytest-cov ruff mypy
 ### T1. Starter Setup Creates Aegis Runtime
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File 24hagent-starter/Start.ps1 -NoClaude -SkipReadiness
+powershell -NoProfile -ExecutionPolicy Bypass -File aegis-starter/Start.ps1 -NoClaude -SkipReadiness
 ```
 
 Expected:

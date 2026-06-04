@@ -22,8 +22,8 @@ D:\AAAOddsAndEnds\PROGRAM\superpowers
 With the bundled starter:
 
 ```text
-Copy 24hagent-starter/ into the target project.
-Run 24hagent-starter/Start.ps1 or double-click Start.bat on Windows.
+Copy aegis-starter/ into the target project.
+Run aegis-starter/Start.ps1 or double-click Start.bat on Windows.
 ```
 
 The starter installs `aegis-install`, initializes `.aegis/`, and generates:
@@ -180,11 +180,12 @@ Aegis may render suggestions, but the human controls final Git and release actio
 
 ## Current Starter Status
 
-The existing `24hagent-starter/` directory name is retained for distribution compatibility. Its onboarding path is now Aegis-first:
+The bundled starter is now `aegis-starter/`. Its onboarding path is Aegis-first:
 
 - installs `.claude/skills/aegis-install/`
 - initializes `.aegis/config`, `.aegis/current`, `.aegis/blueprint`, and `.aegis/state`
 - writes `.aegis/current/next-claude-install-prompt.md`
-- ships `24hagent-starter/bin/aegis.mjs`
+- ships `aegis-starter/bin/aegis.mjs`
 
-The next packaging hardening phase should add a real setup smoke test that runs the starter in a temporary target project and verifies the generated `.aegis/` layout.
+The setup smoke test runs the starter in a temporary target project and verifies
+the generated `.aegis/` layout.

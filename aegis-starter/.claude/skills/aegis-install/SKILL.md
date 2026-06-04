@@ -5,7 +5,7 @@ description: Use when Aegis Starter has completed local setup and Claude Code mu
 
 # Aegis Install Onboarding
 
-You are in a project where `24hagent-starter` has already completed local setup.
+You are in a project where `aegis-starter` has already completed local setup.
 Your job is to onboard the project into Aegis without starting broad
 implementation work.
 

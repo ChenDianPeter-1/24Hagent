@@ -1,11 +1,11 @@
 {
   "schema_version": 1,
   "project_id": "aegis-rewrite",
-  "task_id": "20260604-final-aegis-naming-cleanup",
-  "phase": "passed",
+  "task_id": "20260604-final-starter-shell-cleanup",
+  "phase": "hard-blocked",
   "mode": "auto",
-  "last_verdict": "final-naming-cleanup-complete",
+  "last_verdict": "NEED_HUMAN",
   "round_count": 0,
   "retry_count": 0,
-  "updated_at": "2026-06-04T15:18:00+08:00"
+  "updated_at": "2026-06-04T06:32:17.267Z"
 }

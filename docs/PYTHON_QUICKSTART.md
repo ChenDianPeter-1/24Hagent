@@ -71,13 +71,13 @@ strict = true
 Copy the bundled starter into the target project and run it:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File 24hagent-starter/Start.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File aegis-starter/Start.ps1
 ```
 
 For setup without launching Claude Code:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File 24hagent-starter/Start.ps1 -NoClaude
+powershell -NoProfile -ExecutionPolicy Bypass -File aegis-starter/Start.ps1 -NoClaude
 ```
 
 The starter initializes:

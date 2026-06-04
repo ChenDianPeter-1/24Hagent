@@ -6,7 +6,7 @@ import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-const starter = resolve(root, '24hagent-starter')
+const starter = resolve(root, 'aegis-starter')
 const setup = resolve(starter, 'setup.ps1')
 
 describe('Aegis starter setup smoke', () => {

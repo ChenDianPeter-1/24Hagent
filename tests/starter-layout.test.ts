@@ -4,7 +4,7 @@ import { resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-const starter = resolve(root, '24hagent-starter')
+const starter = resolve(root, 'aegis-starter')
 const readStarter = (path: string) => readFileSync(resolve(starter, path), 'utf-8')
 
 describe('Aegis starter layout', () => {
@@ -22,7 +22,7 @@ describe('Aegis starter layout', () => {
     expect(existsSync(resolve(starter, '.claude/skills/24hagent-install'))).toBe(false)
     expect(existsSync(resolve(starter, '.claude/skills/24hagent-setup'))).toBe(false)
     expect(existsSync(resolve(starter, '.claude/skills/brainstorming'))).toBe(false)
-    expect(existsSync(resolve(starter, '.agent/skills'))).toBe(false)
+    expect(existsSync(resolve(starter, '.agent'))).toBe(false)
     expect(existsSync(resolve(starter, '.aegis/config/codex-rubric.md'))).toBe(true)
   })
 
