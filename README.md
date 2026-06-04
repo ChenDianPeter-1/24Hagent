@@ -2,7 +2,7 @@
 
 <div align="center">
 
-# <code>Aegis</code>
+<img src="assets/aegis-logo.png" width="60%" alt="Aegis" />
 
 <em>A delivery gate that lives inside Claude Code / 寄生在 Claude Code 里的交付门禁</em>
 
@@ -15,15 +15,10 @@
 <img src="https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square" alt="License">
 <img src="https://img.shields.io/badge/tests-202%20passed-success.svg?style=flat-square" alt="Tests">
 
-**<a href="#english">English</a> | <a href="#chinese">中文</a>**
-
 </div>
 
----
-
-<h2 id="english"> English</h2>
-
-<div align="right"><a href="#top">Back to top </a></div>
+<details open>
+<summary><b> English</b></summary>
 
 ## ✨ Overview
 
@@ -285,12 +280,12 @@ Current baseline: **27 test files, 202 tests passed**.
 ## 📜 License
 
 Aegis is distributed under the [MIT](LICENSE) license.
+</details>
 
----
+<details>
+<summary><b> 中文</b></summary>
 
-<h2 id="chinese"> 中文</h2>
 
-<div align="right"><a href="#top">回到顶部 </a></div>
 
 ## ✨ 概述
 
@@ -556,9 +551,11 @@ Aegis 基于 [MIT](LICENSE) 许可协议分发。
 <div align="right">
 
 [![][back-to-top]](#top)
+</details>
 
 </div>
 
 [back-to-top]: https://img.shields.io/badge/-BACK_TO_TOP-151515?style=flat-square
+</details>
 
 </div>
