@@ -62,10 +62,9 @@ aegis commit:suggest
 
 `24h` exists only as a compatibility alias. New work should use `aegis`.
 
-The old `.agent/` runtime is retained only as a compatibility fallback for
-pre-Aegis projects. Current fallback paths are centralized in
-`src/core/aegis-runtime/legacy-compat.ts` and documented in
-`docs/AEGIS_LEGACY_COMPATIBILITY.md`.
+The old `.agent/` runtime has been removed from active Aegis behavior. Aegis
+uses `.aegis/` as the only runtime root, documented in
+`docs/AEGIS_LEGACY_REMOVAL.md`.
 
 Bundled starter state:
 
@@ -97,7 +96,7 @@ Do not mark the rewrite complete until these are audited or implemented:
 - Strengthen blueprint revision behavior beyond the current start/summary/confirm slice.
 - Shorten and refocus the root `CLAUDE.md` so Claude Code sees the Aegis hosting contract before legacy project-local rules.
 - Refresh the architecture map around Aegis roles, runtime state, compatibility surfaces, and remaining migration decisions.
-- Decide in a dedicated compatibility-release phase whether to drop the old `24h` alias and `.agent/` fallback.
+- Decide in a dedicated compatibility-release phase whether to drop the old `24h` alias.
 - Audit README/docs/package/starter search results for old product mind before final completion.
 
 ## Boundaries

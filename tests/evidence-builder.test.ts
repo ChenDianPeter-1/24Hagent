@@ -18,7 +18,7 @@ function write(path: string, content: string): void {
 }
 
 function writeTask(fileScope: string[] = ['src']): void {
-  write('.agent/CURRENT_TASK.md', [
+  write('.aegis/current/current-task.md', [
     '## Task ID',
     'T-001',
     '',
@@ -51,9 +51,9 @@ beforeEach(() => {
   git(['config', 'user.email', 'test@example.com'])
   git(['config', 'user.name', 'Test User'])
   writeTask()
-  write('.agent/WORK_REPORT.md', 'Implemented scoped review.')
-  write('.agent/VALIDATION_REPORT.md', 'Validation passed.')
-  write('.agent/CODEX_REVIEW_RUBRIC.md', 'Return YAML verdict.')
+  write('.aegis/current/round-summary.md', 'Implemented scoped review.')
+  write('.aegis/current/validation-report.md', 'Validation passed.')
+  write('.aegis/config/codex-rubric.md', 'Return YAML verdict.')
   write('src/allowed.ts', 'export const value = 1\n')
   git(['add', '.'])
   git(['commit', '-m', 'initial'])

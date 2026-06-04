@@ -4,7 +4,7 @@ import { createEvidencePacketManifest, EvidencePacketSchema } from '../src/core/
 describe('EvidencePacket', () => {
   it('creates a valid manifest', () => {
     const p = createEvidencePacketManifest(
-      'T-001', '.agent/WORK_REPORT.md', '.agent/VALIDATION_REPORT.md', 'diff --git'
+      'T-001', '.aegis/current/round-summary.md', '.aegis/current/validation-report.md', 'diff --git'
     )
     expect(p.task_id).toBe('T-001')
     expect(p.git_diff).toBe('diff --git')

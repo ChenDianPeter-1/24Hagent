@@ -1,29 +1,20 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { renderTaskQualityReview, reviewCurrentTaskMarkdown } from '../core/quality/task-quality-gate.js'
-import { getAegisRuntimePaths, getLegacyAgentRuntimePaths, type AegisRuntimeKind } from '../core/aegis-runtime/index.js'
+import { getAegisRuntimePaths } from '../core/aegis-runtime/index.js'
 
 export type TaskReviewRuntimePaths = {
   currentTaskPath: string
   reportPath: string
-  runtimeKind: AegisRuntimeKind
+  runtimeKind: 'aegis'
 }
 
 export function getTaskReviewRuntimePaths(root: string): TaskReviewRuntimePaths {
   const aegis = getAegisRuntimePaths(root)
-  if (existsSync(aegis.currentTask)) {
-    return {
-      currentTaskPath: aegis.currentTask,
-      reportPath: aegis.taskQualityReport,
-      runtimeKind: 'aegis'
-    }
-  }
-
-  const legacy = getLegacyAgentRuntimePaths(root)
   return {
-    currentTaskPath: legacy.currentTask,
-    reportPath: legacy.taskQualityReport,
-    runtimeKind: 'legacy-agent'
+    currentTaskPath: aegis.currentTask,
+    reportPath: aegis.taskQualityReport,
+    runtimeKind: 'aegis'
   }
 }
 

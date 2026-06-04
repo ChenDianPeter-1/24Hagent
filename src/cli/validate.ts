@@ -1,8 +1,8 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { loadGateConfig, planGateExecutions, runConfiguredGates, evaluateGateResults, renderValidationReport } from '../core/quality/validation-engine.js'
 import { RealCommandRunner } from '../adapters/shell/command-runner.js'
-import { getAegisRuntimePaths, getLegacyAgentRuntimePaths, type AegisRuntimeKind } from '../core/aegis-runtime/index.js'
+import { getAegisRuntimePaths } from '../core/aegis-runtime/index.js'
 
 function readJsonSafe(path: string) {
   let raw = readFileSync(path, 'utf-8')
@@ -13,24 +13,15 @@ function readJsonSafe(path: string) {
 export type ValidationRuntimePaths = {
   qualityGatesPath: string
   reportPath: string
-  runtimeKind: AegisRuntimeKind
+  runtimeKind: 'aegis'
 }
 
 export function getValidationRuntimePaths(root: string): ValidationRuntimePaths {
   const aegis = getAegisRuntimePaths(root)
-  if (existsSync(aegis.qualityGates)) {
-    return {
-      qualityGatesPath: aegis.qualityGates,
-      reportPath: aegis.validationReport,
-      runtimeKind: 'aegis'
-    }
-  }
-
-  const legacy = getLegacyAgentRuntimePaths(root)
   return {
-    qualityGatesPath: legacy.qualityGates,
-    reportPath: legacy.validationReport,
-    runtimeKind: 'legacy-agent'
+    qualityGatesPath: aegis.qualityGates,
+    reportPath: aegis.validationReport,
+    runtimeKind: 'aegis'
   }
 }
 

@@ -96,7 +96,7 @@ Implemented slices include:
 - completed-round archival under `.aegis/archive/<task-id>/`
 - bundled starter onboarding migrated to Aegis / `.aegis`
 
-The strongest remaining migration work is now deeper verification and cleanup: shorten the Claude Code repo rules, refresh the architecture map, and decide when the compatibility release can drop the old `24h` alias and `.agent/` fallback.
+The strongest remaining migration work is now final verification and cleanup: refresh the architecture map, audit old product naming, and decide when the compatibility release can drop the old `24h` alias.
 
 ## Verification
 
@@ -120,6 +120,6 @@ git diff --check
 - `docs/AEGIS_RUNTIME_SPEC.md`
 - `docs/AEGIS_MVP_ROADMAP.md`
 - `docs/AEGIS_CLAUDE_CODE_CONTRACT.md`
-- `docs/AEGIS_LEGACY_COMPATIBILITY.md`
+- `docs/AEGIS_LEGACY_REMOVAL.md`
 - `docs/HANDOFF.md`
 - `docs/HOW_TO_NEW_PROJECT.md`

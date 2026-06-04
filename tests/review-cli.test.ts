@@ -17,7 +17,7 @@ function write(path: string, content: string, root: string): void {
 }
 
 describe('review CLI runtime paths', () => {
-  it('prefers .aegis review artifacts when current task exists', () => {
+  it('uses .aegis review artifacts', () => {
     const root = mkdtempSync(join(tmpdir(), 'aegis-review-cli-'))
     try {
       write('.aegis/current/current-task.md', '# Current Task\n', root)
@@ -28,20 +28,6 @@ describe('review CLI runtime paths', () => {
       expect(paths.promptPath).toBe(join(root, '.aegis/current/codex-review-prompt.md'))
       expect(paths.rawReviewPath).toBe(join(root, '.aegis/current/codex-review.jsonl'))
       expect(paths.renderedReviewPath).toBe(join(root, '.aegis/current/codex-review.md'))
-    } finally {
-      rmSync(root, { recursive: true, force: true })
-    }
-  })
-
-  it('falls back to legacy .agent review artifacts', () => {
-    const root = mkdtempSync(join(tmpdir(), 'aegis-review-cli-'))
-    try {
-      const paths = getReviewRuntimePaths(root)
-
-      expect(paths.runtimeKind).toBe('legacy-agent')
-      expect(paths.promptPath).toBe(join(root, '.agent/codex-review-prompt.md'))
-      expect(paths.rawReviewPath).toBe(join(root, '.agent/codex-review-raw.jsonl'))
-      expect(paths.renderedReviewPath).toBe(join(root, '.agent/CODEX_REVIEW.md'))
     } finally {
       rmSync(root, { recursive: true, force: true })
     }

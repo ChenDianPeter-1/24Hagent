@@ -51,19 +51,6 @@ describe('formatStatus', () => {
     expect(out.split('\n')).toHaveLength(3)
   })
 
-  it('runStatus reads real fixtures and prints', () => {
-    const dir = resolve(__dirname, 'fixtures/.test-status')
-    mkdirSync(resolve(dir, '.agent'), { recursive: true })
-    writeFileSync(resolve(dir, '.agent/RUN_STATE.json'), JSON.stringify(rs({ phase: 'FIXTURE_TEST' })))
-    writeFileSync(resolve(dir, '.agent/CURRENT_TASK.md'),
-      '# Current Task\n## Task ID\nT-FIX\n## Title\n夹具\n## Specification\nx\n## File Scope\n- a\n## Definition of DoD\n- [ ] ok\n## Acceptance Checks\nx\n## Stop Rule\nx')
-    const spy = vi.spyOn(console, 'log').mockImplementation(() => {})
-    runStatus(dir)
-    expect(spy.mock.calls[0][0]).toContain('当前阶段: FIXTURE_TEST')
-    spy.mockRestore()
-    rmSync(dir, { recursive: true, force: true })
-  })
-
   it('formats Aegis status from .aegis run state and task markdown', () => {
     const out = formatAegisStatus(
       {

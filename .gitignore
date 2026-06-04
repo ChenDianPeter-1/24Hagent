@@ -1,6 +1,3 @@
-# Agent runtime
-.agent/
-
 # Aegis runtime
 .aegis/archive/
 .aegis/current/codex-review-prompt.md

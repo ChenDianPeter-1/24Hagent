@@ -1,16 +1,14 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
-import { resolve } from 'node:path'
 import {
   getAegisRuntimePaths,
-  getLegacyAgentRuntimePaths,
   parseAegisRunStateJson,
   renderProjectProgress,
   renderStatus,
   renderWorkInstruction,
   type AegisRunState
 } from '../core/aegis-runtime/index.js'
-import { parseRunStateJson, type RunState } from '../core/schemas/run-state.js'
-import { parseCurrentTaskMarkdown, type TaskPackage } from '../core/schemas/task-package.js'
+import type { RunState } from '../core/schemas/run-state.js'
+import type { TaskPackage } from '../core/schemas/task-package.js'
 
 /** Pure: strictly 3 lines. No fs, no process, no console. */
 export function formatStatus(rs: RunState, tp: TaskPackage): string {
@@ -65,19 +63,7 @@ export function runAegisStatus(root: string): void {
   console.log(renderStatus(input))
 }
 
-export function runLegacyStatus(root: string): void {
-  const legacy = getLegacyAgentRuntimePaths(root)
-  const rs = parseRunStateJson(readFileSync(legacy.runState, 'utf-8'))
-  const tp = parseCurrentTaskMarkdown(readFileSync(legacy.currentTask, 'utf-8'))
-  console.log(formatStatus(rs, tp))
-}
-
-/** Read Aegis runtime status when present, otherwise fall back to legacy .agent status. */
+/** Read and refresh Aegis runtime status. */
 export function runStatus(root: string): void {
-  if (existsSync(resolve(root, '.aegis/state/run-state.json'))) {
-    runAegisStatus(root)
-    return
-  }
-
-  runLegacyStatus(root)
+  runAegisStatus(root)
 }

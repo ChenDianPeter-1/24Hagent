@@ -37,7 +37,7 @@ function write(path: string, content: string, root: string): void {
 }
 
 describe('task:review runtime paths', () => {
-  it('prefers .aegis current task and report paths', () => {
+  it('uses .aegis current task and report paths', () => {
     const root = mkdtempSync(join(tmpdir(), 'aegis-task-review-'))
     try {
       write('.aegis/current/current-task.md', validTask, root)
@@ -47,19 +47,6 @@ describe('task:review runtime paths', () => {
       expect(paths.runtimeKind).toBe('aegis')
       expect(paths.currentTaskPath).toBe(join(root, '.aegis/current/current-task.md'))
       expect(paths.reportPath).toBe(join(root, '.aegis/current/task-quality-report.md'))
-    } finally {
-      rmSync(root, { recursive: true, force: true })
-    }
-  })
-
-  it('falls back to legacy .agent task paths', () => {
-    const root = mkdtempSync(join(tmpdir(), 'aegis-task-review-'))
-    try {
-      const paths = getTaskReviewRuntimePaths(root)
-
-      expect(paths.runtimeKind).toBe('legacy-agent')
-      expect(paths.currentTaskPath).toBe(join(root, '.agent/CURRENT_TASK.md'))
-      expect(paths.reportPath).toBe(join(root, '.agent/TASK_QUALITY_REPORT.md'))
     } finally {
       rmSync(root, { recursive: true, force: true })
     }

@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { detectToolchain, detectPythonToolchain, compareGates, classifyReadiness, renderReadinessReport, computeReadinessExitCode } from '../core/quality/readiness-engine.js'
-import { getAegisRuntimePaths, getLegacyAgentRuntimePaths, type AegisRuntimeKind } from '../core/aegis-runtime/index.js'
+import { getAegisRuntimePaths } from '../core/aegis-runtime/index.js'
 
 /** Strip UTF-8 BOM before JSON.parse (PowerShell often writes BOM) */
 function readJsonSafe(path: string) {
@@ -22,24 +22,15 @@ function detectPackageManager(root: string): string {
 export type ReadinessRuntimePaths = {
   qualityGatesPath: string
   reportPath: string
-  runtimeKind: AegisRuntimeKind
+  runtimeKind: 'aegis'
 }
 
 export function getReadinessRuntimePaths(root: string): ReadinessRuntimePaths {
   const aegis = getAegisRuntimePaths(root)
-  if (existsSync(aegis.qualityGates)) {
-    return {
-      qualityGatesPath: aegis.qualityGates,
-      reportPath: aegis.qualityReadinessReport,
-      runtimeKind: 'aegis'
-    }
-  }
-
-  const legacy = getLegacyAgentRuntimePaths(root)
   return {
-    qualityGatesPath: legacy.qualityGates,
-    reportPath: legacy.qualityReadinessReport,
-    runtimeKind: 'legacy-agent'
+    qualityGatesPath: aegis.qualityGates,
+    reportPath: aegis.qualityReadinessReport,
+    runtimeKind: 'aegis'
   }
 }
 

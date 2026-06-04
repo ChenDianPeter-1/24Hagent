@@ -10,20 +10,20 @@
 
 ## Current Task
 
-`20260604-shorten-claude-md`
+`20260604-pure-aegis-runtime-cleanup`
 
 ## Current Task Title
 
-Shorten root CLAUDE.md for Aegis hosting.
+Remove old 24Hagent `.agent` runtime fallback.
 
 ## Last Result
 
-shorten-claude-md-complete
+pure-aegis-cleanup-complete
 
 ## Next Action
 
-Commit the shortened root CLAUDE.md phase, then record the result in GitHub issue #4.
+Commit the completed pure Aegis runtime cleanup and update GitHub issue #14.
 
 ## Risks
 
-- None recorded.
+- Historical fixtures may still mention `.agent`; active runtime behavior no longer depends on it.

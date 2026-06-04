@@ -40,7 +40,7 @@ function write(path: string, content: string, root: string): void {
 }
 
 describe('readiness CLI runtime paths', () => {
-  it('prefers .aegis quality gates and readiness report path', () => {
+  it('uses .aegis quality gates and readiness report path', () => {
     const root = mkdtempSync(join(tmpdir(), 'aegis-readiness-'))
     try {
       write('.aegis/config/quality-gates.json', JSON.stringify(gates), root)
@@ -50,19 +50,6 @@ describe('readiness CLI runtime paths', () => {
       expect(paths.runtimeKind).toBe('aegis')
       expect(paths.qualityGatesPath).toBe(join(root, '.aegis/config/quality-gates.json'))
       expect(paths.reportPath).toBe(join(root, '.aegis/current/quality-readiness-report.md'))
-    } finally {
-      rmSync(root, { recursive: true, force: true })
-    }
-  })
-
-  it('falls back to legacy .agent readiness paths', () => {
-    const root = mkdtempSync(join(tmpdir(), 'aegis-readiness-'))
-    try {
-      const paths = getReadinessRuntimePaths(root)
-
-      expect(paths.runtimeKind).toBe('legacy-agent')
-      expect(paths.qualityGatesPath).toBe(join(root, '.agent/QUALITY_GATES.json'))
-      expect(paths.reportPath).toBe(join(root, '.agent/QUALITY_READINESS_REPORT.md'))
     } finally {
       rmSync(root, { recursive: true, force: true })
     }

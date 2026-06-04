@@ -97,34 +97,6 @@ var init_paths = __esm({
   }
 });
 
-// src/core/aegis-runtime/legacy-compat.ts
-import { resolve as resolve2 } from "node:path";
-function getLegacyAgentRuntimePaths(root) {
-  const legacyDir = resolve2(root, LEGACY_AGENT_DIR);
-  return {
-    currentTask: resolve2(legacyDir, "CURRENT_TASK.md"),
-    workReport: resolve2(legacyDir, "WORK_REPORT.md"),
-    superpowerSummary: resolve2(legacyDir, "SUPERPOWER_SUMMARY.md"),
-    disciplineReport: resolve2(legacyDir, "DISCIPLINE_REPORT.md"),
-    validationReport: resolve2(legacyDir, "VALIDATION_REPORT.md"),
-    qualityGates: resolve2(legacyDir, "QUALITY_GATES.json"),
-    qualityReadinessReport: resolve2(legacyDir, "QUALITY_READINESS_REPORT.md"),
-    taskQualityReport: resolve2(legacyDir, "TASK_QUALITY_REPORT.md"),
-    codexRubric: resolve2(legacyDir, "CODEX_REVIEW_RUBRIC.md"),
-    codexReviewPrompt: resolve2(legacyDir, "codex-review-prompt.md"),
-    codexReviewRaw: resolve2(legacyDir, "codex-review-raw.jsonl"),
-    codexReview: resolve2(legacyDir, "CODEX_REVIEW.md"),
-    runState: resolve2(legacyDir, "RUN_STATE.json")
-  };
-}
-var LEGACY_AGENT_DIR;
-var init_legacy_compat = __esm({
-  "src/core/aegis-runtime/legacy-compat.ts"() {
-    "use strict";
-    LEGACY_AGENT_DIR = ".agent";
-  }
-});
-
 // node_modules/zod/v3/helpers/util.js
 var util, objectUtil, ZodParsedType, getParsedType;
 var init_util = __esm({
@@ -5577,26 +5549,14 @@ import { existsSync as existsSync5, readFileSync as readFileSync5 } from "node:f
 import { execFileSync } from "node:child_process";
 function getReviewEvidencePaths(root) {
   const aegis = getAegisRuntimePaths(root);
-  if (existsSync5(aegis.currentTask)) {
-    return {
-      currentTaskPath: aegis.currentTask,
-      workReportPath: aegis.roundSummary,
-      superpowerSummaryPath: aegis.superpowerSummary,
-      disciplineReportPath: aegis.disciplineReport,
-      validationReportPath: aegis.validationReport,
-      rubricPath: aegis.codexRubric,
-      runtimeKind: "aegis"
-    };
-  }
-  const legacy = getLegacyAgentRuntimePaths(root);
   return {
-    currentTaskPath: legacy.currentTask,
-    workReportPath: legacy.workReport,
-    superpowerSummaryPath: legacy.superpowerSummary,
-    disciplineReportPath: legacy.disciplineReport,
-    validationReportPath: legacy.validationReport,
-    rubricPath: legacy.codexRubric,
-    runtimeKind: "legacy-agent"
+    currentTaskPath: aegis.currentTask,
+    workReportPath: aegis.roundSummary,
+    superpowerSummaryPath: aegis.superpowerSummary,
+    disciplineReportPath: aegis.disciplineReport,
+    validationReportPath: aegis.validationReport,
+    rubricPath: aegis.codexRubric,
+    runtimeKind: "aegis"
   };
 }
 function readIfExists(path) {
@@ -5754,7 +5714,7 @@ var init_prompt_builder = __esm({
 
 // src/core/superpower/sources.ts
 import { existsSync as existsSync6, readdirSync, readFileSync as readFileSync6, statSync } from "node:fs";
-import { resolve as resolve3 } from "node:path";
+import { resolve as resolve2 } from "node:path";
 function firstNonEmptyLine3(markdown) {
   return markdown.split(/\r?\n/).map((line) => line.trim()).find(Boolean) ?? "";
 }
@@ -5768,9 +5728,9 @@ function readSummary(path, fallback) {
 }
 function buildSuperpowerSourceManifest(sourceRoot, generatedAt) {
   const sources = [];
-  const readme = resolve3(sourceRoot, "README.md");
-  const claude = resolve3(sourceRoot, "CLAUDE.md");
-  const skillsDir = resolve3(sourceRoot, "skills");
+  const readme = resolve2(sourceRoot, "README.md");
+  const claude = resolve2(sourceRoot, "CLAUDE.md");
+  const skillsDir = resolve2(sourceRoot, "skills");
   if (existsSync6(readme)) {
     sources.push({
       kind: "repository",
@@ -5789,7 +5749,7 @@ function buildSuperpowerSourceManifest(sourceRoot, generatedAt) {
   }
   if (existsSync6(skillsDir)) {
     for (const skill of IMPORTANT_SKILLS) {
-      const skillPath = resolve3(skillsDir, skill, "SKILL.md");
+      const skillPath = resolve2(skillsDir, skill, "SKILL.md");
       if (existsSync6(skillPath) && statSync(skillPath).isFile()) {
         sources.push({
           kind: "skill",
@@ -5801,7 +5761,7 @@ function buildSuperpowerSourceManifest(sourceRoot, generatedAt) {
     }
     const extraSkills = readdirSync(skillsDir, { withFileTypes: true }).filter((entry) => entry.isDirectory()).map((entry) => entry.name).filter((name) => !IMPORTANT_SKILLS.includes(name)).sort();
     for (const skill of extraSkills.slice(0, 12)) {
-      const skillPath = resolve3(skillsDir, skill, "SKILL.md");
+      const skillPath = resolve2(skillsDir, skill, "SKILL.md");
       if (existsSync6(skillPath) && statSync(skillPath).isFile()) {
         sources.push({
           kind: "skill",
@@ -5901,7 +5861,7 @@ function buildEvidenceRequirement(category, required) {
 function collectRoundDisciplineEvidence(currentDir, currentTaskMarkdown) {
   const required = requiredEvidenceCategories(currentTaskMarkdown);
   return Object.keys(EVIDENCE_FILE_NAMES).map((category) => {
-    const path = resolve3(currentDir, EVIDENCE_FILE_NAMES[category]);
+    const path = resolve2(currentDir, EVIDENCE_FILE_NAMES[category]);
     const fileExists = existsSync6(path);
     const markdown = fileExists ? readFileSync6(path, "utf-8") : "";
     const issues = fileExists ? evidenceIssues(markdown, category) : ["Evidence file is missing."];
@@ -6353,7 +6313,7 @@ var init_round_gate = __esm({
 
 // src/core/aegis-runtime/progression.ts
 import { copyFileSync, existsSync as existsSync9, mkdirSync as mkdirSync6, readFileSync as readFileSync9, writeFileSync as writeFileSync7 } from "node:fs";
-import { basename, resolve as resolve4 } from "node:path";
+import { basename, resolve as resolve3 } from "node:path";
 function readLimits(root) {
   const paths = getAegisRuntimePaths(root);
   if (!existsSync9(paths.aegisConfig)) {
@@ -6401,7 +6361,7 @@ function sanitizeArchiveName(taskId) {
 }
 function archiveCompletedRound(root, taskId, timestamp) {
   const paths = getAegisRuntimePaths(root);
-  const archivePath = resolve4(paths.archiveDir, sanitizeArchiveName(taskId));
+  const archivePath = resolve3(paths.archiveDir, sanitizeArchiveName(taskId));
   mkdirSync6(archivePath, { recursive: true });
   const candidates = [
     paths.currentTask,
@@ -6426,7 +6386,7 @@ function archiveCompletedRound(root, taskId, timestamp) {
   const copiedFiles = [];
   for (const file of candidates) {
     if (!existsSync9(file)) continue;
-    const target = resolve4(archivePath, basename(file));
+    const target = resolve3(archivePath, basename(file));
     copyFileSync(file, target);
     copiedFiles.push(basename(file));
   }
@@ -6436,7 +6396,7 @@ function archiveCompletedRound(root, taskId, timestamp) {
     archived_at: timestamp,
     copied_files: copiedFiles
   };
-  writeFileSync7(resolve4(archivePath, "manifest.json"), `${JSON.stringify(manifest, null, 2)}
+  writeFileSync7(resolve3(archivePath, "manifest.json"), `${JSON.stringify(manifest, null, 2)}
 `, "utf-8");
   copiedFiles.push("manifest.json");
   return { archivePath, copiedFiles };
@@ -6575,7 +6535,6 @@ var init_aegis_runtime = __esm({
   "src/core/aegis-runtime/index.ts"() {
     "use strict";
     init_paths();
-    init_legacy_compat();
     init_run_state();
     init_navigation();
     init_navigation_refresh();
@@ -6641,46 +6600,15 @@ var init_aegis = __esm({
   }
 });
 
-// src/core/schemas/run-state.ts
-function parseRunStateJson(raw) {
-  return RunStateSchema.parse(JSON.parse(raw));
-}
-var FixHistoryEntry, RunStateSchema;
-var init_run_state2 = __esm({
-  "src/core/schemas/run-state.ts"() {
-    "use strict";
-    init_zod();
-    FixHistoryEntry = external_exports.object({
-      attempt: external_exports.number().int().min(1),
-      timestamp: external_exports.string().min(1),
-      verdict: external_exports.enum(["PASS", "NEED_FIX", "NEED_HUMAN"]).optional(),
-      required_fixes: external_exports.array(external_exports.string()).optional(),
-      blocking_issue_ids: external_exports.array(external_exports.string()).optional(),
-      reason: external_exports.string().optional()
-    });
-    RunStateSchema = external_exports.object({
-      active_task_id: external_exports.string().nullable(),
-      phase: external_exports.string().min(1),
-      retry_count: external_exports.number().int().min(0).max(3),
-      last_verdict: external_exports.enum(["PASS", "NEED_FIX", "NEED_HUMAN"]).nullable(),
-      consecutive_failures: external_exports.number().int().min(0),
-      fix_history: external_exports.array(FixHistoryEntry).default([]),
-      updated_at: external_exports.string().nullable()
-    });
-  }
-});
-
 // src/cli/status.ts
 var status_exports = {};
 __export(status_exports, {
   formatAegisStatus: () => formatAegisStatus,
   formatStatus: () => formatStatus,
   runAegisStatus: () => runAegisStatus,
-  runLegacyStatus: () => runLegacyStatus,
   runStatus: () => runStatus
 });
 import { existsSync as existsSync11, mkdirSync as mkdirSync7, readFileSync as readFileSync11, writeFileSync as writeFileSync8 } from "node:fs";
-import { resolve as resolve5 } from "node:path";
 function formatStatus(rs, tp) {
   return [
     `\u5F53\u524D\u9636\u6BB5: ${rs.phase}`,
@@ -6721,25 +6649,13 @@ function runAegisStatus(root) {
   writeFileSync8(paths.projectProgress, renderProjectProgress(input), "utf-8");
   console.log(renderStatus(input));
 }
-function runLegacyStatus(root) {
-  const legacy = getLegacyAgentRuntimePaths(root);
-  const rs = parseRunStateJson(readFileSync11(legacy.runState, "utf-8"));
-  const tp = parseCurrentTaskMarkdown(readFileSync11(legacy.currentTask, "utf-8"));
-  console.log(formatStatus(rs, tp));
-}
 function runStatus(root) {
-  if (existsSync11(resolve5(root, ".aegis/state/run-state.json"))) {
-    runAegisStatus(root);
-    return;
-  }
-  runLegacyStatus(root);
+  runAegisStatus(root);
 }
 var init_status = __esm({
   "src/cli/status.ts"() {
     "use strict";
     init_aegis_runtime();
-    init_run_state2();
-    init_task_package();
   }
 });
 
@@ -7007,7 +6923,7 @@ __export(readiness_exports, {
   runReadiness: () => runReadiness
 });
 import { readFileSync as readFileSync12, writeFileSync as writeFileSync9, existsSync as existsSync12, mkdirSync as mkdirSync8 } from "node:fs";
-import { resolve as resolve6 } from "node:path";
+import { resolve as resolve4 } from "node:path";
 function readJsonSafe2(path) {
   let raw = readFileSync12(path, "utf-8");
   if (raw.charCodeAt(0) === 65279) raw = raw.slice(1);
@@ -7017,29 +6933,21 @@ function detectPackageManager(root) {
   const locks = ["uv.lock", "poetry.lock", "pdm.lock", "Pipfile"];
   const pms = ["uv", "poetry", "pdm", "pipenv"];
   for (let i = 0; i < locks.length; i++) {
-    if (existsSync12(resolve6(root, locks[i]))) return pms[i];
+    if (existsSync12(resolve4(root, locks[i]))) return pms[i];
   }
   return "pip";
 }
 function getReadinessRuntimePaths(root) {
   const aegis = getAegisRuntimePaths(root);
-  if (existsSync12(aegis.qualityGates)) {
-    return {
-      qualityGatesPath: aegis.qualityGates,
-      reportPath: aegis.qualityReadinessReport,
-      runtimeKind: "aegis"
-    };
-  }
-  const legacy = getLegacyAgentRuntimePaths(root);
   return {
-    qualityGatesPath: legacy.qualityGates,
-    reportPath: legacy.qualityReadinessReport,
-    runtimeKind: "legacy-agent"
+    qualityGatesPath: aegis.qualityGates,
+    reportPath: aegis.qualityReadinessReport,
+    runtimeKind: "aegis"
   };
 }
 function runReadiness(root) {
-  const pkgPath = resolve6(root, "package.json");
-  const pyprojectPath = resolve6(root, "pyproject.toml");
+  const pkgPath = resolve4(root, "package.json");
+  const pyprojectPath = resolve4(root, "pyproject.toml");
   const paths = getReadinessRuntimePaths(root);
   let tc;
   if (existsSync12(pkgPath)) {
@@ -7056,7 +6964,7 @@ function runReadiness(root) {
   const audit = gatesRaw ? compareGates(tc, gatesRaw.gates) : [];
   const result = classifyReadiness(audit, tc);
   const report = renderReadinessReport(result);
-  mkdirSync8(resolve6(paths.reportPath, ".."), { recursive: true });
+  mkdirSync8(resolve4(paths.reportPath, ".."), { recursive: true });
   writeFileSync9(paths.reportPath, report, "utf-8");
   console.log(`Verdict: **${result.verdict}**`);
   process.exitCode = computeReadinessExitCode(result.verdict);
@@ -7082,18 +6990,18 @@ var init_command_runner = __esm({
     "use strict";
     RealCommandRunner = class {
       async run(command, opts) {
-        return new Promise((resolve11, reject) => {
+        return new Promise((resolve9, reject) => {
           exec(command, {
             cwd: opts?.cwd,
             timeout: opts?.timeoutMs,
             maxBuffer: 10 * 1024 * 1024
           }, (error, stdout, stderr) => {
             if (!error) {
-              resolve11({ exitCode: 0, stdout, stderr });
+              resolve9({ exitCode: 0, stdout, stderr });
               return;
             }
             try {
-              resolve11({ exitCode: classifyExecError(error, command), stdout, stderr });
+              resolve9({ exitCode: classifyExecError(error, command), stdout, stderr });
             } catch (e) {
               reject(e);
             }
@@ -7111,8 +7019,8 @@ __export(validate_exports, {
   runValidate: () => runValidate,
   runValidatePlan: () => runValidatePlan
 });
-import { existsSync as existsSync13, mkdirSync as mkdirSync9, readFileSync as readFileSync13, writeFileSync as writeFileSync10 } from "node:fs";
-import { resolve as resolve7 } from "node:path";
+import { mkdirSync as mkdirSync9, readFileSync as readFileSync13, writeFileSync as writeFileSync10 } from "node:fs";
+import { resolve as resolve5 } from "node:path";
 function readJsonSafe3(path) {
   let raw = readFileSync13(path, "utf-8");
   if (raw.charCodeAt(0) === 65279) raw = raw.slice(1);
@@ -7120,18 +7028,10 @@ function readJsonSafe3(path) {
 }
 function getValidationRuntimePaths(root) {
   const aegis = getAegisRuntimePaths(root);
-  if (existsSync13(aegis.qualityGates)) {
-    return {
-      qualityGatesPath: aegis.qualityGates,
-      reportPath: aegis.validationReport,
-      runtimeKind: "aegis"
-    };
-  }
-  const legacy = getLegacyAgentRuntimePaths(root);
   return {
-    qualityGatesPath: legacy.qualityGates,
-    reportPath: legacy.validationReport,
-    runtimeKind: "legacy-agent"
+    qualityGatesPath: aegis.qualityGates,
+    reportPath: aegis.validationReport,
+    runtimeKind: "aegis"
   };
 }
 async function runValidate(root) {
@@ -7147,7 +7047,7 @@ async function runValidate(root) {
     timestamp: (/* @__PURE__ */ new Date()).toISOString(),
     readinessVerdict: "READY"
   });
-  mkdirSync9(resolve7(paths.reportPath, ".."), { recursive: true });
+  mkdirSync9(resolve5(paths.reportPath, ".."), { recursive: true });
   writeFileSync10(paths.reportPath, report, "utf-8");
   console.log(`Overall: ${verdict.overall}`);
   console.log(`Validation report: ${paths.reportPath}`);
@@ -7179,22 +7079,14 @@ __export(task_review_exports, {
   getTaskReviewRuntimePaths: () => getTaskReviewRuntimePaths,
   runTaskReview: () => runTaskReview
 });
-import { existsSync as existsSync14, mkdirSync as mkdirSync10, readFileSync as readFileSync14, writeFileSync as writeFileSync11 } from "node:fs";
-import { resolve as resolve8 } from "node:path";
+import { mkdirSync as mkdirSync10, readFileSync as readFileSync14, writeFileSync as writeFileSync11 } from "node:fs";
+import { resolve as resolve6 } from "node:path";
 function getTaskReviewRuntimePaths(root) {
   const aegis = getAegisRuntimePaths(root);
-  if (existsSync14(aegis.currentTask)) {
-    return {
-      currentTaskPath: aegis.currentTask,
-      reportPath: aegis.taskQualityReport,
-      runtimeKind: "aegis"
-    };
-  }
-  const legacy = getLegacyAgentRuntimePaths(root);
   return {
-    currentTaskPath: legacy.currentTask,
-    reportPath: legacy.taskQualityReport,
-    runtimeKind: "legacy-agent"
+    currentTaskPath: aegis.currentTask,
+    reportPath: aegis.taskQualityReport,
+    runtimeKind: "aegis"
   };
 }
 function runTaskReview(root) {
@@ -7202,7 +7094,7 @@ function runTaskReview(root) {
   const rawTask = readFileSync14(paths.currentTaskPath, "utf-8");
   const review = reviewCurrentTaskMarkdown(rawTask);
   const report = renderTaskQualityReview(review);
-  mkdirSync10(resolve8(paths.reportPath, ".."), { recursive: true });
+  mkdirSync10(resolve6(paths.reportPath, ".."), { recursive: true });
   writeFileSync11(paths.reportPath, report, "utf-8");
   console.log(report);
   process.exitCode = review.verdict === "PASS" ? 0 : 1;
@@ -7278,7 +7170,7 @@ __export(superpower_exports, {
   runSuperpowerScan: () => runSuperpowerScan
 });
 import { mkdirSync as mkdirSync11, readFileSync as readFileSync16, writeFileSync as writeFileSync12 } from "node:fs";
-import { resolve as resolve9 } from "node:path";
+import { resolve as resolve7 } from "node:path";
 function readAegisConfig(root) {
   const paths = getAegisRuntimePaths(root);
   return JSON.parse(readFileSync16(paths.aegisConfig, "utf-8"));
@@ -7286,7 +7178,7 @@ function readAegisConfig(root) {
 function runSuperpowerScan(root) {
   const paths = getAegisRuntimePaths(root);
   const configuredPath = readAegisConfig(root).superpower?.local_path_hint;
-  const sourceRoot = configuredPath || resolve9(root, ".superpowers");
+  const sourceRoot = configuredPath || resolve7(root, ".superpowers");
   const manifest = buildSuperpowerSourceManifest(sourceRoot, (/* @__PURE__ */ new Date()).toISOString());
   mkdirSync11(paths.currentDir, { recursive: true });
   writeFileSync12(paths.superpowerSources, `${JSON.stringify(manifest, null, 2)}
@@ -14815,36 +14707,27 @@ __export(review_exports, {
   runReviewPrompt: () => runReviewPrompt,
   runReviewRender: () => runReviewRender
 });
-import { existsSync as existsSync15, mkdirSync as mkdirSync12, readFileSync as readFileSync17, writeFileSync as writeFileSync13 } from "node:fs";
-import { resolve as resolve10 } from "node:path";
+import { mkdirSync as mkdirSync12, readFileSync as readFileSync17, writeFileSync as writeFileSync13 } from "node:fs";
+import { resolve as resolve8 } from "node:path";
 function getReviewRuntimePaths(root) {
   const aegis = getAegisRuntimePaths(root);
-  if (existsSync15(aegis.currentTask)) {
-    return {
-      promptPath: aegis.codexReviewPrompt,
-      rawReviewPath: aegis.codexReviewRaw,
-      renderedReviewPath: aegis.codexReview,
-      runtimeKind: "aegis"
-    };
-  }
-  const legacy = getLegacyAgentRuntimePaths(root);
   return {
-    promptPath: legacy.codexReviewPrompt,
-    rawReviewPath: legacy.codexReviewRaw,
-    renderedReviewPath: legacy.codexReview,
-    runtimeKind: "legacy-agent"
+    promptPath: aegis.codexReviewPrompt,
+    rawReviewPath: aegis.codexReviewRaw,
+    renderedReviewPath: aegis.codexReview,
+    runtimeKind: "aegis"
   };
 }
 function runReviewPrompt(root) {
   const paths = getReviewRuntimePaths(root);
   const prompt = buildReviewPrompt(buildReviewEvidence(root));
-  mkdirSync12(resolve10(paths.promptPath, ".."), { recursive: true });
+  mkdirSync12(resolve8(paths.promptPath, ".."), { recursive: true });
   writeFileSync13(paths.promptPath, prompt, "utf-8");
   console.log(`Review prompt written to ${paths.promptPath}`);
 }
 function runReviewRender(root, jsonlPath) {
   const paths = getReviewRuntimePaths(root);
-  const rawOutputPath = jsonlPath ? resolve10(root, jsonlPath) : paths.rawReviewPath;
+  const rawOutputPath = jsonlPath ? resolve8(root, jsonlPath) : paths.rawReviewPath;
   const jsonl = readFileSync17(rawOutputPath, "utf-8");
   const result = parseCodexJsonlToReviewResult(jsonl);
   const timestamp = (/* @__PURE__ */ new Date()).toISOString();
@@ -14854,11 +14737,9 @@ function runReviewRender(root, jsonlPath) {
     timestamp,
     rawOutputPath
   });
-  mkdirSync12(resolve10(paths.renderedReviewPath, ".."), { recursive: true });
+  mkdirSync12(resolve8(paths.renderedReviewPath, ".."), { recursive: true });
   writeFileSync13(paths.renderedReviewPath, md, "utf-8");
-  if (paths.runtimeKind === "aegis") {
-    routeCodexReviewResult(root, result, timestamp);
-  }
+  routeCodexReviewResult(root, result, timestamp);
   console.log(md);
 }
 var init_review = __esm({

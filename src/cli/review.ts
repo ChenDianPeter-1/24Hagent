@@ -1,35 +1,25 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { buildReviewPrompt } from '../core/review/prompt-builder.js'
 import { buildReviewEvidence } from '../core/review/evidence-builder.js'
 import { renderReviewMarkdown } from '../core/review/result-renderer.js'
 import { parseCodexJsonlToReviewResult } from '../core/schemas/review-result.js'
-import { getAegisRuntimePaths, getLegacyAgentRuntimePaths, routeCodexReviewResult, type AegisRuntimeKind } from '../core/aegis-runtime/index.js'
+import { getAegisRuntimePaths, routeCodexReviewResult } from '../core/aegis-runtime/index.js'
 
 export type ReviewRuntimePaths = {
   promptPath: string
   rawReviewPath: string
   renderedReviewPath: string
-  runtimeKind: AegisRuntimeKind
+  runtimeKind: 'aegis'
 }
 
 export function getReviewRuntimePaths(root: string): ReviewRuntimePaths {
   const aegis = getAegisRuntimePaths(root)
-  if (existsSync(aegis.currentTask)) {
-    return {
-      promptPath: aegis.codexReviewPrompt,
-      rawReviewPath: aegis.codexReviewRaw,
-      renderedReviewPath: aegis.codexReview,
-      runtimeKind: 'aegis'
-    }
-  }
-
-  const legacy = getLegacyAgentRuntimePaths(root)
   return {
-    promptPath: legacy.codexReviewPrompt,
-    rawReviewPath: legacy.codexReviewRaw,
-    renderedReviewPath: legacy.codexReview,
-    runtimeKind: 'legacy-agent'
+    promptPath: aegis.codexReviewPrompt,
+    rawReviewPath: aegis.codexReviewRaw,
+    renderedReviewPath: aegis.codexReview,
+    runtimeKind: 'aegis'
   }
 }
 
@@ -54,8 +44,6 @@ export function runReviewRender(root: string, jsonlPath?: string): void {
   })
   mkdirSync(resolve(paths.renderedReviewPath, '..'), { recursive: true })
   writeFileSync(paths.renderedReviewPath, md, 'utf-8')
-  if (paths.runtimeKind === 'aegis') {
-    routeCodexReviewResult(root, result, timestamp)
-  }
+  routeCodexReviewResult(root, result, timestamp)
   console.log(md)
 }

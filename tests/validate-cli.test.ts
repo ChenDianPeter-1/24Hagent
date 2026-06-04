@@ -22,7 +22,7 @@ const gates = {
 }
 
 describe('validate CLI runtime paths', () => {
-  it('prefers .aegis quality gates when present', () => {
+  it('uses .aegis quality gates', () => {
     const dir = resolve(__dirname, 'fixtures/.test-validate-aegis')
     rmSync(dir, { recursive: true, force: true })
     mkdirSync(resolve(dir, '.aegis/config'), { recursive: true })
@@ -33,21 +33,6 @@ describe('validate CLI runtime paths', () => {
     expect(paths.runtimeKind).toBe('aegis')
     expect(paths.qualityGatesPath).toBe(resolve(dir, '.aegis/config/quality-gates.json'))
     expect(paths.reportPath).toBe(resolve(dir, '.aegis/current/validation-report.md'))
-
-    rmSync(dir, { recursive: true, force: true })
-  })
-
-  it('falls back to legacy .agent quality gates', () => {
-    const dir = resolve(__dirname, 'fixtures/.test-validate-agent')
-    rmSync(dir, { recursive: true, force: true })
-    mkdirSync(resolve(dir, '.agent'), { recursive: true })
-    writeFileSync(resolve(dir, '.agent/QUALITY_GATES.json'), JSON.stringify(gates))
-
-    const paths = getValidationRuntimePaths(dir)
-
-    expect(paths.runtimeKind).toBe('legacy-agent')
-    expect(paths.qualityGatesPath).toBe(resolve(dir, '.agent/QUALITY_GATES.json'))
-    expect(paths.reportPath).toBe(resolve(dir, '.agent/VALIDATION_REPORT.md'))
 
     rmSync(dir, { recursive: true, force: true })
   })
