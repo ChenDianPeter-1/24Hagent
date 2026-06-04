@@ -60,7 +60,7 @@ aegis safety:check
 aegis commit:suggest
 ```
 
-`24h` exists only as a compatibility alias. New work should use `aegis`.
+Aegis exposes the `aegis` command. Old `24h` command aliases have been removed from the active product.
 
 The old `.agent/` runtime has been removed from active Aegis behavior. Aegis
 uses `.aegis/` as the only runtime root, documented in
@@ -96,7 +96,6 @@ Do not mark the rewrite complete until these are audited or implemented:
 - Strengthen blueprint revision behavior beyond the current start/summary/confirm slice.
 - Shorten and refocus the root `CLAUDE.md` so Claude Code sees the Aegis hosting contract before legacy project-local rules.
 - Refresh the architecture map around Aegis roles, runtime state, compatibility surfaces, and remaining migration decisions.
-- Decide in a dedicated compatibility-release phase whether to drop the old `24h` alias.
 - Audit README/docs/package/starter search results for old product mind before final completion.
 
 ## Boundaries

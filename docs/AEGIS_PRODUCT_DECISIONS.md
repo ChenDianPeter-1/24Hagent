@@ -274,4 +274,4 @@ The runtime directory is `.aegis/`, not `.agent/` and not `.aiges/`.
 
 Core logic belongs in TypeScript and Node.js. PowerShell is only a Windows launcher or installation helper.
 
-The formal command identity is `aegis`. Old `24h` commands may remain as a compatibility layer during migration, but they are not the new product mind.
+The formal command identity is `aegis`. Old `24h` command aliases were removed during the pure Aegis cleanup and are not part of the active product.

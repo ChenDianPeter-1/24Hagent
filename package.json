@@ -4,8 +4,7 @@
   "private": true,
   "type": "module",
   "bin": {
-    "aegis": "dist/cli/main.js",
-    "24h": "dist/cli/main.js"
+    "aegis": "dist/cli/main.js"
   },
   "files": [
     "dist/",

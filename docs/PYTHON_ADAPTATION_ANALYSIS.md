@@ -55,7 +55,7 @@ The following old assumptions are obsolete:
 
 - new projects should initialize the old runtime directory
 - users should copy quality-gate files from the old starter runtime directory
-- Claude Code should enter the old Orchestrator loop
+- Claude Code should enter the old pre-Aegis loop
 - Python onboarding should teach the old command identity as the primary command
 
 New work should use Aegis terminology, `.aegis/` runtime paths, and `aegis`

@@ -110,5 +110,4 @@ powershell -NoProfile -ExecutionPolicy Bypass -File 24hagent-starter/Start.ps1 -
 Claude Code takes over the install onboarding through `aegis-install`.
 It will ask for confirmation before entering the Aegis-governed delivery loop.
 
-`24h` remains a compatibility command in the CLI during migration, but new
-starter onboarding should teach `aegis`.
+Starter onboarding teaches only `aegis`.

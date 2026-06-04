@@ -74,7 +74,7 @@ Aegis does not:
 | `aegis safety:check` | Check forbidden actions and file-scope safety |
 | `aegis commit:suggest` | Render a human-facing commit suggestion after Codex `PASS` |
 
-`24h` remains a compatibility alias during migration. New docs and workflows should teach `aegis`.
+Aegis exposes the `aegis` command. Old `24h` command aliases have been removed from the active product.
 
 ## Current Implementation
 
@@ -84,7 +84,7 @@ Implemented slices include:
 
 - Aegis product decisions, runtime spec, and roadmap
 - `.aegis/` runtime scaffold and compact run state
-- `aegis` CLI identity with `24h` compatibility alias
+- `aegis` CLI identity
 - Claude Code hosting contract
 - blueprint start, summary, and confirmation flow
 - current-task generation and task-quality review
@@ -96,7 +96,7 @@ Implemented slices include:
 - completed-round archival under `.aegis/archive/<task-id>/`
 - bundled starter onboarding migrated to Aegis / `.aegis`
 
-The strongest remaining migration work is now final verification and cleanup: refresh the architecture map, audit old product naming, and decide when the compatibility release can drop the old `24h` alias.
+The strongest remaining migration work is now final verification and cleanup: refresh the architecture map and audit old product naming.
 
 ## Verification
 

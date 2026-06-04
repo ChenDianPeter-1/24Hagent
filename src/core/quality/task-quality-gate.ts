@@ -162,7 +162,7 @@ export function reviewTaskPackageQuality(task: TaskPackage, options: TaskQuality
       code: 'STOP_RULE_TOO_WEAK',
       severity: 'NEED_FIX',
       reason: 'Stop Rule does not clearly say when to stop, ask, hand off, or block execution.',
-      suggestion: 'State the exact condition that requires Worker to stop and ask the Orchestrator or human.'
+        suggestion: 'State the exact condition that requires Claude Code to stop and ask Aegis or the human.'
     })
   }
 
