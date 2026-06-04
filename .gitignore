@@ -20,6 +20,9 @@
 .aegis/current/*.tmp
 .aegis/current/*.log
 
+# Python virtual environment
+.venv/
+
 # Node modules
 node_modules/
 

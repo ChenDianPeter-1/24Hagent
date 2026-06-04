@@ -1,46 +1,78 @@
-# Aegis
+<div id="top">
 
-[![English](#english) | [中文](#chinese)]
+<div align="center">
 
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue)](https://www.typescriptlang.org/)
-[![Node.js](https://img.shields.io/badge/Node.js-20%2B-green)](https://nodejs.org/)
-[![License](https://img.shields.io/badge/license-MIT-brightgreen)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-202%20passed-success)](.)
+# <code>Aegis</code>
+
+<em>A delivery gate that lives inside Claude Code / 寄生在 Claude Code 里的交付门禁</em>
+
+<img src="https://img.shields.io/badge/TypeScript-3178C6.svg?style=flat-square&logo=TypeScript&logoColor=white" alt="TypeScript">
+<img src="https://img.shields.io/badge/Node.js-20%2B-339933.svg?style=flat-square&logo=nodedotjs&logoColor=white" alt="Node.js">
+<img src="https://img.shields.io/badge/Vitest-6E9F18.svg?style=flat-square&logo=Vitest&logoColor=white" alt="Vitest">
+<img src="https://img.shields.io/badge/Zod-3E67B1.svg?style=flat-square&logo=Zod&logoColor=white" alt="Zod">
+<img src="https://img.shields.io/badge/ESLint-4B32C3.svg?style=flat-square&logo=ESLint&logoColor=white" alt="ESLint">
+<br>
+<img src="https://img.shields.io/badge/license-MIT-brightgreen.svg?style=flat-square" alt="License">
+<img src="https://img.shields.io/badge/tests-202%20passed-success.svg?style=flat-square" alt="Tests">
+
+**<a href="#english">English</a> | <a href="#chinese">中文</a>**
+
+</div>
 
 ---
 
-## English
+<h2 id="english"> English</h2>
 
-### What is Aegis?
+<div align="right"><a href="#top">Back to top </a></div>
 
-Aegis is a **delivery gate that lives inside Claude Code**. It does not replace Claude Code, and it does not become another autonomous coding agent.
+## ✨ Overview
+
+**Aegis** is a non-interactive delivery gate that lives inside Claude Code. It does not replace Claude Code, and it does not become another autonomous coding agent.
 
 Think of a construction site:
 
 | Role | Who | Responsibility |
 |---|---|---|
-| Foreman | You | Set the direction, make high-risk decisions |
+| Foreman | You | Set direction, handle high-risk decisions |
 | Crew | Claude Code | Understand goals, break down tasks, write code |
-| Inspector | Aegis | Check blueprints, run quality gates, package evidence |
-| External auditor | Codex | Read-only review, return PASS / NEED_FIX / NEED_HUMAN |
+| **Inspector** | **Aegis** | **Check blueprints, run quality gates, package evidence** |
+| Auditor | Codex | Read-only review, return PASS / NEED_FIX / NEED_HUMAN |
 
-Aegis is the inspector that makes sure every round of work is planned, checked, and reviewed before moving on.
+Aegis is the inspector. It ensures every round of work is planned, checked, and reviewed before the next round begins.
 
-### Why Aegis?
+```text
+Aegis = Superpower discipline + Claude Code construction + Aegis gates + Codex review
+```
 
-Claude Code is powerful but confident. It can drift from the goal, skip tests, expand scope, and mark its own homework.
+## 💡 Why Aegis
+
+Claude Code is powerful but overconfident. It can drift from the goal, skip tests, expand scope, and mark its own homework.
 
 Aegis adds a **mechanical verification layer** that Claude Code cannot bypass:
 
-- Every task must pass a **task quality gate** before construction starts.
-- Every change must pass **local quality gates** (tests, lint, typecheck, coverage).
-- Every round must leave **Superpower discipline evidence** (planning, TDD, debugging).
-- Every change is packaged into a **Codex review packet** for an independent second opinion.
-- Every outcome is routed: **PASS → next round**, **NEED_FIX → repair**, **NEED_HUMAN → stop and ask**.
+- **Task quality gate** — every task is reviewed before construction starts
+- **Local quality gates** — tests, lint, typecheck, and coverage run automatically
+- **Discipline evidence** — every round must leave planning, TDD, and debugging records
+- **Codex review** — every change is packaged for an independent second opinion
+- **Verdict routing** — PASS  next round, NEED_FIX  repair, NEED_HUMAN  stop and ask
 
 Aegis never writes product code, never commits, never pushes, and never calls AI models. It only checks, packages, and routes.
 
-### How It Works
+## 📌 Features
+
+- **Non-interactive CLI** — run `aegis` and it auto-advances to the next stop point
+- **Task quality gate** — validates `current-task.md` before any code is written
+- **Superpower integration** — scans Superpower sources for discipline evidence
+- **Discipline gate** — verifies planning, TDD, debugging, and review evidence exist
+- **Local quality gates** — runs test, lint, typecheck, and coverage automatically
+- **Codex review pipeline** — builds evidence packets, generates review prompts, renders verdicts
+- **Verdict routing** — PASS archives the round, NEED_FIX triggers repair, NEED_HUMAN stops for human
+- **Safety hard-blocks** — forbidden actions (commit, push, deploy, rebase) are blocked
+- **Progression modes** — `auto`, `allow`, and `ask` control how Aegis advances after PASS
+- **Round archiving** — completed rounds are archived to `.aegis/archive/` (excluded from git)
+- **Bundled starter** — copy `aegis-starter/` into any project, double-click, and Claude Code handles the rest
+
+## 🔄 How It Works
 
 One round of Aegis-governed work:
 
@@ -48,179 +80,221 @@ One round of Aegis-governed work:
 You: "Use Aegis to start."
         │
         ▼
-┌─────────────────────────────────────────────────────┐
-│  1. Blueprint                                        │
-│     Claude Code uses Superpower to draft a blueprint │
-│     Aegis locks it as project-blueprint.md           │
-└──────────────────────┬──────────────────────────────┘
-                       ▼
-┌─────────────────────────────────────────────────────┐
-│  2. Task Shaping                                     │
-│     Aegis extracts the next minimal task             │
-│     Writes current-task.md + work-instruction.md     │
-└──────────────────────┬──────────────────────────────┘
-                       ▼
-┌─────────────────────────────────────────────────────┐
-│  3. Pre-construction Gates                           │
-│     aegis task:review    → task quality check        │
-│     aegis safety:check   → forbidden action scan     │
-└──────────────────────┬──────────────────────────────┘
-                       ▼
-┌─────────────────────────────────────────────────────┐
-│  4. Construction                                     │
-│     Claude Code builds per current-task.md           │
-│     Leaves discipline evidence in .aegis/current/    │
-└──────────────────────┬──────────────────────────────┘
-                       ▼
-┌─────────────────────────────────────────────────────┐
-│  5. Post-construction Gates                          │
-│     aegis discipline:check → evidence completeness   │
-│     aegis validate        → test/lint/typecheck/cov  │
-│     aegis round:check     → combined pre-Codex gate  │
-└──────────────────────┬──────────────────────────────┘
-                       ▼
-┌─────────────────────────────────────────────────────┐
-│  6. Codex Review                                     │
-│     aegis review:prompt → build evidence packet      │
-│     Codex reads, returns PASS/NEED_FIX/NEED_HUMAN    │
-│     aegis review:render → human-readable report      │
-└──────────────────────┬──────────────────────────────┘
-                       ▼
-┌─────────────────────────────────────────────────────┐
-│  7. Verdict Routing                                  │
-│     PASS        → archive round, prepare next task   │
-│     NEED_FIX    → repair, retry (capped)             │
-│     NEED_HUMAN  → write human-handoff.md, stop       │
-└─────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────┐
+│  1. Blueprint                           │
+│     Claude Code drafts a blueprint      │
+│     Aegis locks it as confirmed         │
+└──────────────┬──────────────────────────┘
+               ▼
+┌─────────────────────────────────────────┐
+│  2. Task Shaping                        │
+│     Aegis extracts the next minimal     │
+│     task from the blueprint             │
+│     Writes current-task.md              │
+└──────────────┬──────────────────────────┘
+               ▼
+┌─────────────────────────────────────────┐
+│  3. Pre-construction Gates              │
+│     task:review    check task quality   │
+│     safety:check   scan for forbidden   │
+│                    actions              │
+└──────────────┬──────────────────────────┘
+               ▼
+┌─────────────────────────────────────────┐
+│  4. Construction                        │
+│     Claude Code builds per task spec    │
+│     Leaves evidence in .aegis/current/  │
+└──────────────┬──────────────────────────┘
+               ▼
+┌─────────────────────────────────────────┐
+│  5. Post-construction Gates             │
+│     discipline:check  verify evidence   │
+│     validate          test/lint/typechk │
+│     round:check       pre-Codex combo   │
+└──────────────┬──────────────────────────┘
+               ▼
+┌─────────────────────────────────────────┐
+│  6. Codex Review                        │
+│     review:prompt  build evidence       │
+│     Codex reads, returns verdict        │
+│     review:render  readable report      │
+└──────────────┬──────────────────────────┘
+               ▼
+┌─────────────────────────────────────────┐
+│  7. Verdict                             │
+│     PASS        archive, next task     │
+│     NEED_FIX    repair (capped)        │
+│     NEED_HUMAN  stop, write handoff    │
+└─────────────────────────────────────────┘
 ```
 
-### Quick Start
+## 📁 Project Structure
+
+```sh
+aegis/
+├── .aegis/                    # Runtime state directory
+│   ├── config/                # Quality gates, Codex rubric, Claude Code contract
+│   ├── blueprint/             # Project blueprint + progress snapshot
+│   ├── current/               # Current task, status, evidence, reports
+│   ├── state/                 # run-state.json (single machine source of truth)
+│   └── archive/               # Completed round snapshots (gitignored)
+├── aegis-starter/             # Bundled starter kit for other projects
+│   ├── Start.bat              # Windows double-click launcher
+│   ├── .claude/skills/        # Superpower + aegis-install skills
+│   └── bin/                   # Local aegis CLI entry
+├── src/
+│   ├── cli/                   # CLI command handlers (main, aegis, blueprint, safety, etc.)
+│   └── core/
+│       ├── aegis-runtime/     # Paths, run-state, navigation, controller, safety
+│       ├── quality/           # Validation engine, readiness, task quality gate
+│       ├── review/            # Evidence builder, prompt builder, result renderer
+│       ├── schemas/           # Zod schemas for runtime types
+│       └── superpower/        # Superpower source scanner
+├── tests/                     # 27 test files, 202 tests
+├── docs/                      # Product decisions, runtime spec, roadmap, contract
+├── package.json
+└── README.md
+```
+
+## 🚀 Getting Started
+
+### 📋 Prerequisites
+
+- **Node.js** 20 or newer
+- **npm** (bundled with Node.js)
+- **Claude CLI** on PATH (for automatic Claude Code launch in starter)
+
+### ⚙️ Installation
 
 **In the Aegis project itself:**
 
-```bash
+```sh
+git clone https://github.com/ChenDianPeter-1/24Hagent.git
+cd 24Hagent
 npm ci
 npm run build
-npm test
 ```
 
 **To use Aegis in another project:**
 
-```bash
+```sh
 # 1. Copy the starter into your target project
 cp -r aegis-starter/ /path/to/your-project/
 
-# 2. Double-click Start.bat (Windows) or run:
-powershell -NoProfile -ExecutionPolicy Bypass -File aegis-starter/Start.ps1
+# 2. Double-click Start.bat (Windows)
+#    Or run: powershell -NoProfile -ExecutionPolicy Bypass -File aegis-starter/Start.ps1
 
-# 3. The starter installs .aegis/ runtime state + Superpower skills
-# 4. Claude Code takes over onboarding via the aegis-install skill
-# 5. Then just say:
-#    "Use Aegis to start."
-#    "Use Aegis to continue."
+# 3. The starter installs .aegis/ runtime + Superpower skills
+# 4. Claude Code takes over via the aegis-install skill
 ```
 
-Requirements: Node.js 20+, Claude CLI on PATH.
+### 💻 Usage
 
-### Commands
+Inside Claude Code, say:
+
+```text
+Use Aegis to start.
+Use Aegis to continue.
+```
+
+Claude Code runs `aegis`, reads the generated navigation files, performs only the instructed work, leaves evidence, and runs `aegis` again.
+
+Run `aegis` directly from the terminal:
+
+```sh
+aegis                 # Refresh navigation, advance state
+aegis status          # Show current phase, task, and mode
+aegis round:check     # Run full pre-Codex gate suite
+```
+
+### 🧪 Testing
+
+This project uses [Vitest](https://vitest.dev/). Run the test suite with:
+
+```sh
+npm test
+```
+
+Current baseline: **27 test files, 202 tests passed**.
+
+## 📟 Commands
 
 | Command | Purpose |
 |---|---|
-| `aegis` | Refresh navigation, advance state until a stop is required |
+| `aegis` | Refresh navigation, advance state until stop required |
 | `aegis contract` | Print the Claude Code hosting contract |
 | `aegis blueprint:start` | Prepare a Superpower-guided blueprint draft |
 | `aegis blueprint:summary` | Render blueprint summary + decision request |
-| `aegis blueprint:confirm` | Lock the draft as the confirmed project blueprint |
-| `aegis task:next` | Generate the next formal current-task.md from blueprint |
+| `aegis blueprint:confirm` | Lock the draft as confirmed project blueprint |
+| `aegis task:next` | Generate the next formal current-task.md |
 | `aegis task:review` | Check current-task quality before construction |
 | `aegis superpower:scan` | Record Superpower source file references |
-| `aegis discipline:check` | Verify current-round Superpower discipline evidence |
+| `aegis discipline:check` | Verify current-round discipline evidence |
 | `aegis validate` | Run local quality gates (test, lint, typecheck, coverage) |
-| `aegis round:check` | Combined pre-Codex gate (safety + task + discipline + validate) |
-| `aegis review:prompt` | Generate a read-only Codex review prompt packet |
-| `aegis review:render` | Render Codex JSONL into a readable review report |
-| `aegis review:run` | Full review loop: prompt → Codex → render → route verdict |
-| `aegis safety:check` | Hard-block forbidden actions and file-scope violations |
-| `aegis commit:suggest` | Render a commit suggestion after Codex PASS |
-| `aegis status` | Show current phase, task, mode, and next action |
+| `aegis round:check` | Combined pre-Codex gate |
+| `aegis review:prompt` | Generate Codex review prompt packet |
+| `aegis review:render` | Render Codex JSONL into readable report |
+| `aegis safety:check` | Hard-block forbidden actions |
+| `aegis status` | Show current phase, task, mode, next action |
 
-### Runtime Directory
-
-```text
-.aegis/
-  config/
-    aegis.json              ← Aegis configuration
-    quality-gates.json      ← Quality gate definitions
-    codex-rubric.md         ← Codex review criteria
-    claude-code-contract.md ← Claude Code hosting rules
-  blueprint/
-    project-blueprint.md    ← Confirmed project blueprint
-    project-progress.md     ← Auto-refreshed progress snapshot
-  state/
-    run-state.json          ← Single machine source of truth
-  current/
-    current-task.md         ← This round's construction ticket
-    status.md               ← Human-readable phase snapshot
-    work-instruction.md     ← Next step for Claude Code
-    round-summary.md        ← Round completion summary
-    decision-request.md     ← Pending decision for human
-    human-handoff.md        ← Human intervention required
-    *-evidence.md           ← Discipline evidence (planning/TDD/debug/verify)
-    validation-report.md    ← Gate execution results
-    codex-review-prompt.md  ← Generated Codex review packet
-    codex-review.md         ← Rendered review verdict
-  archive/
-    <task-id>/              ← Completed round snapshots (not in Git)
-```
-
-`run-state.json` is the compact machine truth. Navigation files are generated for Claude Code to read. `archive/` is gitignored.
-
-### What Aegis Is Not
-
-- Not a new AI agent platform.
-- Not a replacement for Claude Code.
-- Not a model runner. Aegis never calls AI models.
-- Not an interactive CLI. Aegis is non-interactive.
-- Aegis never commits, pushes, merges, rebases, deploys, releases, or publishes.
-- Aegis never takes over Superpower's native directory or methodology.
-
-### Verification
-
-```bash
-npm run typecheck
-npm run build
-npm run lint
-npm test
-node dist/cli/main.js safety:check
-node dist/cli/main.js task:review
-git diff --check
-```
-
-### Documentation
+## 📖 Documentation
 
 | Document | Content |
 |---|---|
-| [docs/AEGIS_PRODUCT_DECISIONS.md](docs/AEGIS_PRODUCT_DECISIONS.md) | Product positioning and design decisions |
+| [docs/AEGIS_PRODUCT_DECISIONS.md](docs/AEGIS_PRODUCT_DECISIONS.md) | Product positioning and design rationale |
 | [docs/AEGIS_RUNTIME_SPEC.md](docs/AEGIS_RUNTIME_SPEC.md) | Runtime directory spec and file contracts |
 | [docs/AEGIS_MVP_ROADMAP.md](docs/AEGIS_MVP_ROADMAP.md) | MVP scope and phase roadmap |
 | [docs/AEGIS_CLAUDE_CODE_CONTRACT.md](docs/AEGIS_CLAUDE_CODE_CONTRACT.md) | The contract Claude Code must follow |
 | [docs/AEGIS_COMPLETION_AUDIT.md](docs/AEGIS_COMPLETION_AUDIT.md) | Rewrite completion audit |
-| [docs/AEGIS_LEGACY_REMOVAL.md](docs/AEGIS_LEGACY_REMOVAL.md) | Legacy .agent fallback removal record |
 | [docs/HANDOFF.md](docs/HANDOFF.md) | Project handoff and state summary |
 | [docs/HOW_TO_NEW_PROJECT.md](docs/HOW_TO_NEW_PROJECT.md) | Guide for onboarding a new project |
 | [aegis-starter/README.md](aegis-starter/README.md) | Starter package documentation |
 
-### License
+## 📈 Roadmap
 
-MIT
+- [X] **Product positioning & .aegis/ runtime scaffold**
+- [X] **Single-entry `aegis` non-interactive CLI**
+- [X] **Blueprint flow (draft  confirm  task generation)**
+- [X] **Superpower integration & discipline gate**
+- [X] **Quality gates + Codex review loop**
+- [X] **Safety boundaries & forbidden-action enforcement**
+- [X] **Auto / Allow / Ask progression modes**
+- [X] **Round archiving & starter migration**
+- [ ] **Richer blueprint revision UX**
+- [ ] **More starter profiles for additional project types**
+- [ ] **Configurable coverage thresholds**
+
+## 🤝 Contributing
+
+- ** [Report Issues](https://github.com/ChenDianPeter-1/24Hagent/issues)** — submit bugs or feature requests
+- ** [Submit Pull Requests](https://github.com/ChenDianPeter-1/24Hagent/pulls)** — review open PRs or submit your own
+
+<details>
+<summary>Contributing Guidelines</summary>
+
+1. **Fork the Repository** — fork the project to your GitHub account
+2. **Clone Locally** — `git clone https://github.com/ChenDianPeter-1/24Hagent.git`
+3. **Create a Branch** — `git checkout -b new-feature-x`
+4. **Make Changes** — develop and test locally
+5. **Commit** — `git commit -m 'Implemented new feature x.'`
+6. **Push** — `git push origin new-feature-x`
+7. **Submit a PR** — create a PR against the main branch
+
+</details>
+
+## 📜 License
+
+Aegis is distributed under the [MIT](LICENSE) license.
 
 ---
 
-## 中文
+<h2 id="chinese"> 中文</h2>
 
-### Aegis 是什么？
+<div align="right"><a href="#top">回到顶部 </a></div>
 
-Aegis 是**寄生在 Claude Code 里面的交付门禁系统**。它不替代 Claude Code，也不是另一个自主编码 Agent。
+## ✨ 概述
+
+**Aegis** 是寄生在 Claude Code 里的非交互式交付门禁系统。它不替代 Claude Code，也不是另一个自主编码 Agent。
 
 把它想象成一个建筑工地：
 
@@ -228,108 +302,187 @@ Aegis 是**寄生在 Claude Code 里面的交付门禁系统**。它不替代 Cl
 |---|---|---|
 | 甲方 | 你 | 定方向，处理高风险决策 |
 | 施工队 | Claude Code | 理解目标，拆解任务，写代码 |
-| 质检员 | Aegis | 检查任务单，跑质量门，打包审查材料 |
+| **质检员** | **Aegis** | **检查蓝图，跑质量门，打包审查材料** |
 | 外部监理 | Codex | 只读审查，返回 PASS / NEED_FIX / NEED_HUMAN |
 
-Aegis 就是那个质检员，确保每一轮工作都是先计划、再检查、再审查，才能进入下一轮。
+Aegis 就是那个质检员。它确保每一轮工作都是先计划、再检查、再审查，才能进入下一轮。
 
-### 为什么需要 Aegis？
+```text
+Aegis = Superpower 纪律 + Claude Code 施工 + Aegis 门禁 + Codex 外审
+```
 
-Claude Code 很强大，但容易过度自信。它会偏离目标、跳过测试、扩大范围、给自己的作业打分。
+## 💡 为什么需要 Aegis
+
+Claude Code 很强大但容易过度自信。它会偏离目标、跳过测试、扩大范围、给自己的作业打分。
 
 Aegis 增加了一层 **Claude Code 无法绕过的机械验证层**：
 
-- 每轮任务开工前必须通过**任务质量门**。
-- 每次修改必须通过**本地质量门**（测试、lint、类型检查、覆盖率）。
-- 每轮施工必须留下 **Superpower 纪律证据**（计划、TDD、调试记录）。
-- 每次改动的证据被打包成 **Codex 审查材料**，由独立第二方审查。
-- 每种结果都有明确路由：**PASS → 下一轮**，**NEED_FIX → 返修**，**NEED_HUMAN → 停机等你**。
+- **任务质量门** — 每轮任务开工前必须通过任务单审查
+- **本地质量门** — 测试、lint、类型检查、覆盖率自动运行
+- **纪律证据** — 每轮必须留下计划、TDD、调试记录
+- **Codex 审查** — 每次改动打包成独立第二方审查材料
+- **裁决路由** — PASS  下一轮，NEED_FIX  返修，NEED_HUMAN  停机等你
 
 Aegis 永远不写产品代码、不 commit、不 push、不调用 AI 模型。它只做检查、打包和路由。
 
-### 怎么工作
+## 📌 功能特性
 
-Aegis 驱动下的一轮完整流程：
+- **非交互式 CLI** — 运行 `aegis` 即可自动推进到下一个停止点
+- **任务质量门** — 在动代码之前检查 `current-task.md` 是否合格
+- **Superpower 集成** — 扫描 Superpower 源文件获取纪律证据
+- **纪律门** — 验证计划、TDD、调试、审查证据是否完整
+- **本地质量门** — 自动运行 test、lint、typecheck、coverage
+- **Codex 审查管线** — 构建证据包、生成审查 prompt、渲染裁决结果
+- **裁决路由** — PASS 归档本轮，NEED_FIX 触发返修，NEED_HUMAN 停机等人
+- **安全硬阻断** — 禁区动作（commit、push、deploy、rebase）被阻断
+- **延展模式** — `auto`、`allow`、`ask` 三种模式控制 PASS 后的行为
+- **轮次归档** — 已完成轮次归档到 `.aegis/archive/`（不入 Git）
+- **内置 Starter** — 复制 `aegis-starter/` 到任意项目，双击即可启动
+
+## 🔄 工作流程
+
+Aegis 驱动下的一轮完整工作：
 
 ```text
 你："用 Aegis 启动。"
         │
         ▼
-┌─────────────────────────────────────────────────────┐
-│  1. 蓝图                                             │
-│     Claude Code 用 Superpower 起草蓝图               │
-│     Aegis 锁定为 project-blueprint.md                 │
-└──────────────────────┬──────────────────────────────┘
-                       ▼
-┌─────────────────────────────────────────────────────┐
-│  2. 塑形                                             │
-│     Aegis 从蓝图中拆出下一轮最小任务                  │
-│     生成 current-task.md + work-instruction.md       │
-└──────────────────────┬──────────────────────────────┘
-                       ▼
-┌─────────────────────────────────────────────────────┐
-│  3. 开工前检查                                       │
-│     aegis task:review    → 任务单质量检查            │
-│     aegis safety:check   → 禁区动作扫描              │
-└──────────────────────┬──────────────────────────────┘
-                       ▼
-┌─────────────────────────────────────────────────────┐
-│  4. 施工                                             │
-│     Claude Code 按 current-task.md 改代码            │
-│     在 .aegis/current/ 留下施工证据                  │
-└──────────────────────┬──────────────────────────────┘
-                       ▼
-┌─────────────────────────────────────────────────────┐
-│  5. 验收                                             │
-│     aegis discipline:check → 施工纪律证据检查        │
-│     aegis validate        → 测试/lint/类型/覆盖率    │
-│     aegis round:check     → 送审前综合门禁           │
-└──────────────────────┬──────────────────────────────┘
-                       ▼
-┌─────────────────────────────────────────────────────┐
-│  6. 送审                                             │
-│     aegis review:prompt → 生成送审材料包             │
-│     Codex 只读审查，返回 PASS/NEED_FIX/NEED_HUMAN    │
-│     aegis review:render → 可读审查报告               │
-└──────────────────────┬──────────────────────────────┘
-                       ▼
-┌─────────────────────────────────────────────────────┐
-│  7. 裁决                                             │
-│     PASS        → 归档本轮，准备下一任务             │
-│     NEED_FIX    → 返修（有次数上限）                 │
-│     NEED_HUMAN  → 写 human-handoff.md，停机等你      │
-└─────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────┐
+│  1. 蓝图                                 │
+│     Claude Code 起草蓝图                 │
+│     Aegis 锁定为正式项目蓝图              │
+└──────────────┬──────────────────────────┘
+               ▼
+┌─────────────────────────────────────────┐
+│  2. 塑形                                 │
+│     Aegis 从蓝图中拆出下一轮最小任务      │
+│     生成 current-task.md                 │
+└──────────────┬──────────────────────────┘
+               ▼
+┌─────────────────────────────────────────┐
+│  3. 开工前检查                           │
+│     task:review    检查任务单质量        │
+│     safety:check   扫描禁区动作          │
+└──────────────┬──────────────────────────┘
+               ▼
+┌─────────────────────────────────────────┐
+│  4. 施工                                 │
+│     Claude Code 按任务单改代码           │
+│     在 .aegis/current/ 留下施工证据      │
+└──────────────┬──────────────────────────┘
+               ▼
+┌─────────────────────────────────────────┐
+│  5. 验收                                 │
+│     discipline:check  验证纪律证据       │
+│     validate          测试/lint/类型     │
+│     round:check       送审前综合门禁     │
+└──────────────┬──────────────────────────┘
+               ▼
+┌─────────────────────────────────────────┐
+│  6. 送审                                 │
+│     review:prompt  构建送审材料          │
+│     Codex 只读审查，返回裁决             │
+│     review:render  可读审查报告          │
+└──────────────┬──────────────────────────┘
+               ▼
+┌─────────────────────────────────────────┐
+│  7. 裁决                                 │
+│     PASS        归档，下一任务          │
+│     NEED_FIX    返修（有次数上限）       │
+│     NEED_HUMAN  停机，写 handoff        │
+└─────────────────────────────────────────┘
 ```
 
-### 快速开始
+## 📁 项目结构
+
+```sh
+aegis/
+├── .aegis/                    # 运行态目录
+│   ├── config/                # 质量门、Codex 审查标准、Claude Code 操作协议
+│   ├── blueprint/             # 项目蓝图 + 进度快照
+│   ├── current/               # 当前任务、状态、证据、报告
+│   ├── state/                 # run-state.json（唯一机器真相）
+│   └── archive/               # 已完成轮次归档（不入 Git）
+├── aegis-starter/             # 内置 Starter 套件
+│   ├── Start.bat              # Windows 双击启动
+│   ├── .claude/skills/        # Superpower + aegis-install 技能
+│   └── bin/                   # 本地 aegis CLI 入口
+├── src/
+│   ├── cli/                   # CLI 命令处理（main、aegis、blueprint、safety 等）
+│   └── core/
+│       ├── aegis-runtime/     # 路径、运行状态、导航、控制器、安全
+│       ├── quality/           # 验证引擎、就绪检查、任务质量门
+│       ├── review/            # 证据构建器、Prompt 构建器、结果渲染器
+│       ├── schemas/           # 运行时类型 Zod Schema
+│       └── superpower/        # Superpower 源文件扫描器
+├── tests/                     # 27 个测试文件，202 个测试用例
+├── docs/                      # 产品决策、运行时规范、路线图、操作协议
+├── package.json
+└── README.md
+```
+
+## 🚀 快速开始
+
+### 📋 前置要求
+
+- **Node.js** 20 或更新版本
+- **npm**（Node.js 自带）
+- **Claude CLI** 在 PATH 中（Starter 自动启动 Claude Code 时需要）
+
+### ⚙️ 安装
 
 **在 Aegis 项目本身：**
 
-```bash
+```sh
+git clone https://github.com/ChenDianPeter-1/24Hagent.git
+cd 24Hagent
 npm ci
 npm run build
-npm test
 ```
 
 **在其他项目中使用 Aegis：**
 
-```bash
+```sh
 # 1. 把 starter 复制到目标项目
 cp -r aegis-starter/ /path/to/your-project/
 
-# 2. 双击 Start.bat（Windows）或运行：
-powershell -NoProfile -ExecutionPolicy Bypass -File aegis-starter/Start.ps1
+# 2. 双击 Start.bat（Windows）
+#    或运行：powershell -NoProfile -ExecutionPolicy Bypass -File aegis-starter/Start.ps1
 
 # 3. Starter 自动安装 .aegis/ 运行态 + Superpower 技能套装
 # 4. Claude Code 通过 aegis-install 技能接手引导
-# 5. 之后你只需要说：
-#    "用 Aegis 启动。"
-#    "用 Aegis 继续。"
 ```
 
-前置要求：Node.js 20+，Claude CLI 在 PATH 中。
+### 💻 使用
 
-### 命令参考
+在 Claude Code 中说：
+
+```text
+用 Aegis 启动。
+用 Aegis 继续。
+```
+
+Claude Code 会执行 `aegis`，读取生成的导航文件，只做被指示的工作，留下证据，然后再次运行 `aegis`。
+
+在终端直接运行：
+
+```sh
+aegis                 # 刷新导航，推进状态
+aegis status          # 查看当前阶段、任务和模式
+aegis round:check     # 运行送审前完整门禁
+```
+
+### 🧪 测试
+
+本项目使用 [Vitest](https://vitest.dev/)。运行测试：
+
+```sh
+npm test
+```
+
+当前基线：**27 个测试文件，202 个测试全部通过**。
+
+## 📟 命令参考
 
 | 命令 | 用途 |
 |---|---|
@@ -341,69 +494,15 @@ powershell -NoProfile -ExecutionPolicy Bypass -File aegis-starter/Start.ps1
 | `aegis task:next` | 从蓝图生成下一个正式 current-task.md |
 | `aegis task:review` | 施工前检查当前任务单质量 |
 | `aegis superpower:scan` | 记录 Superpower 源文件引用 |
-| `aegis discipline:check` | 验证当前轮 Superpower 纪律证据 |
-| `aegis validate` | 运行本地质量门（测试、lint、类型检查、覆盖率） |
-| `aegis round:check` | 送审前综合门禁（安全 + 任务 + 纪律 + 验证） |
-| `aegis review:prompt` | 生成 Codex 只读审查材料包 |
-| `aegis review:render` | 将 Codex JSONL 渲染为可读审查报告 |
-| `aegis review:run` | 完整审查循环：生成 prompt → Codex → 渲染 → 路由裁决 |
-| `aegis safety:check` | 硬阻断禁区动作和文件范围违规 |
-| `aegis commit:suggest` | Codex PASS 后渲染提交建议 |
-| `aegis status` | 显示当前阶段、任务、模式和下一步 |
+| `aegis discipline:check` | 验证当前轮施工纪律证据 |
+| `aegis validate` | 运行本地质量门（test、lint、typecheck、coverage） |
+| `aegis round:check` | 送审前综合门禁 |
+| `aegis review:prompt` | 生成 Codex 审查送审包 |
+| `aegis review:render` | 将 Codex JSONL 渲染为可读报告 |
+| `aegis safety:check` | 硬阻断禁区动作 |
+| `aegis status` | 显示当前阶段、任务、模式、下一步 |
 
-### 运行态目录
-
-```text
-.aegis/
-  config/
-    aegis.json              ← Aegis 配置
-    quality-gates.json      ← 质量门定义
-    codex-rubric.md         ← Codex 审查标准
-    claude-code-contract.md ← Claude Code 托管规则
-  blueprint/
-    project-blueprint.md    ← 已确认的项目蓝图
-    project-progress.md     ← 自动刷新的进度快照
-  state/
-    run-state.json          ← 唯一机器真相
-  current/
-    current-task.md         ← 当前轮施工单
-    status.md               ← 人类可读的阶段快照
-    work-instruction.md     ← Claude Code 的下一步指令
-    round-summary.md        ← 本轮完成总结
-    decision-request.md     ← 等待人类决策
-    human-handoff.md        ← 需要人类介入
-    *-evidence.md           ← 纪律证据（计划/TDD/调试/验证）
-    validation-report.md    ← 质量门执行结果
-    codex-review-prompt.md  ← 生成的 Codex 送审包
-    codex-review.md         ← 渲染后的审查报告
-  archive/
-    <task-id>/              ← 已完成轮次归档（不入 Git）
-```
-
-`run-state.json` 是紧凑的机器真相。导航文件为 Claude Code 读取而生成。`archive/` 被 gitignore 排除。
-
-### Aegis 不是什么
-
-- 不是新的 AI Agent 平台。
-- 不是 Claude Code 的替代品。
-- 不运行模型。Aegis 从不调用 AI 模型。
-- 不是交互式 CLI。Aegis 是非交互式的。
-- Aegis 永远不 commit、push、merge、rebase、deploy、release、publish。
-- Aegis 不接管 Superpower 的原生目录和方法论。
-
-### 验证命令
-
-```bash
-npm run typecheck
-npm run build
-npm run lint
-npm test
-node dist/cli/main.js safety:check
-node dist/cli/main.js task:review
-git diff --check
-```
-
-### 文档索引
+## 📖 文档索引
 
 | 文档 | 内容 |
 |---|---|
@@ -412,11 +511,54 @@ git diff --check
 | [docs/AEGIS_MVP_ROADMAP.md](docs/AEGIS_MVP_ROADMAP.md) | MVP 范围与阶段路线图 |
 | [docs/AEGIS_CLAUDE_CODE_CONTRACT.md](docs/AEGIS_CLAUDE_CODE_CONTRACT.md) | Claude Code 必须遵守的协议 |
 | [docs/AEGIS_COMPLETION_AUDIT.md](docs/AEGIS_COMPLETION_AUDIT.md) | 重构完工审计 |
-| [docs/AEGIS_LEGACY_REMOVAL.md](docs/AEGIS_LEGACY_REMOVAL.md) | 旧 .agent fallback 移除记录 |
 | [docs/HANDOFF.md](docs/HANDOFF.md) | 项目交接与状态摘要 |
 | [docs/HOW_TO_NEW_PROJECT.md](docs/HOW_TO_NEW_PROJECT.md) | 新项目接入指南 |
 | [aegis-starter/README.md](aegis-starter/README.md) | Starter 包文档 |
 
-### 许可协议
+## 📈 路线图
 
-MIT
+- [X] **产品定位与 .aegis/ 运行态骨架**
+- [X] **单一入口 `aegis` 非交互式 CLI**
+- [X] **蓝图流（草稿  确认  任务生成）**
+- [X] **Superpower 集成与纪律门**
+- [X] **质量门 + Codex 审查闭环**
+- [X] **安全边界与禁区动作强制**
+- [X] **Auto / Allow / Ask 延展模式**
+- [X] **轮次归档与 Starter 迁移**
+- [ ] **更丰富的蓝图修订交互**
+- [ ] **更多项目类型的 Starter 模板**
+- [ ] **可配置的覆盖率阈值**
+
+## 🤝 参与贡献
+
+- ** [报告问题](https://github.com/ChenDianPeter-1/24Hagent/issues)** — 提交 bug 或功能请求
+- ** [提交 PR](https://github.com/ChenDianPeter-1/24Hagent/pulls)** — 审查开放 PR 或提交你自己的
+
+<details>
+<summary>贡献指南</summary>
+
+1. **Fork 仓库** — fork 项目到你的 GitHub 账号
+2. **克隆到本地** — `git clone https://github.com/ChenDianPeter-1/24Hagent.git`
+3. **新建分支** — `git checkout -b new-feature-x`
+4. **修改代码** — 本地开发和测试
+5. **提交** — `git commit -m '实现新功能 x'`
+6. **推送** — `git push origin new-feature-x`
+7. **发起 PR** — 向 main 分支创建 Pull Request
+
+</details>
+
+## 📜 许可协议
+
+Aegis 基于 [MIT](LICENSE) 许可协议分发。
+
+---
+
+<div align="right">
+
+[![][back-to-top]](#top)
+
+</div>
+
+[back-to-top]: https://img.shields.io/badge/-BACK_TO_TOP-151515?style=flat-square
+
+</div>
